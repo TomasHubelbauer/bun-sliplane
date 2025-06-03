@@ -12,3 +12,6 @@
 10. Wait for the deployment to complete and check the generated URL
 
 From this point on, the service will re-deploy on every push to GitHub.
+
+Note that volumes can be created and attached to services at a selected path
+like `/data` and they will preserve data between deployments.
