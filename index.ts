@@ -31,6 +31,18 @@ Bun.serve({
         return new Response(await Bun.file(APPEND_FILE_PATH).text());
       },
     },
+    "/:password/add": {
+      POST: async (request) => {
+        if (request.params.password !== process.env.PASSWORD) {
+          return new Response(null, { status: 401 });
+        }
+
+        const url = new URL(request.url);
+        const data = url.searchParams.get("text");
+        await fs.promises.appendFile(APPEND_FILE_PATH, data + "\n");
+        return new Response(await Bun.file(APPEND_FILE_PATH).text());
+      },
+    },
   },
   fetch() {
     return new Response("Hello from Bun!");
