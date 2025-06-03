@@ -8,6 +8,5 @@
 6. Select your GitHub account and then click Only Selected Repositories
 7. Click on Select Repositories and find your Bun repository
 8. Click on Install & Authorize and wait for the dialog to close
-9. Select the repository in the list
-
-- [ ] Capture the rest of the steps as I go
+9. Select the repository in the list and click on Deploy
+10. Wait for the deployment to complete and check the generated URL
