@@ -4,6 +4,11 @@ body {
   font: icon;
 }
 
+input {
+  /* Make the font large enough for iOS Safari to not zoom it in automatically */
+  font-size: 16px;
+}
+
 ul {
   list-style-type: none;
   padding: 0;
