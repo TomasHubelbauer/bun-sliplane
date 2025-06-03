@@ -10,3 +10,5 @@
 8. Click on Install & Authorize and wait for the dialog to close
 9. Select the repository in the list and click on Deploy
 10. Wait for the deployment to complete and check the generated URL
+
+From this point on, the service will re-deploy on every push to GitHub.
