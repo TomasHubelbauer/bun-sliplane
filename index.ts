@@ -7,6 +7,7 @@ const GLOB = new Glob("*Z.json");
 Bun.serve({
   routes: {
     "/": index,
+    "/manifest.json": () => new Response(Bun.file("./manifest.json")),
     "/:password": {
       GET: async (request) => {
         if (request.params.password !== process.env.PASSWORD) {
