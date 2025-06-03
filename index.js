@@ -1,4 +1,5 @@
 const textInput = document.querySelector('#textInput');
+const logoutButton = document.querySelector('#logoutButton');
 const itemUl = document.querySelector('#itemUl');
 
 const password = localStorage.getItem('password');
@@ -28,6 +29,15 @@ textInput.addEventListener('keydown', async function (event) {
 });
 
 textInput.focus();
+
+logoutButton.addEventListener('click', function () {
+  if (!confirm('Are you sure you want to log out?')) {
+    return;
+  }
+
+  localStorage.removeItem('password');
+  location.reload();
+});
 
 if (password) {
   const response = await fetch(`/${password}`);
@@ -70,4 +80,7 @@ if (password) {
 
     itemUl.append(li);
   }
+}
+else {
+  logoutButton.style.display = 'none';
 }

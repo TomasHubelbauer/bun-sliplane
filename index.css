@@ -4,7 +4,14 @@ body {
   font-family: sans-serif;
 }
 
+div {
+  display: flex;
+  gap: 1ch;
+}
+
 input {
+  flex: 1;
+
   /* Make the font large enough for iOS Safari to not zoom it in automatically */
   font-size: 16px;
 }
