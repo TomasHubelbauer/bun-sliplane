@@ -1,50 +1,76 @@
-import Bun from "bun";
-import fs from "node:fs";
+import Bun, { Glob } from "bun";
+import index from "./index.html";
 
-const REPLACE_FILE_PATH = "/data/data.txt";
-const APPEND_FILE_PATH = "/data/data_append.txt";
+const VOLUME_PATH = process.env.VOLUME_PATH ?? "./";
+const GLOB = new Glob("*Z.json");
 
 Bun.serve({
   routes: {
-    "/api": {
-      GET: async () => new Response(await Bun.file(REPLACE_FILE_PATH).text()),
-      POST: async (request: Request) => {
-        await Bun.file(REPLACE_FILE_PATH).write(new Date().toISOString());
-        return new Response();
-      },
-    },
+    "/": index,
     "/:password": {
       GET: async (request) => {
         if (request.params.password !== process.env.PASSWORD) {
           return new Response(null, { status: 401 });
         }
 
-        return new Response(await Bun.file(APPEND_FILE_PATH).text());
+        const data: { name: string; text: string }[] = [];
+        for await (const name of GLOB.scan(VOLUME_PATH)) {
+          data.push({
+            name,
+            text: await Bun.file(`${VOLUME_PATH}/${name}`).text(),
+          });
+        }
+
+        return Response.json(data);
       },
       POST: async (request) => {
         if (request.params.password !== process.env.PASSWORD) {
           return new Response(null, { status: 401 });
         }
 
-        const data = await request.text();
-        await fs.promises.appendFile(APPEND_FILE_PATH, data + "\n");
-        return new Response(await Bun.file(APPEND_FILE_PATH).text());
+        const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const text = await request.text();
+        await Bun.write(`${VOLUME_PATH}/${stamp}.json`, text);
+        return new Response();
       },
-    },
-    "/:password/add": {
-      POST: async (request) => {
+      DELETE: async (request) => {
+        console.log("Deleting file:", request.url);
         if (request.params.password !== process.env.PASSWORD) {
           return new Response(null, { status: 401 });
         }
 
         const url = new URL(request.url);
-        const data = url.searchParams.get("text");
-        await fs.promises.appendFile(APPEND_FILE_PATH, data + "\n");
-        return new Response(await Bun.file(APPEND_FILE_PATH).text());
+        const name = url.searchParams.get("name");
+        if (!name) {
+          return new Response("Name query parameter is required", {
+            status: 400,
+          });
+        }
+
+        try {
+          await Bun.file(`${VOLUME_PATH}/${name}`).unlink();
+          return new Response();
+        } catch (error) {
+          return new Response("File not found", { status: 404 });
+        }
+      },
+      PUT: async (request) => {
+        if (request.params.password !== process.env.PASSWORD) {
+          return new Response(null, { status: 401 });
+        }
+
+        const url = new URL(request.url);
+        const name = url.searchParams.get("name");
+        if (!name) {
+          return new Response("Name query parameter is required", {
+            status: 400,
+          });
+        }
+
+        const text = await request.text();
+        await Bun.write(`${VOLUME_PATH}/${name}`, text);
+        return new Response();
       },
     },
-  },
-  fetch() {
-    return new Response("Hello from Bun!");
   },
 });

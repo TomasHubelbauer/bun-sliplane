@@ -1,0 +1,10 @@
+body {
+  display: flex;
+  flex-direction: column;
+  font: icon;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}

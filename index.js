@@ -1,0 +1,66 @@
+const textInput = document.querySelector('#textInput');
+const itemUl = document.querySelector('#itemUl');
+
+const password = localStorage.getItem('password');
+if (!password) {
+  textInput.disabled = true;
+  textInput.placeholder = 'Set `password` in `localStorage`';
+}
+
+textInput.addEventListener('keydown', async function (event) {
+  if (event.key !== 'Enter') {
+    return;
+  }
+
+  const text = textInput.value.trim();
+  if (!text) {
+    return;
+  }
+
+  await fetch(`/${password}`, { method: 'POST', body: text });
+  textInput.value = '';
+  location.reload();
+});
+
+textInput.focus();
+
+const response = await fetch(`/${password}`);
+const items = await response.json();
+
+for (const item of items) {
+  const li = document.createElement('li');
+
+  const deleteButton = document.createElement('button');
+  deleteButton.textContent = '✕';
+  li.append(deleteButton);
+
+  deleteButton.addEventListener('click', async function () {
+    if (!confirm(`Delete item "${item.name}"?`)) {
+      return;
+    }
+
+    await fetch(`/${password}?name=${item.name}`, { method: 'DELETE' });
+    li.remove();
+  });
+
+  li.append(` ${item.name}: `);
+
+  const textSpan = document.createElement('span');
+  textSpan.textContent = item.text;
+  li.append(textSpan);
+
+  textSpan.addEventListener('click', async function () {
+    const newText = prompt('Text:', item.text);
+    if (newText === null || newText === item.text) {
+      return;
+    }
+
+    await fetch(`/${password}?name=${item.name}`, {
+      method: 'PUT',
+      body: newText,
+    });
+    textSpan.textContent = newText;
+  });
+
+  itemUl.append(li);
+}
