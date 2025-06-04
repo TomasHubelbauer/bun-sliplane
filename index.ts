@@ -22,7 +22,7 @@ Bun.serve({
           });
         }
 
-        data.sort((a, b) => a.name.localeCompare(b.name));
+        data.sort((a, b) => b.name.localeCompare(a.name));
         return Response.json(data);
       },
       POST: async (request) => {
