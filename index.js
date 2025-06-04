@@ -59,7 +59,7 @@ if (password) {
       li.remove();
     });
 
-    li.append(` ${item.name}: `);
+    li.append(` ${item.name.slice(0, -'Z.json'.length).replace('T', ' ')}: `);
 
     const textSpan = document.createElement('span');
     textSpan.textContent = item.text;
