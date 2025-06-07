@@ -39,7 +39,13 @@ logoutButton.addEventListener('click', function () {
   location.reload();
 });
 
-if (password) {
+async function render() {
+  if (!password) {
+    return;
+  }
+
+  itemUl.replaceChildren();
+
   const response = await fetch(`/${password}`);
   const items = await response.json();
 
@@ -81,6 +87,8 @@ if (password) {
     itemUl.append(li);
   }
 }
-else {
-  logoutButton.style.display = 'none';
-}
+
+await render();
+
+// Update the list whenever the tab visibility changes to keep it up to date
+document.addEventListener('visibilitychange', render);
