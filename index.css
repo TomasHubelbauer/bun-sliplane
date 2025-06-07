@@ -29,6 +29,10 @@ button {
   cursor: pointer;
 }
 
+time {
+  cursor: default;
+}
+
 @media (orientation: portrait) {
   html {
     display: flex;

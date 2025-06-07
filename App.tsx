@@ -140,7 +140,9 @@ export default function App() {
             <button data-name={item.name} onClick={handleDeleteButtonClick}>
               ✕
             </button>
-            {item.name.slice(0, -"Z.json".length).replace("T", " ")}:{" "}
+            <time dateTime={item.name} title={item.name}>
+              {item.name.slice(0, -"Z.json".length).replace("T", " ")}:{" "}
+            </time>
             <span data-name={item.name} onClick={handleTextSpanClick}>
               {item.text}
             </span>
