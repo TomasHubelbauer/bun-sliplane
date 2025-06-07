@@ -28,6 +28,11 @@ export default function Composer({
 
   const handleInputKeyDown = useCallback(
     async (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === "Escape") {
+        setDraft("");
+        return;
+      }
+
       if (event.key !== "Enter") {
         return;
       }
