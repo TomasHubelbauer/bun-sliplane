@@ -48,7 +48,7 @@ export default function Item({
     <li>
       <button onClick={handleDeleteButtonClick}>✕</button>
       <time dateTime={stamp} title={stamp}>
-        {name}:
+        {name}
       </time>
       <span onClick={handleTextSpanClick}>{text}</span>
     </li>

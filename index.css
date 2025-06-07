@@ -21,7 +21,12 @@ ul {
   padding: 0;
 }
 
-ul li:hover {
+li {
+  display: flex;
+  gap: 1ch;
+}
+
+li:hover {
   background: whitesmoke;
 }
 
@@ -30,6 +35,7 @@ button {
 }
 
 time {
+  color: gray;
   cursor: default;
 }
 
