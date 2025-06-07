@@ -21,6 +21,10 @@ ul {
   padding: 0;
 }
 
+ul li:hover {
+  background: whitesmoke;
+}
+
 @media (orientation: portrait) {
   html {
     display: flex;
