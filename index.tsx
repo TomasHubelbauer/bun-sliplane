@@ -1,6 +1,8 @@
-const textInput = document.querySelector('#textInput');
-const logoutButton = document.querySelector('#logoutButton');
-const itemUl = document.querySelector('#itemUl');
+import type { Item } from './Item.d.ts';
+
+const textInput = document.querySelector('#textInput') as HTMLInputElement;
+const logoutButton = document.querySelector('#logoutButton') as HTMLButtonElement;
+const itemUl = document.querySelector('#itemUl') as HTMLUListElement;
 
 const password = localStorage.getItem('password');
 if (!password) {
@@ -47,7 +49,7 @@ async function render() {
   itemUl.replaceChildren();
 
   const response = await fetch(`/${password}`);
-  const items = await response.json();
+  const items: Item[] = await response.json();
 
   for (const item of items) {
     const li = document.createElement('li');
