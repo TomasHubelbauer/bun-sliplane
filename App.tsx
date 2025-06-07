@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Item as ItemType } from "./ItemType.ts";
 import Composer from "./Composer.tsx";
 import List from "./List.tsx";
@@ -41,6 +41,21 @@ export default function App() {
     await refreshItems();
   }, [refreshItems]);
 
+  const search = useMemo(() => {
+    const search = draft.trim().toUpperCase();
+    if (!search || search.includes(" ")) {
+      return;
+    }
+
+    return search;
+  }, [draft]);
+
+  const matches = useMemo(() => {
+    return search
+      ? items.filter((item) => item.text.toUpperCase().includes(search))
+      : [];
+  }, [items, search]);
+
   return (
     <>
       <div>
@@ -53,8 +68,13 @@ export default function App() {
         />
         <button onClick={handleLogoutButtonClick}>Log out</button>
       </div>
+      {matches.length > 0 && `Items matching "${search}":`}
       {password && (
-        <List items={items} password={password} refreshItems={refreshItems} />
+        <List
+          items={matches.length ? matches : items}
+          password={password}
+          refreshItems={refreshItems}
+        />
       )}
     </>
   );
