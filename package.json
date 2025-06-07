@@ -3,6 +3,12 @@
     "start": "bun index.ts"
   },
   "dependencies": {
-    "@types/bun": "latest"
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
   }
 }

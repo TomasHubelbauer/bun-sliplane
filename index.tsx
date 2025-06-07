@@ -96,3 +96,7 @@ await render();
 
 // Update the list whenever the tab visibility changes to keep it up to date
 document.addEventListener("visibilitychange", render);
+
+import { createRoot } from "react-dom/client";
+import App from "./App.tsx";
+createRoot(document.getElementById("rootDiv")!).render(<App />);
