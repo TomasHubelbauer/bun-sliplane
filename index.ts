@@ -9,7 +9,6 @@ if (!process.env.PASSWORD) {
 const VOLUME_PATH = process.env.VOLUME_PATH ?? "./";
 const GLOB = new Glob("*Z.json");
 
-console.log(process.env.SLIPLANE_COMMIT_HASH);
 Bun.serve({
   routes: {
     "/": index,
