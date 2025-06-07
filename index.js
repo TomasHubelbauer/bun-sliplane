@@ -25,7 +25,7 @@ textInput.addEventListener('keydown', async function (event) {
 
   await fetch(`/${password}`, { method: 'POST', body: text });
   textInput.value = '';
-  location.reload();
+  await render();
 });
 
 textInput.focus();
