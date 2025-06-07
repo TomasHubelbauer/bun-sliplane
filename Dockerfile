@@ -1,3 +1,3 @@
 FROM oven/bun
 COPY . .
-CMD ["bun", "."]
+CMD ["bun", "start"]
