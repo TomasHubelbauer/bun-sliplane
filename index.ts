@@ -1,6 +1,6 @@
 import Bun, { Glob } from "bun";
 import index from "./index.html";
-import type { Item } from "./Item.d.ts";
+import type { Item } from "./ItemType.ts";
 
 if (!process.env.PASSWORD) {
   throw new Error("PASSWORD environment variable is required");

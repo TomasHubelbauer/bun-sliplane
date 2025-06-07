@@ -1,11 +1,6 @@
-import {
-  useCallback,
-  useEffect,
-  useState,
-  type KeyboardEvent,
-  type MouseEvent,
-} from "react";
-import type { Item } from "./Item.d.ts";
+import { useCallback, useEffect, useState, type KeyboardEvent } from "react";
+import type { Item as ItemType } from "./ItemType.ts";
+import Item from "./Item.tsx";
 
 export default function App() {
   const [password, setPassword] = useState<string | null>(
@@ -13,7 +8,7 @@ export default function App() {
   );
 
   const [draft, setDraft] = useState<string>("");
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<ItemType[]>([]);
 
   const refreshItems = useCallback(async () => {
     if (!password) {
@@ -77,55 +72,6 @@ export default function App() {
     await refreshItems();
   }, [refreshItems]);
 
-  const handleDeleteButtonClick = useCallback(
-    async (event: MouseEvent<HTMLButtonElement>) => {
-      const stamp = event.currentTarget.dataset.stamp;
-      if (!stamp) {
-        return;
-      }
-
-      const item = items.find((item) => item.stamp === stamp);
-      if (!item) {
-        return;
-      }
-
-      if (!confirm(`Delete item "${item.name}"?`)) {
-        return;
-      }
-
-      await fetch(`/${password}?stamp=${stamp}`, { method: "DELETE" });
-      await refreshItems();
-    },
-    [items, password, refreshItems]
-  );
-
-  const handleTextSpanClick = useCallback(
-    async (event: MouseEvent<HTMLSpanElement>) => {
-      const stamp = event.currentTarget.dataset.stamp;
-      if (!stamp) {
-        return;
-      }
-
-      const item = items.find((item) => item.stamp === stamp);
-      if (!item) {
-        return;
-      }
-
-      const text = prompt("Text:", item.text);
-      if (!text || text === item.text) {
-        return;
-      }
-
-      await fetch(`/${password}?stamp=${stamp}`, {
-        method: "PUT",
-        body: text,
-      });
-
-      await refreshItems();
-    },
-    [items, password, refreshItems]
-  );
-
   return (
     <>
       <div>
@@ -140,19 +86,16 @@ export default function App() {
         <button onClick={handleLogoutButtonClick}>Log out</button>
       </div>
       <ul>
-        {items.map((item) => (
-          <li key={item.stamp}>
-            <button data-stamp={item.stamp} onClick={handleDeleteButtonClick}>
-              ✕
-            </button>
-            <time dateTime={item.stamp} title={item.stamp}>
-              {item.name}:
-            </time>
-            <span data-stamp={item.stamp} onClick={handleTextSpanClick}>
-              {item.text}
-            </span>
-          </li>
-        ))}
+        {password &&
+          items.map((item) => (
+            <Item
+              key={item.stamp}
+              {...item}
+              password={password}
+              onDelete={refreshItems}
+              onRename={refreshItems}
+            />
+          ))}
       </ul>
     </>
   );
