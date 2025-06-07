@@ -25,6 +25,10 @@ ul li:hover {
   background: whitesmoke;
 }
 
+button {
+  cursor: pointer;
+}
+
 @media (orientation: portrait) {
   html {
     display: flex;
