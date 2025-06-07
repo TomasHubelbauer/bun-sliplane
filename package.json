@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "start": "bun ."
+  },
   "dependencies": {
     "@types/bun": "latest"
   }
