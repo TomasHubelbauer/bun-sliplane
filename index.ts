@@ -1,6 +1,10 @@
 import Bun, { Glob } from "bun";
 import index from "./index.html";
 
+if (!process.env.PASSWORD) {
+  throw new Error("PASSWORD environment variable is required");
+}
+
 const VOLUME_PATH = process.env.VOLUME_PATH ?? "./";
 const GLOB = new Glob("*Z.json");
 
