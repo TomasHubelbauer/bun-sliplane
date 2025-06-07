@@ -1,29 +1,30 @@
 import {
   useCallback,
-  useState,
   type Dispatch,
   type KeyboardEvent,
   type SetStateAction,
 } from "react";
 
 type ComposerProps = {
+  draft: string;
+  setDraft: Dispatch<SetStateAction<string>>;
   password: string | null;
   setPassword: Dispatch<SetStateAction<string | null>>;
   onSubmit: () => Promise<void>;
 };
 
 export default function Composer({
+  draft,
+  setDraft,
   password,
   setPassword,
   onSubmit,
 }: ComposerProps) {
-  const [draft, setDraft] = useState<string>("");
-
   const handleInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setDraft(event.currentTarget.value);
     },
-    []
+    [setDraft]
   );
 
   const handleInputKeyDown = useCallback(
@@ -53,7 +54,7 @@ export default function Composer({
       setDraft("");
       await onSubmit();
     },
-    [password, setPassword, onSubmit]
+    [password, setPassword, onSubmit, setDraft]
   );
 
   return (

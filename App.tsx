@@ -4,6 +4,7 @@ import Item from "./Item.tsx";
 import Composer from "./Composer.tsx";
 
 export default function App() {
+  const [draft, setDraft] = useState<string>("");
   const [password, setPassword] = useState<string | null>(
     localStorage.getItem("password")
   );
@@ -44,6 +45,8 @@ export default function App() {
     <>
       <div>
         <Composer
+          draft={draft}
+          setDraft={setDraft}
           password={password}
           setPassword={setPassword}
           onSubmit={refreshItems}
