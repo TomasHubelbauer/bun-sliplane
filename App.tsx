@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Item as ItemType } from "./ItemType.ts";
-import Item from "./Item.tsx";
 import Composer from "./Composer.tsx";
+import List from "./List.tsx";
 
 export default function App() {
   const [draft, setDraft] = useState<string>("");
@@ -53,18 +53,9 @@ export default function App() {
         />
         <button onClick={handleLogoutButtonClick}>Log out</button>
       </div>
-      <ul>
-        {password &&
-          items.map((item) => (
-            <Item
-              key={item.stamp}
-              {...item}
-              password={password}
-              onDelete={refreshItems}
-              onRename={refreshItems}
-            />
-          ))}
-      </ul>
+      {password && (
+        <List items={items} password={password} refreshItems={refreshItems} />
+      )}
     </>
   );
 }
