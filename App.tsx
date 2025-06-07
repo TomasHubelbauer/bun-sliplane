@@ -79,29 +79,34 @@ export default function App() {
 
   const handleDeleteButtonClick = useCallback(
     async (event: MouseEvent<HTMLButtonElement>) => {
-      const name = event.currentTarget.dataset.name;
-      if (!name) {
+      const stamp = event.currentTarget.dataset.stamp;
+      if (!stamp) {
         return;
       }
 
-      if (!confirm(`Delete item "${name}"?`)) {
+      const item = items.find((item) => item.stamp === stamp);
+      if (!item) {
         return;
       }
 
-      await fetch(`/${password}?name=${name}`, { method: "DELETE" });
+      if (!confirm(`Delete item "${item.name}"?`)) {
+        return;
+      }
+
+      await fetch(`/${password}?stamp=${stamp}`, { method: "DELETE" });
       await refreshItems();
     },
-    [password, refreshItems]
+    [items, password, refreshItems]
   );
 
   const handleTextSpanClick = useCallback(
     async (event: MouseEvent<HTMLSpanElement>) => {
-      const name = event.currentTarget.dataset.name;
-      if (!name) {
+      const stamp = event.currentTarget.dataset.stamp;
+      if (!stamp) {
         return;
       }
 
-      const item = items.find((item) => item.name === name);
+      const item = items.find((item) => item.stamp === stamp);
       if (!item) {
         return;
       }
@@ -111,7 +116,7 @@ export default function App() {
         return;
       }
 
-      await fetch(`/${password}?name=${name}`, {
+      await fetch(`/${password}?stamp=${stamp}`, {
         method: "PUT",
         body: text,
       });
@@ -136,14 +141,14 @@ export default function App() {
       </div>
       <ul>
         {items.map((item) => (
-          <li key={item.name}>
-            <button data-name={item.name} onClick={handleDeleteButtonClick}>
+          <li key={item.stamp}>
+            <button data-stamp={item.stamp} onClick={handleDeleteButtonClick}>
               ✕
             </button>
-            <time dateTime={item.name} title={item.name}>
-              {item.name.slice(0, -"Z.json".length).replace("T", " ")}:{" "}
+            <time dateTime={item.stamp} title={item.stamp}>
+              {item.name}:
             </time>
-            <span data-name={item.name} onClick={handleTextSpanClick}>
+            <span data-stamp={item.stamp} onClick={handleTextSpanClick}>
               {item.text}
             </span>
           </li>

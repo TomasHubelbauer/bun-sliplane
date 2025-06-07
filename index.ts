@@ -1,5 +1,6 @@
 import Bun, { Glob } from "bun";
 import index from "./index.html";
+import type { Item } from "./Item.d.ts";
 
 if (!process.env.PASSWORD) {
   throw new Error("PASSWORD environment variable is required");
@@ -18,11 +19,14 @@ Bun.serve({
           return new Response(null, { status: 401 });
         }
 
-        const data: { name: string; text: string }[] = [];
-        for await (const name of GLOB.scan(VOLUME_PATH)) {
+        const data: Item[] = [];
+        for await (const path of GLOB.scan(VOLUME_PATH)) {
+          const stamp = path.slice(0, -".json".length);
+          const name = path.slice(0, -"Z.json".length).replace("T", " ");
           data.push({
+            stamp,
             name,
-            text: await Bun.file(`${VOLUME_PATH}/${name}`).text(),
+            text: await Bun.file(`${VOLUME_PATH}/${path}`).text(),
           });
         }
 
@@ -46,15 +50,15 @@ Bun.serve({
         }
 
         const url = new URL(request.url);
-        const name = url.searchParams.get("name");
-        if (!name) {
-          return new Response("Name query parameter is required", {
+        const stamp = url.searchParams.get("stamp");
+        if (!stamp) {
+          return new Response("'stamp' query parameter is required", {
             status: 400,
           });
         }
 
         try {
-          await Bun.file(`${VOLUME_PATH}/${name}`).unlink();
+          await Bun.file(`${VOLUME_PATH}/${stamp}.json`).unlink();
           return new Response();
         } catch (error) {
           return new Response("File not found", { status: 404 });
@@ -66,15 +70,15 @@ Bun.serve({
         }
 
         const url = new URL(request.url);
-        const name = url.searchParams.get("name");
-        if (!name) {
-          return new Response("Name query parameter is required", {
+        const stamp = url.searchParams.get("stamp");
+        if (!stamp) {
+          return new Response("'stamp' query parameter is required", {
             status: 400,
           });
         }
 
         const text = await request.text();
-        await Bun.write(`${VOLUME_PATH}/${name}`, text);
+        await Bun.write(`${VOLUME_PATH}/${stamp}.json`, text);
         return new Response();
       },
     },
