@@ -1,5 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import type { Item as ItemType } from "./ItemType.ts";
+import RichText from "./RichText.tsx";
+import segmentUrls from "./segmentUrls.ts";
 
 type ItemProps = ItemType & {
   password: string;
@@ -52,6 +54,9 @@ export default function Item({
     await onRename();
   }, [password, onRename, stamp, text]);
 
+  const nameSegments = useMemo(() => [...segmentUrls(name)], [name]);
+  const textSegments = useMemo(() => [...segmentUrls(text)], [text]);
+
   return (
     <fieldset className="item">
       <legend>
@@ -60,10 +65,13 @@ export default function Item({
           onClick={handleNameSpanClick}
           className={name ? "" : "placeholder"}
         >
-          {name ?? "(unnamed)"}
+          <RichText parts={nameSegments} />
+          {!name && "(unnamed)"}
         </span>
       </legend>
-      <span onClick={handleTextSpanClick}>{text}</span>
+      <span onClick={handleTextSpanClick}>
+        <RichText parts={textSegments} />
+      </span>
       <time dateTime={stamp} title={stamp}>
         {stamp}
       </time>
