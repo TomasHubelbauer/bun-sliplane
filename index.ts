@@ -69,8 +69,22 @@ Bun.serve({
           });
         }
 
-        const text = await request.text();
-        db.run("UPDATE items SET text = ? WHERE stamp = ?", [text, stamp]);
+        const item = await request.json();
+
+        if ("name" in item) {
+          db.run("UPDATE items SET name = ? WHERE stamp = ?", [
+            item.name,
+            stamp,
+          ]);
+        }
+
+        if ("text" in item) {
+          db.run("UPDATE items SET text = ? WHERE stamp = ?", [
+            item.text,
+            stamp,
+          ]);
+        }
+
         return new Response();
       },
     },

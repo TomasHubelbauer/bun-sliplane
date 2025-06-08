@@ -27,6 +27,23 @@ export default function Item({
     [password, onDelete, stamp, name]
   );
 
+  const handleNameSpanClick = useCallback(
+    async (event: MouseEvent<HTMLTimeElement>) => {
+      const newName = prompt("Name:", name);
+      if (!newName || newName === name) {
+        return;
+      }
+
+      await fetch(`/${password}?stamp=${stamp}`, {
+        method: "PUT",
+        body: JSON.stringify({ name: newName }),
+      });
+
+      await onRename();
+    },
+    [password, onRename, stamp, name]
+  );
+
   const handleTextSpanClick = useCallback(
     async (event: MouseEvent<HTMLSpanElement>) => {
       const newText = prompt("Text:", text);
@@ -36,7 +53,7 @@ export default function Item({
 
       await fetch(`/${password}?stamp=${stamp}`, {
         method: "PUT",
-        body: newText,
+        body: JSON.stringify({ text: newText }),
       });
 
       await onRename();
@@ -47,7 +64,7 @@ export default function Item({
   return (
     <li>
       <button onClick={handleDeleteButtonClick}>✕</button>
-      <time dateTime={stamp} title={stamp}>
+      <time dateTime={stamp} title={stamp} onClick={handleNameSpanClick}>
         {name}
       </time>
       <span onClick={handleTextSpanClick}>{text}</span>
