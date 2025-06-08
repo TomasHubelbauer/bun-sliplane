@@ -21,6 +21,27 @@ for await (const path of new Glob("*").scan(VOLUME_PATH)) {
   console.log(path);
 }
 
+const data: Item[] = [];
+for await (const path of GLOB.scan(VOLUME_PATH)) {
+  const stamp = path.slice(0, -".json".length);
+  const name = path.slice(0, -"Z.json".length).replace("T", " ");
+  data.push({
+    stamp,
+    name,
+    text: await Bun.file(`${VOLUME_PATH}/${path}`).text(),
+  });
+}
+
+data.sort((a, b) => b.name.localeCompare(a.name));
+
+for (const item of data) {
+  db.run("INSERT OR REPLACE INTO items (stamp, name, text) VALUES (?, ?, ?)", [
+    item.stamp,
+    item.name,
+    item.text,
+  ]);
+}
+
 Bun.serve({
   routes: {
     "/": index,
