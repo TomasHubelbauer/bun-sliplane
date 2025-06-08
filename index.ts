@@ -1,4 +1,4 @@
-import Bun, { Glob } from "bun";
+import Bun from "bun";
 import { Database } from "bun:sqlite";
 import index from "./index.html";
 
@@ -12,11 +12,6 @@ const db = new Database(DATABASE_PATH);
 db.run(
   "CREATE TABLE IF NOT EXISTS items (stamp TEXT PRIMARY KEY, name TEXT, text TEXT)"
 );
-
-console.log("Volume content:");
-for await (const path of new Glob("*").scan(VOLUME_PATH)) {
-  console.log(path);
-}
 
 Bun.serve({
   routes: {
