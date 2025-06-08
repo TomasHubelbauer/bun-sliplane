@@ -9,7 +9,7 @@ type ListProps = {
 
 export default function List({ items, password, refreshItems }: ListProps) {
   return (
-    <ul>
+    <div className="list">
       {items.map((item) => (
         <Item
           key={item.stamp}
@@ -19,6 +19,6 @@ export default function List({ items, password, refreshItems }: ListProps) {
           onRename={refreshItems}
         />
       ))}
-    </ul>
+    </div>
   );
 }

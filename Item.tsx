@@ -53,12 +53,12 @@ export default function Item({
   }, [password, onRename, stamp, text]);
 
   return (
-    <li>
+    <div className="item">
       <button onClick={handleDeleteButtonClick}>✕</button>
       <time dateTime={stamp} title={stamp} onClick={handleNameSpanClick}>
         {name}
       </time>
       <span onClick={handleTextSpanClick}>{text}</span>
-    </li>
+    </div>
   );
 }

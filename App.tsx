@@ -58,7 +58,7 @@ export default function App() {
 
   return (
     <>
-      <div>
+      <div className="composer">
         <Composer
           draft={draft}
           setDraft={setDraft}

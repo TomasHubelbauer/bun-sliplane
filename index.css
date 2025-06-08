@@ -2,9 +2,10 @@ body {
   display: flex;
   flex-direction: column;
   font-family: sans-serif;
+  gap: 1ch;
 }
 
-div {
+div.composer {
   display: flex;
   gap: 1ch;
 }
@@ -16,17 +17,18 @@ input {
   font-size: 16px;
 }
 
-ul {
+div.list {
   list-style-type: none;
   padding: 0;
 }
 
-li {
+div.item {
+  align-items: center;
   display: flex;
   gap: 1ch;
 }
 
-li:hover {
+div.item:hover {
   background: whitesmoke;
 }
 
@@ -47,15 +49,15 @@ time {
 
   body {
     flex: 1;
-    flex-direction: column-reverse;
   }
 
-  ul {
+  div.list {
     flex: 1;
     overflow: auto;
   }
 
-  input {
+  div.composer {
+    order: 2;
     position: sticky;
   }
 }
