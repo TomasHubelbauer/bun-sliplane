@@ -10,6 +10,7 @@ type ItemProps = ItemType & {
 };
 
 export default function Item({
+  rowid,
   stamp,
   name,
   text,
@@ -22,9 +23,9 @@ export default function Item({
       return;
     }
 
-    await fetch(`/${password}?stamp=${stamp}`, { method: "DELETE" });
+    await fetch(`/${password}?rowId=${rowid}`, { method: "DELETE" });
     await onDelete();
-  }, [password, onDelete, stamp, name]);
+  }, [password, onDelete, rowid, name]);
 
   const handleNameSpanClick = useCallback(async () => {
     const newName = prompt("Name:", name);
@@ -32,13 +33,13 @@ export default function Item({
       return;
     }
 
-    await fetch(`/${password}?stamp=${stamp}`, {
+    await fetch(`/${password}?rowId=${rowid}`, {
       method: "PUT",
       body: JSON.stringify({ name: newName }),
     });
 
     await onRename();
-  }, [password, onRename, stamp, name]);
+  }, [password, onRename, rowid, name]);
 
   const handleTextSpanClick = useCallback(async () => {
     const newText = prompt("Text:", text);
@@ -46,13 +47,13 @@ export default function Item({
       return;
     }
 
-    await fetch(`/${password}?stamp=${stamp}`, {
+    await fetch(`/${password}?rowId=${rowid}`, {
       method: "PUT",
       body: JSON.stringify({ text: newText }),
     });
 
     await onRename();
-  }, [password, onRename, stamp, text]);
+  }, [password, onRename, rowid, text]);
 
   const nameSegments = useMemo(() => [...segmentUrls(name)], [name]);
   const textSegments = useMemo(() => [...segmentUrls(text)], [text]);
@@ -72,9 +73,12 @@ export default function Item({
       <span onClick={handleTextSpanClick}>
         <RichText parts={textSegments} />
       </span>
-      <time dateTime={stamp} title={stamp}>
-        {stamp}
-      </time>
+      <div className="metadata">
+        <span className="placeholder">#{rowid}</span>
+        <time dateTime={stamp} title={stamp}>
+          {stamp}
+        </time>
+      </div>
     </fieldset>
   );
 }

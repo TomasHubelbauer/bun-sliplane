@@ -23,7 +23,7 @@ Bun.serve({
           return new Response(null, { status: 401 });
         }
 
-        return Response.json(db.query("SELECT * FROM items").all());
+        return Response.json(db.query("SELECT rowid, * FROM items").all());
       },
       POST: async (request) => {
         if (request.params.password !== process.env.PASSWORD) {
@@ -46,14 +46,14 @@ Bun.serve({
         }
 
         const url = new URL(request.url);
-        const stamp = url.searchParams.get("stamp");
-        if (!stamp) {
-          return new Response("'stamp' query parameter is required", {
+        const rowId = url.searchParams.get("rowId");
+        if (!rowId) {
+          return new Response("'rowId' query parameter is required", {
             status: 400,
           });
         }
 
-        db.run("DELETE FROM items WHERE stamp = ?", [stamp]);
+        db.run("DELETE FROM items WHERE rowid = ?", [rowId]);
         return new Response();
       },
       PUT: async (request) => {
@@ -62,9 +62,9 @@ Bun.serve({
         }
 
         const url = new URL(request.url);
-        const stamp = url.searchParams.get("stamp");
-        if (!stamp) {
-          return new Response("'stamp' query parameter is required", {
+        const rowId = url.searchParams.get("rowId");
+        if (!rowId) {
+          return new Response("'rowId' query parameter is required", {
             status: 400,
           });
         }
@@ -72,16 +72,16 @@ Bun.serve({
         const item = await request.json();
 
         if ("name" in item) {
-          db.run("UPDATE items SET name = ? WHERE stamp = ?", [
+          db.run("UPDATE items SET name = ? WHERE rowid = ?", [
             item.name,
-            stamp,
+            rowId,
           ]);
         }
 
         if ("text" in item) {
-          db.run("UPDATE items SET text = ? WHERE stamp = ?", [
+          db.run("UPDATE items SET text = ? WHERE rowid = ?", [
             item.text,
-            stamp,
+            rowId,
           ]);
         }
 

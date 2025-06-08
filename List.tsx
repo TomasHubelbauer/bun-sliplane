@@ -12,7 +12,7 @@ export default function List({ items, password, refreshItems }: ListProps) {
     <div className="list">
       {items.map((item) => (
         <Item
-          key={item.stamp}
+          key={item.rowid}
           {...item}
           password={password}
           onDelete={refreshItems}

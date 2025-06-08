@@ -48,6 +48,11 @@ span.placeholder {
   color: gray;
 }
 
+div.metadata {
+  display: flex;
+  gap: 1ch;
+}
+
 div.controls {
   align-items: center;
   display: flex;
