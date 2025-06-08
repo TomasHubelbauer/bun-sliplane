@@ -34,6 +34,10 @@ fieldset.item {
   gap: 1ch;
 }
 
+input[type="file"] {
+  display: none;
+}
+
 fieldset.item:hover {
   background: whitesmoke;
 }

@@ -17,6 +17,7 @@ export default function List({ items, password, refreshItems }: ListProps) {
           password={password}
           onDelete={refreshItems}
           onRename={refreshItems}
+          onAttach={refreshItems}
         />
       ))}
     </div>
