@@ -1,4 +1,4 @@
-import { useCallback, type MouseEvent } from "react";
+import { useCallback } from "react";
 import type { Item as ItemType } from "./ItemType.ts";
 
 type ItemProps = ItemType & {
@@ -15,51 +15,42 @@ export default function Item({
   onDelete,
   onRename,
 }: ItemProps) {
-  const handleDeleteButtonClick = useCallback(
-    async (event: MouseEvent<HTMLButtonElement>) => {
-      if (!confirm(`Delete item "${name}"?`)) {
-        return;
-      }
+  const handleDeleteButtonClick = useCallback(async () => {
+    if (!confirm(`Delete item "${name}"?`)) {
+      return;
+    }
 
-      await fetch(`/${password}?stamp=${stamp}`, { method: "DELETE" });
-      await onDelete();
-    },
-    [password, onDelete, stamp, name]
-  );
+    await fetch(`/${password}?stamp=${stamp}`, { method: "DELETE" });
+    await onDelete();
+  }, [password, onDelete, stamp, name]);
 
-  const handleNameSpanClick = useCallback(
-    async (event: MouseEvent<HTMLTimeElement>) => {
-      const newName = prompt("Name:", name);
-      if (!newName || newName === name) {
-        return;
-      }
+  const handleNameSpanClick = useCallback(async () => {
+    const newName = prompt("Name:", name);
+    if (!newName || newName === name) {
+      return;
+    }
 
-      await fetch(`/${password}?stamp=${stamp}`, {
-        method: "PUT",
-        body: JSON.stringify({ name: newName }),
-      });
+    await fetch(`/${password}?stamp=${stamp}`, {
+      method: "PUT",
+      body: JSON.stringify({ name: newName }),
+    });
 
-      await onRename();
-    },
-    [password, onRename, stamp, name]
-  );
+    await onRename();
+  }, [password, onRename, stamp, name]);
 
-  const handleTextSpanClick = useCallback(
-    async (event: MouseEvent<HTMLSpanElement>) => {
-      const newText = prompt("Text:", text);
-      if (!newText || newText === text) {
-        return;
-      }
+  const handleTextSpanClick = useCallback(async () => {
+    const newText = prompt("Text:", text);
+    if (!newText || newText === text) {
+      return;
+    }
 
-      await fetch(`/${password}?stamp=${stamp}`, {
-        method: "PUT",
-        body: JSON.stringify({ text: newText }),
-      });
+    await fetch(`/${password}?stamp=${stamp}`, {
+      method: "PUT",
+      body: JSON.stringify({ text: newText }),
+    });
 
-      await onRename();
-    },
-    [password, onRename, stamp, text]
-  );
+    await onRename();
+  }, [password, onRename, stamp, text]);
 
   return (
     <li>
