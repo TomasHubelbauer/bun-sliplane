@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   type Dispatch,
   type KeyboardEvent,
   type SetStateAction,
@@ -22,10 +23,15 @@ export default function Composer({
 }: ComposerProps) {
   const handleInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
+      localStorage.setItem("draft", event.currentTarget.value);
       setDraft(event.currentTarget.value);
     },
     [setDraft]
   );
+
+  useEffect(() => {
+    setDraft(localStorage.getItem("draft") || "");
+  }, [setDraft]);
 
   const handleInputKeyDown = useCallback(
     async (event: KeyboardEvent<HTMLInputElement>) => {
