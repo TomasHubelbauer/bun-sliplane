@@ -69,6 +69,7 @@ export default function Composer({
       });
 
       setDraft("");
+      localStorage.setItem("draft", "");
       await onSubmit();
     },
     [password, setPassword, onSubmit, setDraft]
