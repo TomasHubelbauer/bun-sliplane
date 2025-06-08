@@ -21,8 +21,6 @@ for await (const path of new Glob("*").scan(VOLUME_PATH)) {
   console.log(path);
 }
 
-await Bun.file(VOLUME_PATH + "/data.txt").unlink();
-
 Bun.serve({
   routes: {
     "/": index,
