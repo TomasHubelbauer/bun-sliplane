@@ -10,8 +10,14 @@ div.composer {
   gap: 1ch;
 }
 
-input {
+div.hint {
+  padding: 2px;
+  margin: 1px;
+}
+
+textarea {
   flex: 1;
+  font: inherit;
 }
 
 div.list {
@@ -36,6 +42,10 @@ legend {
   align-items: center;
   display: flex;
   gap: 1ch;
+}
+
+span.placeholder {
+  color: gray;
 }
 
 div.controls {
@@ -77,8 +87,8 @@ time {
     position: sticky;
   }
 
-  input {
-    /* Prevent iOS Safari from zooming in when the user focuses the input */
+  textarea {
+    /* Prevent iOS Safari from zooming in when the user focuses the element */
     font-size: 16px;
   }
 }

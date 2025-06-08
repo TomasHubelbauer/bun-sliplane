@@ -58,15 +58,13 @@ export default function App() {
 
   return (
     <>
-      <div className="composer">
-        <Composer
-          draft={draft}
-          setDraft={setDraft}
-          password={password}
-          setPassword={setPassword}
-          onSubmit={refreshItems}
-        />
-      </div>
+      <Composer
+        draft={draft}
+        setDraft={setDraft}
+        password={password}
+        setPassword={setPassword}
+        onSubmit={refreshItems}
+      />
       {matches.length > 0 && `Items matching "${search}":`}
       {password && (
         <>

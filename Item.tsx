@@ -56,7 +56,12 @@ export default function Item({
     <fieldset className="item">
       <legend>
         <button onClick={handleDeleteButtonClick}>✕</button>
-        <span onClick={handleNameSpanClick}>{name}</span>
+        <span
+          onClick={handleNameSpanClick}
+          className={name ? "" : "placeholder"}
+        >
+          {name ?? "(unnamed)"}
+        </span>
       </legend>
       <span onClick={handleTextSpanClick}>{text}</span>
       <time dateTime={stamp} title={stamp}>

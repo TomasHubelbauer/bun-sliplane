@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   type Dispatch,
   type KeyboardEvent,
   type SetStateAction,
@@ -21,8 +22,8 @@ export default function Composer({
   setPassword,
   onSubmit,
 }: ComposerProps) {
-  const handleInputChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTextAreaChange = useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       localStorage.setItem("draft", event.currentTarget.value);
       setDraft(event.currentTarget.value);
     },
@@ -33,44 +34,73 @@ export default function Composer({
     setDraft(localStorage.getItem("draft") || "");
   }, [setDraft]);
 
-  const handleInputKeyDown = useCallback(
-    async (event: KeyboardEvent<HTMLInputElement>) => {
+  const handleTextAreaKeyDown = useCallback(
+    async (event: KeyboardEvent<HTMLTextAreaElement>) => {
       if (event.key === "Escape") {
         setDraft("");
         return;
       }
 
-      if (event.key !== "Enter") {
+      if (event.key !== "Enter" || event.shiftKey) {
         return;
       }
 
-      const text = event.currentTarget.value.trim();
-      if (!text) {
+      const value = event.currentTarget.value.trim();
+      if (!value) {
         return;
       }
 
       if (!password) {
-        localStorage.setItem("password", text);
-        setPassword(text);
+        localStorage.setItem("password", value);
+        setPassword(value);
         await onSubmit();
         return;
       }
 
-      await fetch(`/${password}`, { method: "POST", body: text });
+      const [name, ...lines] = value.split("\n");
+      const text = lines.join("\n").trim();
+
+      await fetch(`/${password}`, {
+        method: "POST",
+        body: JSON.stringify({
+          name: text ? name : null,
+          text: text ? text : name,
+        }),
+      });
+
       setDraft("");
       await onSubmit();
     },
     [password, setPassword, onSubmit, setDraft]
   );
 
+  const rows = useMemo(() => draft.split("\n").length, [draft]);
+
+  const placeholder = useMemo(() => {
+    if (!password) {
+      return "Set password";
+    }
+
+    return "Press Enter to submit, Escape to clear, Shift+Enter to enter name+text mode";
+  }, [password]);
+
   return (
-    <input
-      autoComplete="off"
-      autoFocus
-      onKeyDown={handleInputKeyDown}
-      placeholder={!password ? "Set password" : undefined}
-      value={draft}
-      onChange={handleInputChange}
-    />
+    <div className="composer">
+      {rows > 1 && (
+        <div className="hint">
+          <div>Name:</div>
+          <div>Text:</div>
+        </div>
+      )}
+      <textarea
+        autoComplete="off"
+        autoFocus
+        onKeyDown={handleTextAreaKeyDown}
+        placeholder={placeholder}
+        value={draft}
+        rows={rows}
+        onChange={handleTextAreaChange}
+      />
+    </div>
   );
 }

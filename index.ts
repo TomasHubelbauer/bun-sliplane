@@ -30,10 +30,10 @@ Bun.serve({
           return new Response(null, { status: 401 });
         }
 
-        const text = await request.text();
+        const { name, text } = await request.json();
         db.run("INSERT INTO items (stamp, name, text) VALUES (?, ?, ?)", [
           new Date().toISOString(),
-          new Date().toISOString(),
+          name,
           text,
         ]);
 
