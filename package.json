@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "bun index.ts"
+    "start": "bun --hot index.ts"
   },
   "dependencies": {
     "react": "latest",
