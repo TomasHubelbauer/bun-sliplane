@@ -1,15 +1,12 @@
 import Bun, { Glob } from "bun";
 import { Database } from "bun:sqlite";
 import index from "./index.html";
-import type { Item } from "./ItemType.ts";
 
 if (!process.env.PASSWORD) {
   throw new Error("PASSWORD environment variable is required");
 }
 
 const VOLUME_PATH = process.env.VOLUME_PATH ?? ".";
-const GLOB = new Glob("*Z.json");
-
 const DATABASE_PATH = VOLUME_PATH + "/db.sqlite";
 const db = new Database(DATABASE_PATH);
 db.run(
@@ -19,27 +16,6 @@ db.run(
 console.log("Volume content:");
 for await (const path of new Glob("*").scan(VOLUME_PATH)) {
   console.log(path);
-}
-
-const data: Item[] = [];
-for await (const path of GLOB.scan(VOLUME_PATH)) {
-  const stamp = path.slice(0, -".json".length);
-  const name = path.slice(0, -"Z.json".length).replace("T", " ");
-  data.push({
-    stamp,
-    name,
-    text: await Bun.file(`${VOLUME_PATH}/${path}`).text(),
-  });
-}
-
-data.sort((a, b) => b.name.localeCompare(a.name));
-
-for (const item of data) {
-  db.run("INSERT OR REPLACE INTO items (stamp, name, text) VALUES (?, ?, ?)", [
-    item.stamp,
-    item.name,
-    item.text,
-  ]);
 }
 
 Bun.serve({
@@ -52,28 +28,20 @@ Bun.serve({
           return new Response(null, { status: 401 });
         }
 
-        const data: Item[] = [];
-        for await (const path of GLOB.scan(VOLUME_PATH)) {
-          const stamp = path.slice(0, -".json".length);
-          const name = path.slice(0, -"Z.json".length).replace("T", " ");
-          data.push({
-            stamp,
-            name,
-            text: await Bun.file(`${VOLUME_PATH}/${path}`).text(),
-          });
-        }
-
-        data.sort((a, b) => b.name.localeCompare(a.name));
-        return Response.json(data);
+        return Response.json(db.query("SELECT * FROM items").all());
       },
       POST: async (request) => {
         if (request.params.password !== process.env.PASSWORD) {
           return new Response(null, { status: 401 });
         }
 
-        const stamp = new Date().toISOString().replace(/[:.]/g, "-");
         const text = await request.text();
-        await Bun.write(`${VOLUME_PATH}/${stamp}.json`, text);
+        db.run("INSERT INTO items (stamp, name, text) VALUES (?, ?, ?)", [
+          new Date().toISOString(),
+          new Date().toISOString(),
+          text,
+        ]);
+
         return new Response();
       },
       DELETE: async (request) => {
@@ -90,12 +58,8 @@ Bun.serve({
           });
         }
 
-        try {
-          await Bun.file(`${VOLUME_PATH}/${stamp}.json`).unlink();
-          return new Response();
-        } catch (error) {
-          return new Response("File not found", { status: 404 });
-        }
+        db.run("DELETE FROM items WHERE stamp = ?", [stamp]);
+        return new Response();
       },
       PUT: async (request) => {
         if (request.params.password !== process.env.PASSWORD) {
@@ -111,7 +75,7 @@ Bun.serve({
         }
 
         const text = await request.text();
-        await Bun.write(`${VOLUME_PATH}/${stamp}.json`, text);
+        db.run("UPDATE items SET text = ? WHERE stamp = ?", [text, stamp]);
         return new Response();
       },
     },
