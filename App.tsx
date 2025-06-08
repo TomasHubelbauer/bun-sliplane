@@ -70,11 +70,14 @@ export default function App() {
       </div>
       {matches.length > 0 && `Items matching "${search}":`}
       {password && (
-        <List
-          items={matches.length ? matches : items}
-          password={password}
-          refreshItems={refreshItems}
-        />
+        <>
+          <List
+            items={matches.length ? matches : items}
+            password={password}
+            refreshItems={refreshItems}
+          />
+          <a href={`/${password}/backup`}>Backup</a>
+        </>
       )}
     </>
   );
