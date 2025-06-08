@@ -1,7 +1,7 @@
 body {
   display: flex;
   flex-direction: column;
-  font-family: sans-serif;
+  font: icon;
   gap: 1ch;
 }
 
@@ -12,24 +12,30 @@ div.composer {
 
 input {
   flex: 1;
-
-  /* Make the font large enough for iOS Safari to not zoom it in automatically */
-  font-size: 16px;
 }
 
 div.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1ch;
   list-style-type: none;
   padding: 0;
 }
 
-div.item {
-  align-items: center;
+fieldset.item {
   display: flex;
+  flex-direction: column;
   gap: 1ch;
 }
 
-div.item:hover {
+fieldset.item:hover {
   background: whitesmoke;
+}
+
+legend {
+  align-items: center;
+  display: flex;
+  gap: 1ch;
 }
 
 button {
@@ -59,5 +65,10 @@ time {
   div.composer {
     order: 2;
     position: sticky;
+  }
+
+  input {
+    /* Prevent iOS Safari from zooming in when the user focuses the input */
+    font-size: 16px;
   }
 }

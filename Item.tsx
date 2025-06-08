@@ -53,12 +53,15 @@ export default function Item({
   }, [password, onRename, stamp, text]);
 
   return (
-    <div className="item">
-      <button onClick={handleDeleteButtonClick}>✕</button>
-      <time dateTime={stamp} title={stamp} onClick={handleNameSpanClick}>
-        {name}
-      </time>
+    <fieldset className="item">
+      <legend>
+        <button onClick={handleDeleteButtonClick}>✕</button>
+        <span onClick={handleNameSpanClick}>{name}</span>
+      </legend>
       <span onClick={handleTextSpanClick}>{text}</span>
-    </div>
+      <time dateTime={stamp} title={stamp}>
+        {stamp}
+      </time>
+    </fieldset>
   );
 }
