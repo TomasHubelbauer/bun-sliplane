@@ -16,7 +16,7 @@ db.run(
 console.log("Volume content:");
 for await (const path of new Glob("*Z.json").scan(VOLUME_PATH)) {
   console.log(path);
-  await Bun.file(path).unlink();
+  await Bun.file(VOLUME_PATH + "/" + path).unlink();
 }
 
 Bun.serve({
