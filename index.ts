@@ -7,10 +7,10 @@ if (!process.env.PASSWORD) {
   throw new Error("PASSWORD environment variable is required");
 }
 
-const VOLUME_PATH = process.env.VOLUME_PATH ?? "./";
+const VOLUME_PATH = process.env.VOLUME_PATH ?? ".";
 const GLOB = new Glob("*Z.json");
 
-const DATABASE_PATH = VOLUME_PATH + "db.sqlite";
+const DATABASE_PATH = VOLUME_PATH + "/db.sqlite";
 const db = new Database(DATABASE_PATH);
 db.run(
   "CREATE TABLE IF NOT EXISTS items (stamp TEXT PRIMARY KEY, name TEXT, text TEXT)"
@@ -21,7 +21,7 @@ for await (const path of new Glob("*").scan(VOLUME_PATH)) {
   console.log(path);
 }
 
-await Bun.file(VOLUME_PATH + "data.txt").unlink();
+await Bun.file(VOLUME_PATH + "/data.txt").unlink();
 
 Bun.serve({
   routes: {
