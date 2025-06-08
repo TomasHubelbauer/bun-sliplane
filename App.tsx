@@ -66,7 +66,6 @@ export default function App() {
           setPassword={setPassword}
           onSubmit={refreshItems}
         />
-        <button onClick={handleLogoutButtonClick}>Log out</button>
       </div>
       {matches.length > 0 && `Items matching "${search}":`}
       {password && (
@@ -76,7 +75,10 @@ export default function App() {
             password={password}
             refreshItems={refreshItems}
           />
-          <a href={`/${password}/backup`}>Backup</a>
+          <div className="controls">
+            <a href={`/${password}/backup`}>Backup</a>
+            <button onClick={handleLogoutButtonClick}>Log out</button>
+          </div>
         </>
       )}
     </>
