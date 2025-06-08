@@ -88,12 +88,17 @@ Bun.serve({
         return new Response();
       },
     },
-    "/:password/backup": () =>
-      new Response(db.serialize(), {
+    "/:password/backup": (request) => {
+      if (request.params.password !== process.env.PASSWORD) {
+        return new Response(null, { status: 401 });
+      }
+
+      return new Response(db.serialize(), {
         headers: {
           "Content-Type": "application/x-sqlite3",
           "Content-Disposition": `attachment; filename="backup-${new Date().toISOString()}.db"`,
         },
-      }),
+      });
+    },
   },
 });
