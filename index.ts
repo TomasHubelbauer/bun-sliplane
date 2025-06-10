@@ -66,6 +66,18 @@ Bun.serve({
           });
         }
 
+        const { attachments } = db
+          .query("SELECT attachments FROM items WHERE rowid = ?")
+          .get(rowId) as { attachments: string };
+        const files = JSON.parse(attachments || "[]").map((attachment) =>
+          JSON.parse(attachment)
+        );
+
+        for (const file of files) {
+          const filePath = `${VOLUME_PATH}/${file.path}`;
+          await Bun.file(filePath).unlink();
+        }
+
         db.run("DELETE FROM items WHERE rowid = ?", [rowId]);
         return new Response();
       },
@@ -188,7 +200,6 @@ Bun.serve({
         const file: { name: string; path: string; type: string } = files.find(
           (f) => f.uuid === uuid
         );
-        console.log(file);
 
         if (!file) {
           return new Response("Attachment not found", { status: 404 });
