@@ -2,6 +2,8 @@ import Bun from "bun";
 import { Database } from "bun:sqlite";
 import index from "./index.html";
 import fs from "fs";
+import enforceAuthorization from "./enforceAuthorization.ts";
+import getRequestSearchParameter from "./getRequestSearchParameter.ts";
 
 if (!process.env.PASSWORD) {
   throw new Error("PASSWORD environment variable is required");
@@ -33,16 +35,11 @@ Bun.serve({
     "/manifest.json": () => new Response(Bun.file("./manifest.json")),
     "/:password": {
       GET: async (request) => {
-        if (request.params.password !== process.env.PASSWORD) {
-          return new Response(null, { status: 401 });
-        }
-
+        enforceAuthorization(request);
         return Response.json(db.query("SELECT rowid, * FROM items").all());
       },
       POST: async (request) => {
-        if (request.params.password !== process.env.PASSWORD) {
-          return new Response(null, { status: 401 });
-        }
+        enforceAuthorization(request);
 
         const { name, text } = await request.json();
         db.run("INSERT INTO items (stamp, name, text) VALUES (?, ?, ?)", [
@@ -54,17 +51,8 @@ Bun.serve({
         return new Response();
       },
       DELETE: async (request) => {
-        if (request.params.password !== process.env.PASSWORD) {
-          return new Response(null, { status: 401 });
-        }
-
-        const url = new URL(request.url);
-        const rowId = url.searchParams.get("rowId");
-        if (!rowId) {
-          return new Response("'rowId' query parameter is required", {
-            status: 400,
-          });
-        }
+        enforceAuthorization(request);
+        const rowId = getRequestSearchParameter(request, "rowId");
 
         const { attachments } = db
           .query("SELECT attachments FROM items WHERE rowid = ?")
@@ -82,17 +70,8 @@ Bun.serve({
         return new Response();
       },
       PUT: async (request) => {
-        if (request.params.password !== process.env.PASSWORD) {
-          return new Response(null, { status: 401 });
-        }
-
-        const url = new URL(request.url);
-        const rowId = url.searchParams.get("rowId");
-        if (!rowId) {
-          return new Response("'rowId' query parameter is required", {
-            status: 400,
-          });
-        }
+        enforceAuthorization(request);
+        const rowId = getRequestSearchParameter(request, "rowId");
 
         const item = await request.json();
 
@@ -114,9 +93,7 @@ Bun.serve({
       },
     },
     "/:password/backup": (request) => {
-      if (request.params.password !== process.env.PASSWORD) {
-        return new Response(null, { status: 401 });
-      }
+      enforceAuthorization(request);
 
       return new Response(db.serialize(), {
         headers: {
@@ -127,17 +104,8 @@ Bun.serve({
     },
     "/:password/attach": {
       POST: async (request) => {
-        if (request.params.password !== process.env.PASSWORD) {
-          return new Response(null, { status: 401 });
-        }
-
-        const url = new URL(request.url);
-        const rowId = url.searchParams.get("rowId");
-        if (!rowId) {
-          return new Response("'rowId' query parameter is required", {
-            status: 400,
-          });
-        }
+        enforceAuthorization(request);
+        const rowId = getRequestSearchParameter(request, "rowId");
 
         const formData = await request.formData();
         const file = formData.get("file");
@@ -174,21 +142,9 @@ Bun.serve({
         return new Response();
       },
       GET: async (request) => {
-        if (request.params.password !== process.env.PASSWORD) {
-          return new Response(null, { status: 401 });
-        }
-
-        const url = new URL(request.url);
-        const rowId = url.searchParams.get("rowId");
-        const uuid = url.searchParams.get("uuid");
-        if (!rowId || !uuid) {
-          return new Response(
-            "'rowId' and 'uuid' query parameters are required",
-            {
-              status: 400,
-            }
-          );
-        }
+        enforceAuthorization(request);
+        const rowId = getRequestSearchParameter(request, "rowId");
+        const uuid = getRequestSearchParameter(request, "uuid");
 
         const { attachments } = db
           .query("SELECT attachments FROM items WHERE rowid = ?")
@@ -213,21 +169,9 @@ Bun.serve({
         });
       },
       DELETE: async (request) => {
-        if (request.params.password !== process.env.PASSWORD) {
-          return new Response(null, { status: 401 });
-        }
-
-        const url = new URL(request.url);
-        const rowId = url.searchParams.get("rowId");
-        const uuid = url.searchParams.get("uuid");
-        if (!rowId || !uuid) {
-          return new Response(
-            "'rowId' and 'uuid' query parameters are required",
-            {
-              status: 400,
-            }
-          );
-        }
+        enforceAuthorization(request);
+        const rowId = getRequestSearchParameter(request, "rowId");
+        const uuid = getRequestSearchParameter(request, "uuid");
 
         const { attachments } = db
           .query("SELECT attachments FROM items WHERE rowid = ?")
