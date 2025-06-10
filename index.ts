@@ -1,6 +1,7 @@
 import Bun from "bun";
 import { Database } from "bun:sqlite";
 import index from "./index.html";
+import fs from "fs";
 
 if (!process.env.PASSWORD) {
   throw new Error("PASSWORD environment variable is required");
@@ -21,6 +22,10 @@ try {
     throw error;
   }
 }
+
+console.log(`Contents of ${VOLUME_PATH}:`);
+console.log(await fs.promises.readdir(VOLUME_PATH));
+console.log(`/Contents of ${VOLUME_PATH}:`);
 
 Bun.serve({
   routes: {
