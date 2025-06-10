@@ -57,6 +57,12 @@ div.metadata {
   gap: 1ch;
 }
 
+span.attachment {
+  align-items: center;
+  display: flex;
+  gap: 1ch;
+}
+
 div.controls {
   align-items: center;
   display: flex;

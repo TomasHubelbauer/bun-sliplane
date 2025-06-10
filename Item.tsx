@@ -1,4 +1,10 @@
-import { useCallback, useMemo, useRef, type ChangeEvent } from "react";
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  type ChangeEvent,
+  type MouseEvent,
+} from "react";
 import type { Item as ItemType } from "./ItemType.ts";
 import RichText from "./RichText.tsx";
 import segmentUrls from "./segmentUrls.ts";
@@ -96,6 +102,32 @@ export default function Item({
     [attachments]
   );
 
+  const handleDeleteAttachmentButtonClick = useCallback(
+    async (event: MouseEvent<HTMLButtonElement>) => {
+      const button = event.currentTarget;
+      const uuid = button.dataset.uuid;
+      if (!uuid) {
+        return;
+      }
+
+      const attachment = files.find((file) => file.uuid === uuid);
+      if (!attachment) {
+        return;
+      }
+
+      if (!confirm(`Delete attachment "${attachment.name}"?`)) {
+        return;
+      }
+
+      await fetch(`/${password}/attach?rowId=${rowid}&uuid=${uuid}`, {
+        method: "DELETE",
+      });
+
+      await onAttach();
+    },
+    [password, onAttach, rowid, files]
+  );
+
   return (
     <fieldset className="item">
       <legend>
@@ -110,14 +142,21 @@ export default function Item({
         <input type="file" ref={inputRef} onChange={handleInputChange} />
         <button onClick={handleAttachButtonClick}>+</button>
         {files.map((file) => (
-          <a
-            key={file.uuid}
-            href={`/${password}/attach?rowId=${rowid}&uuid=${file.uuid}`}
-            target="_blank"
-          >
-            {file.type.startsWith("image/") && "🖼️ "}
-            {file.name}
-          </a>
+          <span key={file.uuid} className="attachment">
+            {file.type.startsWith("image/") && <span>🖼️</span>}
+            <a
+              href={`/${password}/attach?rowId=${rowid}&uuid=${file.uuid}`}
+              target="_blank"
+            >
+              {file.name}
+            </a>
+            <button
+              onClick={handleDeleteAttachmentButtonClick}
+              data-uuid={file.uuid}
+            >
+              ✕
+            </button>
+          </span>
         ))}
       </legend>
       <span onClick={handleTextSpanClick}>

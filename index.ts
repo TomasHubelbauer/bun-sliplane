@@ -201,6 +201,46 @@ Bun.serve({
           },
         });
       },
+      DELETE: async (request) => {
+        if (request.params.password !== process.env.PASSWORD) {
+          return new Response(null, { status: 401 });
+        }
+
+        const url = new URL(request.url);
+        const rowId = url.searchParams.get("rowId");
+        const uuid = url.searchParams.get("uuid");
+        if (!rowId || !uuid) {
+          return new Response(
+            "'rowId' and 'uuid' query parameters are required",
+            {
+              status: 400,
+            }
+          );
+        }
+
+        const { attachments } = db
+          .query("SELECT attachments FROM items WHERE rowid = ?")
+          .get(rowId) as { attachments: string };
+        const files = JSON.parse(attachments || "[]").map((attachment) =>
+          JSON.parse(attachment)
+        );
+
+        const fileIndex = files.findIndex((f) => f.uuid === uuid);
+        if (fileIndex === -1) {
+          return new Response("Attachment not found", { status: 404 });
+        }
+
+        const filePath = `${VOLUME_PATH}/${files[fileIndex].path}`;
+        await Bun.file(filePath).unlink();
+
+        files.splice(fileIndex, 1);
+        db.run("UPDATE items SET attachments = ? WHERE rowid = ?", [
+          JSON.stringify(files),
+          rowId,
+        ]);
+
+        return new Response();
+      },
     },
   },
 });
