@@ -1,7 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type MouseEvent,
+} from "react";
 import type { Item as ItemType } from "./ItemType.ts";
 import Composer from "./Composer.tsx";
 import List from "./List.tsx";
+import VolumeExplorer from "./VolumeExplorer.tsx";
+import DatabaseExplorer from "./DatabaseExplorer.tsx";
 
 export default function App() {
   const [draft, setDraft] = useState<string>("");
@@ -56,6 +64,23 @@ export default function App() {
       : [];
   }, [items, search]);
 
+  const [tool, setTool] = useState<"volume-explorer" | "database-explorer">();
+
+  const handleToolResetButtonClick = useCallback(() => {
+    setTool(undefined);
+  }, []);
+
+  const handleToolButtonClick = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      setTool(
+        event.currentTarget.dataset.tool as
+          | "volume-explorer"
+          | "database-explorer"
+      );
+    },
+    []
+  );
+
   return (
     <>
       <Composer
@@ -65,6 +90,35 @@ export default function App() {
         setPassword={setPassword}
         onSubmit={refreshItems}
       />
+      <fieldset>
+        <legend>
+          {tool && <button onClick={handleToolResetButtonClick}>✕</button>}
+          {tool === "volume-explorer" && "Volume explorer"}
+          {tool === "database-explorer" && "Database explorer"}
+          {!tool && (
+            <>
+              <button
+                data-tool="volume-explorer"
+                onClick={handleToolButtonClick}
+              >
+                Volume explorer
+              </button>
+              <button
+                data-tool="database-explorer"
+                onClick={handleToolButtonClick}
+              >
+                Database explorer
+              </button>
+            </>
+          )}
+        </legend>
+        {tool === "volume-explorer" && password && (
+          <VolumeExplorer password={password} />
+        )}
+        {tool === "database-explorer" && password && (
+          <DatabaseExplorer password={password} />
+        )}
+      </fieldset>
       {matches.length > 0 && `Items matching "${search}":`}
       {password && (
         <>

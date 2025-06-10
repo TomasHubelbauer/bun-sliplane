@@ -25,10 +25,6 @@ try {
   }
 }
 
-console.log(`Contents of ${VOLUME_PATH}:`);
-console.log(await fs.promises.readdir(VOLUME_PATH));
-console.log(`/Contents of ${VOLUME_PATH}:`);
-
 Bun.serve({
   routes: {
     "/": index,
@@ -194,6 +190,62 @@ Bun.serve({
           rowId,
         ]);
 
+        return new Response();
+      },
+    },
+    "/:password/volume": {
+      GET: async (request) => {
+        enforceAuthorization(request);
+        const items = await fs.promises.readdir(VOLUME_PATH, {
+          withFileTypes: true,
+        });
+
+        return Response.json(
+          items.filter((item) => item.isFile()).map((item) => item.name)
+        );
+      },
+      DELETE: async (request) => {
+        enforceAuthorization(request);
+        const name = getRequestSearchParameter(request, "name");
+        await Bun.file(`${VOLUME_PATH}/${name}`).unlink();
+        return new Response();
+      },
+    },
+    "/:password/database": {
+      GET: async (request) => {
+        enforceAuthorization(request);
+        return Response.json(db.query("SELECT rowid, * FROM items").all());
+      },
+      PUT: async (request) => {
+        enforceAuthorization(request);
+        const rowId = getRequestSearchParameter(request, "rowId");
+        const key = getRequestSearchParameter(request, "key");
+        const value = await request.text();
+
+        if (!rowId || !key || !value) {
+          return new Response("Missing required parameters", { status: 400 });
+        }
+
+        if (
+          key !== "stamp" &&
+          key !== "name" &&
+          key !== "text" &&
+          key !== "attachments"
+        ) {
+          return new Response("Invalid key", { status: 400 });
+        }
+
+        db.run(`UPDATE items SET ${key} = ? WHERE rowid = ?`, [value, rowId]);
+        return new Response();
+      },
+      DELETE: async (request) => {
+        enforceAuthorization(request);
+        const rowId = getRequestSearchParameter(request, "rowId");
+        if (!rowId) {
+          return new Response("Missing 'rowId' parameter", { status: 400 });
+        }
+
+        db.run("DELETE FROM items WHERE rowid = ?", [rowId]);
         return new Response();
       },
     },
