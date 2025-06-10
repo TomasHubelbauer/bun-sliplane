@@ -10,6 +10,7 @@ import Composer from "./Composer.tsx";
 import List from "./List.tsx";
 import VolumeExplorer from "./VolumeExplorer.tsx";
 import DatabaseExplorer from "./DatabaseExplorer.tsx";
+import formatHumanStamp from "./formatHumanStamp.ts";
 
 export default function App() {
   const [draft, setDraft] = useState<string>("");
@@ -18,6 +19,15 @@ export default function App() {
   );
 
   const [items, setItems] = useState<ItemType[]>([]);
+  const [audits, setAudits] = useState<{ name: string; stamp: string }[]>([]);
+
+  useEffect(() => {
+    void (async function () {
+      setAudits(
+        await fetch(`/${password}/audits`).then((response) => response.json())
+      );
+    })();
+  }, []);
 
   const refreshItems = useCallback(async () => {
     if (!password) {
@@ -81,6 +91,17 @@ export default function App() {
     []
   );
 
+  const handleBackupAClick = useCallback(async () => {
+    setAudits(
+      await fetch(`/${password}/audits`).then((response) => response.json())
+    );
+  }, [password]);
+
+  const lastBackup = useMemo(
+    () => audits.find((audit) => audit.name === "backup")?.stamp,
+    [audits]
+  );
+
   return (
     <>
       <Composer
@@ -128,7 +149,13 @@ export default function App() {
             refreshItems={refreshItems}
           />
           <div className="controls">
-            <a href={`/${password}/backup`}>Backup</a>
+            <a
+              href={`/${password}/backup`}
+              target="_blank"
+              onClick={handleBackupAClick}
+            >
+              Backup{lastBackup ? ` (${formatHumanStamp(lastBackup)})` : ""}
+            </a>
             <button onClick={handleLogoutButtonClick}>Log out</button>
           </div>
         </>

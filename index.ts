@@ -25,6 +25,8 @@ try {
   }
 }
 
+db.run("CREATE TABLE IF NOT EXISTS audits (name TEXT PRIMARY KEY, stamp TEXT)");
+
 Bun.serve({
   routes: {
     "/": index,
@@ -93,12 +95,21 @@ Bun.serve({
     "/:password/backup": (request) => {
       enforceAuthorization(request);
 
+      db.run(
+        "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
+        ["backup", new Date().toISOString(), new Date().toISOString()]
+      );
+
       return new Response(db.serialize(), {
         headers: {
           "Content-Type": "application/x-sqlite3",
           "Content-Disposition": `attachment; filename="backup-${new Date().toISOString()}.db"`,
         },
       });
+    },
+    "/:password/audits": (request) => {
+      enforceAuthorization(request);
+      return Response.json(db.query("SELECT * FROM audits").all());
     },
     "/:password/attach": {
       POST: async (request) => {
