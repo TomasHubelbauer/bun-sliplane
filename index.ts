@@ -32,7 +32,9 @@ Bun.serve({
     "/:password": {
       GET: async (request) => {
         enforceAuthorization(request);
-        return Response.json(db.query("SELECT rowid, * FROM items").all());
+        return Response.json(
+          db.query("SELECT rowid, * FROM items ORDER BY stamp DESC").all()
+        );
       },
       POST: async (request) => {
         enforceAuthorization(request);
