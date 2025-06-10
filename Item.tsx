@@ -91,7 +91,7 @@ export default function Item({
 
       await onAttach();
     },
-    [password, onAttach]
+    [password, onAttach, rowid]
   );
 
   const files: { uuid: string; name: string; type: string }[] = useMemo(
