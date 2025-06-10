@@ -111,6 +111,11 @@ Bun.serve({
       enforceAuthorization(request);
       return Response.json(db.query("SELECT * FROM audits").all());
     },
+    "/:password/stats": async (request) => {
+      enforceAuthorization(request);
+      const stats = await fs.promises.statfs(VOLUME_PATH);
+      return Response.json(stats);
+    },
     "/:password/attach": {
       POST: async (request) => {
         enforceAuthorization(request);

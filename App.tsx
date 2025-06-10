@@ -11,6 +11,7 @@ import List from "./List.tsx";
 import VolumeExplorer from "./VolumeExplorer.tsx";
 import DatabaseExplorer from "./DatabaseExplorer.tsx";
 import formatHumanStamp from "./formatHumanStamp.ts";
+import formatHumanBytes from "./formatHumanBytes.ts";
 
 export default function App() {
   const [draft, setDraft] = useState<string>("");
@@ -20,11 +21,16 @@ export default function App() {
 
   const [items, setItems] = useState<ItemType[]>([]);
   const [audits, setAudits] = useState<{ name: string; stamp: string }[]>([]);
+  const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
     void (async function () {
       setAudits(
         await fetch(`/${password}/audits`).then((response) => response.json())
+      );
+
+      setStats(
+        await fetch(`/${password}/stats`).then((response) => response.json())
       );
     })();
   }, []);
@@ -156,6 +162,12 @@ export default function App() {
             >
               Backup{lastBackup ? ` (${formatHumanStamp(lastBackup)})` : ""}
             </a>
+            {stats &&
+              JSON.stringify({
+                free: formatHumanBytes(stats.bsize * stats.bfree),
+                size: formatHumanBytes(stats.bsize * stats.blocks),
+                ratio: ((stats.bfree / stats.blocks) * 100).toFixed(2) + "%",
+              })}
             <button onClick={handleLogoutButtonClick}>Log out</button>
           </div>
         </>
