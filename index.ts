@@ -153,7 +153,7 @@ Bun.serve({
           path,
         };
 
-        await Bun.write(path, await file.arrayBuffer());
+        await Bun.write(VOLUME_PATH + "/" + path, await file.arrayBuffer());
         db.run(
           "UPDATE items SET attachments = json_insert(attachments, '$[#]', ?) WHERE rowid = ?",
           [JSON.stringify(attachment), rowId]
