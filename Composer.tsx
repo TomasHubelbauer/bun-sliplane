@@ -62,10 +62,7 @@ export default function Composer({
 
       await fetch(`/${password}`, {
         method: "POST",
-        body: JSON.stringify({
-          name: text ? name : text,
-          text: text ? text : "",
-        }),
+        body: JSON.stringify({ name, text }),
       });
 
       setDraft("");
