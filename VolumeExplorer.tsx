@@ -1,9 +1,15 @@
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import formatHumanBytes from "./formatHumanBytes.ts";
 import Stamp from "./Stamp.tsx";
+import Usage from "./Usage.tsx";
 
 type VolumeExplorerProps = {
   password: string;
+  stats: {
+    bsize: number;
+    bfree: number;
+    blocks: number;
+  };
 };
 
 type Item = {
@@ -15,7 +21,10 @@ type Item = {
   birthtimeMs: number;
 };
 
-export default function VolumeExplorer({ password }: VolumeExplorerProps) {
+export default function VolumeExplorer({
+  password,
+  stats,
+}: VolumeExplorerProps) {
   const [items, setItems] = useState<Item[]>([]);
 
   useEffect(() => {
@@ -43,43 +52,46 @@ export default function VolumeExplorer({ password }: VolumeExplorerProps) {
   );
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Size (bytes)</th>
-          <th>Access Time</th>
-          <th>Modification Time</th>
-          <th>Change Time</th>
-          <th>Creation Time</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.map((item) => (
-          <tr key={item.name}>
-            <td>{item.name}</td>
-            <td>{formatHumanBytes(item.size)}</td>
-            <td>
-              <Stamp stamp={new Date(item.atimeMs).toISOString()} />
-            </td>
-            <td>
-              <Stamp stamp={new Date(item.mtimeMs).toISOString()} />
-            </td>
-            <td>
-              <Stamp stamp={new Date(item.ctimeMs).toISOString()} />
-            </td>
-            <td>
-              <Stamp stamp={new Date(item.birthtimeMs).toISOString()} />
-            </td>
-            <td>
-              <button data-name={item.name} onClick={handleDeleteButtonClick}>
-                Delete
-              </button>
-            </td>
+    <>
+      {stats && <Usage stats={stats} />}
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Size (bytes)</th>
+            <th>Access Time</th>
+            <th>Modification Time</th>
+            <th>Change Time</th>
+            <th>Creation Time</th>
+            <th>Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {items.map((item) => (
+            <tr key={item.name}>
+              <td>{item.name}</td>
+              <td>{formatHumanBytes(item.size)}</td>
+              <td>
+                <Stamp stamp={new Date(item.atimeMs).toISOString()} />
+              </td>
+              <td>
+                <Stamp stamp={new Date(item.mtimeMs).toISOString()} />
+              </td>
+              <td>
+                <Stamp stamp={new Date(item.ctimeMs).toISOString()} />
+              </td>
+              <td>
+                <Stamp stamp={new Date(item.birthtimeMs).toISOString()} />
+              </td>
+              <td>
+                <button data-name={item.name} onClick={handleDeleteButtonClick}>
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   );
 }

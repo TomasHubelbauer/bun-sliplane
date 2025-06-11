@@ -11,7 +11,7 @@ import List from "./List.tsx";
 import VolumeExplorer from "./VolumeExplorer.tsx";
 import DatabaseExplorer from "./DatabaseExplorer.tsx";
 import formatHumanStamp from "./formatHumanStamp.ts";
-import formatHumanBytes from "./formatHumanBytes.ts";
+import Usage from "./Usage.tsx";
 
 export default function App() {
   const [draft, setDraft] = useState<string>("");
@@ -128,7 +128,7 @@ export default function App() {
                 data-tool="volume-explorer"
                 onClick={handleToolButtonClick}
               >
-                Volume Explorer
+                Volume Explorer {stats && <Usage stats={stats} />}
               </button>
               <button
                 data-tool="database-explorer"
@@ -140,7 +140,7 @@ export default function App() {
           )}
         </legend>
         {tool === "volume-explorer" && password && (
-          <VolumeExplorer password={password} />
+          <VolumeExplorer password={password} stats={stats} />
         )}
         {tool === "database-explorer" && password && (
           <DatabaseExplorer password={password} />
@@ -162,12 +162,6 @@ export default function App() {
             >
               Backup{lastBackup ? ` (${formatHumanStamp(lastBackup)})` : ""}
             </a>
-            {stats &&
-              JSON.stringify({
-                free: formatHumanBytes(stats.bsize * stats.bfree),
-                size: formatHumanBytes(stats.bsize * stats.blocks),
-                ratio: ((stats.bfree / stats.blocks) * 100).toFixed(2) + "%",
-              })}
             <button onClick={handleLogoutButtonClick}>Log out</button>
           </div>
         </>

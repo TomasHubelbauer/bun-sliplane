@@ -82,6 +82,10 @@ time {
   cursor: default;
 }
 
+:not(button) > progress {
+  width: 100%;
+}
+
 table {
   border-collapse: collapse;
   width: 100%;
