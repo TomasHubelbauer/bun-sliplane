@@ -27,8 +27,10 @@ export default function RichText({ text }: RichTextProps) {
             href={part.href}
             target="_blank"
             onClick={handleAClick}
+            title={part.href}
           >
-            {part.href}
+            {part.host}
+            {part.href.slice(part.origin.length)}
           </a>
         ) : (
           <code key={index}>{part.text}</code>
