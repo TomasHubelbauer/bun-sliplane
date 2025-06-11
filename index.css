@@ -82,6 +82,19 @@ time {
   cursor: default;
 }
 
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+thead > tr > th {
+  text-align: start;
+}
+
+tbody > tr:hover {
+  background: whitesmoke;
+}
+
 @media (orientation: portrait) {
   html {
     display: flex;
