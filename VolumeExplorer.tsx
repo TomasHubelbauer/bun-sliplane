@@ -61,16 +61,16 @@ export default function VolumeExplorer({ password }: VolumeExplorerProps) {
             <td>{item.name}</td>
             <td>{formatHumanBytes(item.size)}</td>
             <td>
-              <Stamp stamp={new Date(item.atimeMs).toISOString()} />{" "}
+              <Stamp stamp={new Date(item.atimeMs).toISOString()} />
             </td>
             <td>
-              <Stamp stamp={new Date(item.mtimeMs).toISOString()} />{" "}
+              <Stamp stamp={new Date(item.mtimeMs).toISOString()} />
             </td>
             <td>
-              <Stamp stamp={new Date(item.ctimeMs).toISOString()} />{" "}
+              <Stamp stamp={new Date(item.ctimeMs).toISOString()} />
             </td>
             <td>
-              <Stamp stamp={new Date(item.birthtimeMs).toISOString()} />{" "}
+              <Stamp stamp={new Date(item.birthtimeMs).toISOString()} />
             </td>
             <td>
               <button data-name={item.name} onClick={handleDeleteButtonClick}>
