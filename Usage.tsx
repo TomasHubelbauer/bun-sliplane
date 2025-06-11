@@ -11,24 +11,28 @@ type UsageProps = {
 
 export default function Usage({ stats }: UsageProps) {
   const free = useMemo(
-    () => formatHumanBytes(stats.bsize * stats.bfree),
+    () => stats.bsize * stats.bfree,
     [stats.bsize, stats.bfree]
   );
 
   const size = useMemo(
-    () => formatHumanBytes(stats.bsize * stats.blocks),
+    () => stats.bsize * stats.blocks,
     [stats.bsize, stats.blocks]
   );
 
-  const ratio = useMemo(
-    () => stats.bfree / stats.blocks,
-    [stats.bfree, stats.blocks]
-  );
+  const used = useMemo(() => size - free, [size, free]);
+
+  const ratio = useMemo(() => used / size, [free, size]);
 
   const title = useMemo(
-    () => `${free} / ${size} | ${(ratio * 100).toFixed(2) + "%"} full`,
-    [free, size, ratio]
+    () =>
+      `${formatHumanBytes(free)} free of ${formatHumanBytes(
+        size
+      )} (${formatHumanBytes(used)} used) | ${
+        (ratio * 100).toFixed(2) + "%"
+      } full`,
+    [free, size, used, ratio]
   );
 
-  return <progress max={100} value={ratio * 100} title={title} />;
+  return <progress max={1} value={ratio} title={title} />;
 }
