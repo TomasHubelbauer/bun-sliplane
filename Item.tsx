@@ -7,7 +7,6 @@ import {
 } from "react";
 import type { Item as ItemType } from "./ItemType.ts";
 import RichText from "./RichText.tsx";
-import segmentUrls from "./segmentUrls.ts";
 import Stamp from "./Stamp.tsx";
 
 type ItemProps = ItemType & {
@@ -64,9 +63,6 @@ export default function Item({
 
     await onRename();
   }, [password, onRename, rowid, text]);
-
-  const nameSegments = useMemo(() => [...segmentUrls(name)], [name]);
-  const textSegments = useMemo(() => [...segmentUrls(text)], [text]);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -137,7 +133,7 @@ export default function Item({
           onClick={handleNameSpanClick}
           className={name ? "" : "placeholder"}
         >
-          <RichText parts={nameSegments} />
+          <RichText text={name} />
           {!name && "(unnamed)"}
         </span>
         <input type="file" ref={inputRef} onChange={handleInputChange} />
@@ -161,7 +157,7 @@ export default function Item({
         ))}
       </legend>
       <span onClick={handleTextSpanClick}>
-        <RichText parts={textSegments} />
+        <RichText text={text} />
       </span>
       <div className="metadata">
         <span className="placeholder">#{rowid}</span>

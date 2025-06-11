@@ -99,6 +99,13 @@ tbody > tr:hover {
   background: whitesmoke;
 }
 
+code {
+  background: whitesmoke;
+  border: 1px solid silver;
+  border-radius: 3px;
+  padding: 0 3px;
+}
+
 @media (orientation: portrait) {
   html {
     display: flex;

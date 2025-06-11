@@ -1,10 +1,17 @@
-import { useCallback, type MouseEvent } from "react";
+import { useCallback, useMemo, type MouseEvent } from "react";
+import segmentUrls from "./segmentUrls.ts";
+import segmentCodes from "./segmentCodes.ts";
 
 type RichTextProps = {
-  parts: (string | URL)[];
+  text: string;
 };
 
-export default function RichText({ parts }: RichTextProps) {
+export default function RichText({ text }: RichTextProps) {
+  const parts = useMemo(
+    () => [...segmentCodes([...segmentUrls(text)])],
+    [text]
+  );
+
   const handleAClick = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
     event.stopPropagation();
   }, []);
@@ -14,7 +21,7 @@ export default function RichText({ parts }: RichTextProps) {
       {parts.map((part, index) =>
         typeof part === "string" ? (
           part
-        ) : (
+        ) : part instanceof URL ? (
           <a
             key={index}
             href={part.href}
@@ -23,6 +30,8 @@ export default function RichText({ parts }: RichTextProps) {
           >
             {part.href}
           </a>
+        ) : (
+          <code key={index}>{part.text}</code>
         )
       )}
     </span>
