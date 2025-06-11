@@ -218,9 +218,15 @@ Bun.serve({
           withFileTypes: true,
         });
 
-        return Response.json(
-          items.filter((item) => item.isFile()).map((item) => item.name)
+        const files = items.filter((item) => item.isFile());
+        const filesWithStats = await Promise.all(
+          files.map(async (file) => {
+            const stats = await fs.promises.stat(`${VOLUME_PATH}/${file.name}`);
+            return { ...file, ...stats };
+          })
         );
+
+        return Response.json(filesWithStats);
       },
       DELETE: async (request) => {
         enforceAuthorization(request);

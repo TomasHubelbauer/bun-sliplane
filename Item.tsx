@@ -8,7 +8,7 @@ import {
 import type { Item as ItemType } from "./ItemType.ts";
 import RichText from "./RichText.tsx";
 import segmentUrls from "./segmentUrls.ts";
-import formatHumanStamp from "./formatHumanStamp.ts";
+import Stamp from "./Stamp.tsx";
 
 type ItemProps = ItemType & {
   password: string;
@@ -165,9 +165,7 @@ export default function Item({
       </span>
       <div className="metadata">
         <span className="placeholder">#{rowid}</span>
-        <time dateTime={stamp} title={stamp}>
-          {formatHumanStamp(stamp)}
-        </time>
+        <Stamp stamp={stamp} />
       </div>
     </fieldset>
   );
