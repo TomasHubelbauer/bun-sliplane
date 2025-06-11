@@ -120,21 +120,21 @@ export default function App() {
       <fieldset>
         <legend>
           {tool && <button onClick={handleToolResetButtonClick}>✕</button>}
-          {tool === "volume-explorer" && "Volume explorer"}
-          {tool === "database-explorer" && "Database explorer"}
+          {tool === "volume-explorer" && "Volume Explorer"}
+          {tool === "database-explorer" && "Database Explorer"}
           {!tool && (
             <>
               <button
                 data-tool="volume-explorer"
                 onClick={handleToolButtonClick}
               >
-                Volume explorer
+                Volume Explorer
               </button>
               <button
                 data-tool="database-explorer"
                 onClick={handleToolButtonClick}
               >
-                Database explorer
+                Database Explorer
               </button>
             </>
           )}
