@@ -1,5 +1,5 @@
 export default function* segmentLines(text: string) {
-  if (text === "") return;
+  if (!text) return;
 
   const lines = text.split("\n");
   let i = 0;
@@ -130,14 +130,22 @@ if (import.meta.main) {
       test: () => segmentLines("hello\n1. item 1\n2. item 2\n3. item 3\nworld"),
       expected: [
         "hello",
-        { type: "ordered-list", items: ["item 1", "item 2", "item 3"], start: 1 },
+        {
+          type: "ordered-list",
+          items: ["item 1", "item 2", "item 3"],
+          start: 1,
+        },
         "world",
       ],
     },
     {
       test: () => segmentLines("1. item 1\n2. item 2\n3. item 3\nworld"),
       expected: [
-        { type: "ordered-list", items: ["item 1", "item 2", "item 3"], start: 1 },
+        {
+          type: "ordered-list",
+          items: ["item 1", "item 2", "item 3"],
+          start: 1,
+        },
         "world",
       ],
     },
@@ -145,7 +153,11 @@ if (import.meta.main) {
       test: () => segmentLines("hello\n1. item 1\n2. item 2\n3. item 3"),
       expected: [
         "hello",
-        { type: "ordered-list", items: ["item 1", "item 2", "item 3"], start: 1 },
+        {
+          type: "ordered-list",
+          items: ["item 1", "item 2", "item 3"],
+          start: 1,
+        },
       ],
     },
     {
