@@ -32,7 +32,7 @@ export default function RichText({ text }: RichTextProps) {
             {part.host}
             {part.href.slice(
               part.origin.length,
-              -(part.href.endsWith("/") ? 1 : 0)
+              part.href.endsWith("/") ? -1 : undefined
             )}
           </a>
         ) : (
