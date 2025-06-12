@@ -96,7 +96,7 @@ export default function Composer({
         onKeyDown={handleTextAreaKeyDown}
         placeholder={placeholder}
         value={draft}
-        rows={rows}
+        rows={rows === 1 ? 1 : rows + 1}
         onChange={handleTextAreaChange}
       />
     </div>
