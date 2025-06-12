@@ -29,7 +29,9 @@ export default function RichText({ text }: RichTextProps) {
             onClick={handleAClick}
             title={part.href}
           >
-            {part.host}
+            {part.host.slice(
+              part.host.startsWith("www.") ? "www.".length : undefined
+            )}
             {part.href.slice(
               part.origin.length,
               part.href.endsWith("/") ? -1 : undefined
