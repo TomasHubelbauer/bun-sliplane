@@ -30,7 +30,10 @@ export default function RichText({ text }: RichTextProps) {
             title={part.href}
           >
             {part.host}
-            {part.href.slice(part.origin.length)}
+            {part.href.slice(
+              part.origin.length,
+              -(part.href.endsWith("/") ? 1 : 0)
+            )}
           </a>
         ) : (
           <code key={index}>{part.text}</code>
