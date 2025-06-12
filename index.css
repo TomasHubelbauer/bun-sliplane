@@ -43,3 +43,24 @@ code {
   border-radius: 3px;
   padding: 0 3px;
 }
+
+pre {
+  background: whitesmoke;
+  border: 1px solid silver;
+  border-radius: 3px;
+  overflow: auto;
+}
+
+p {
+  margin: 0;
+}
+
+ul {
+  margin: 1ch 0;
+  padding-left: 2ch;
+}
+
+ol {
+  margin: 1ch 0;
+  padding-left: 2.25ch;
+}

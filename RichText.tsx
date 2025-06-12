@@ -1,6 +1,6 @@
-import { useCallback, useMemo, type MouseEvent, type ReactNode } from "react";
-import segmentUrls from "./segmentUrls.ts";
-import segmentCodes from "./segmentCodes.ts";
+import { useMemo, type ReactNode } from "react";
+import segmentText from "./segmentText.ts";
+import RichLine from "./RichLine.tsx";
 
 type RichTextProps = {
   text: string;
@@ -8,41 +8,50 @@ type RichTextProps = {
 };
 
 export default function RichText({ text, fallback }: RichTextProps) {
-  const parts = useMemo(
-    () => [...segmentCodes([...segmentUrls(text)])],
-    [text]
-  );
-
-  const handleAClick = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
-    event.stopPropagation();
-  }, []);
+  const lines = useMemo(() => segmentText(text), [text]);
 
   return (
-    <span>
+    <div>
       {!text && fallback}
-      {parts.map((part, index) =>
-        typeof part === "string" ? (
-          part
-        ) : part instanceof URL ? (
-          <a
-            key={index}
-            href={part.href}
-            target="_blank"
-            onClick={handleAClick}
-            title={part.href}
-          >
-            {part.host.slice(
-              part.host.startsWith("www.") ? "www.".length : undefined
-            )}
-            {part.href.slice(
-              part.origin.length,
-              part.href.endsWith("/") ? -1 : undefined
-            )}
-          </a>
-        ) : (
-          <code key={index}>{part.text}</code>
-        )
-      )}
-    </span>
+      {lines.map((line, index) => {
+        switch (line.type) {
+          case "paragraph": {
+            return (
+              <p key={index}>
+                <RichLine parts={line.parts} />
+              </p>
+            );
+          }
+          case "code-block": {
+            return <pre key={index}>{line.text} </pre>;
+          }
+          case "unordered-list": {
+            return (
+              <ul key={index}>
+                {line.items.map((item, itemIndex) => (
+                  <li key={itemIndex}>
+                    <RichLine parts={item} />
+                  </li>
+                ))}
+              </ul>
+            );
+          }
+          case "ordered-list": {
+            return (
+              <ol key={index} start={line.start}>
+                {line.items.map((item, itemIndex) => (
+                  <li key={itemIndex}>
+                    <RichLine parts={item} />
+                  </li>
+                ))}
+              </ol>
+            );
+          }
+          default: {
+            throw new Error(`Unknown line type: ${JSON.stringify(line)}`);
+          }
+        }
+      })}
+    </div>
   );
 }
