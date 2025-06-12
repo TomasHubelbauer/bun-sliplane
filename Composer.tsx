@@ -10,18 +10,10 @@ import {
 type ComposerProps = {
   draft: string;
   setDraft: Dispatch<SetStateAction<string>>;
-  password: string | null;
-  setPassword: Dispatch<SetStateAction<string | null>>;
   onSubmit: () => Promise<void>;
 };
 
-export default function Composer({
-  draft,
-  setDraft,
-  password,
-  setPassword,
-  onSubmit,
-}: ComposerProps) {
+export default function Composer({ draft, setDraft, onSubmit }: ComposerProps) {
   const handleTextAreaChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       localStorage.setItem("draft", event.currentTarget.value);
@@ -50,17 +42,10 @@ export default function Composer({
         return;
       }
 
-      if (!password) {
-        localStorage.setItem("password", value);
-        setPassword(value);
-        await onSubmit();
-        return;
-      }
-
       const [name, ...lines] = value.split("\n");
       const text = lines.join("\n").trim();
 
-      await fetch(`/${password}`, {
+      await fetch("/items", {
         method: "POST",
         body: JSON.stringify({ name, text }),
       });
@@ -69,18 +54,10 @@ export default function Composer({
       localStorage.setItem("draft", "");
       await onSubmit();
     },
-    [password, setPassword, onSubmit, setDraft]
+    [onSubmit, setDraft]
   );
 
   const rows = useMemo(() => draft.split("\n").length, [draft]);
-
-  const placeholder = useMemo(() => {
-    if (!password) {
-      return "Set password";
-    }
-
-    return "Press Enter to submit, Escape to clear, Shift+Enter to enter name+text mode";
-  }, [password]);
 
   return (
     <div className="composer">
@@ -94,7 +71,7 @@ export default function Composer({
         autoComplete="off"
         autoFocus
         onKeyDown={handleTextAreaKeyDown}
-        placeholder={placeholder}
+        placeholder="Press Enter to submit, Escape to clear, Shift+Enter to enter name+text mode"
         value={draft}
         rows={rows === 1 ? 1 : rows + 1}
         onChange={handleTextAreaChange}

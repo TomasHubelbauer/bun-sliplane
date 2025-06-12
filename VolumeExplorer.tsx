@@ -4,7 +4,6 @@ import Stamp from "./Stamp.tsx";
 import Usage from "./Usage.tsx";
 
 type VolumeExplorerProps = {
-  password: string;
   stats: {
     bsize: number;
     bfree: number;
@@ -21,15 +20,12 @@ type Item = {
   birthtimeMs: number;
 };
 
-export default function VolumeExplorer({
-  password,
-  stats,
-}: VolumeExplorerProps) {
+export default function VolumeExplorer({ stats }: VolumeExplorerProps) {
   const [items, setItems] = useState<Item[]>([]);
 
   useEffect(() => {
     void (async function () {
-      const response = await fetch(`/${password}/volume`);
+      const response = await fetch("/volume");
       setItems(await response.json());
     })();
   }, []);
@@ -41,14 +37,14 @@ export default function VolumeExplorer({
         return;
       }
 
-      await fetch(`/${password}/volume?name=${name}`, {
+      await fetch(`/volume?name=${name}`, {
         method: "DELETE",
       });
 
-      const response = await fetch(`/${password}/volume`);
+      const response = await fetch("/volume");
       setItems(await response.json());
     },
-    [password]
+    []
   );
 
   return (

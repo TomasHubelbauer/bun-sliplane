@@ -63,16 +63,6 @@ span.attachment {
   gap: 1ch;
 }
 
-div.controls {
-  align-items: center;
-  display: flex;
-  gap: 1ch;
-}
-
-div.controls button {
-  margin-left: auto;
-}
-
 button {
   cursor: pointer;
 }

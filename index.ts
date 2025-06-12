@@ -5,10 +5,6 @@ import fs from "fs";
 import enforceAuthorization from "./enforceAuthorization.ts";
 import getRequestSearchParameter from "./getRequestSearchParameter.ts";
 
-if (!process.env.PASSWORD) {
-  throw new Error("PASSWORD environment variable is required");
-}
-
 const VOLUME_PATH = process.env.VOLUME_PATH ?? ".";
 const DATABASE_PATH = VOLUME_PATH + "/db.sqlite";
 const db = new Database(DATABASE_PATH);
@@ -27,19 +23,36 @@ try {
 
 db.run("CREATE TABLE IF NOT EXISTS audits (name TEXT PRIMARY KEY, stamp TEXT)");
 
-Bun.serve({
+const nonce = crypto.randomUUID();
+
+const server = Bun.serve({
   routes: {
-    "/": index,
+    [`/${nonce}`]: index,
+    "/": (request) => {
+      const authResponse = enforceAuthorization(request);
+      if (authResponse) {
+        return authResponse;
+      }
+
+      return fetch(`${server.url}/${nonce}`);
+    },
     "/manifest.json": () => new Response(Bun.file("./manifest.json")),
-    "/:password": {
+    "/items": {
       GET: async (request) => {
-        enforceAuthorization(request);
+        const authResponse = enforceAuthorization(request);
+        if (authResponse) {
+          return authResponse;
+        }
+
         return Response.json(
           db.query("SELECT rowid, * FROM items ORDER BY stamp DESC").all()
         );
       },
       POST: async (request) => {
-        enforceAuthorization(request);
+        const authResponse = enforceAuthorization(request);
+        if (authResponse) {
+          return authResponse;
+        }
 
         const { name, text } = await request.json();
         db.run("INSERT INTO items (stamp, name, text) VALUES (?, ?, ?)", [
@@ -51,7 +64,11 @@ Bun.serve({
         return new Response();
       },
       DELETE: async (request) => {
-        enforceAuthorization(request);
+        const authResponse = enforceAuthorization(request);
+        if (authResponse) {
+          return authResponse;
+        }
+
         const rowId = getRequestSearchParameter(request, "rowId");
 
         const { attachments } = db
@@ -70,7 +87,11 @@ Bun.serve({
         return new Response();
       },
       PUT: async (request) => {
-        enforceAuthorization(request);
+        const authResponse = enforceAuthorization(request);
+        if (authResponse) {
+          return authResponse;
+        }
+
         const rowId = getRequestSearchParameter(request, "rowId");
 
         const item = await request.json();
@@ -92,8 +113,11 @@ Bun.serve({
         return new Response();
       },
     },
-    "/:password/backup": (request) => {
-      enforceAuthorization(request);
+    "/backup": (request) => {
+      const authResponse = enforceAuthorization(request);
+      if (authResponse) {
+        return authResponse;
+      }
 
       db.run(
         "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
@@ -107,18 +131,30 @@ Bun.serve({
         },
       });
     },
-    "/:password/audits": (request) => {
-      enforceAuthorization(request);
+    "/audits": (request) => {
+      const authResponse = enforceAuthorization(request);
+      if (authResponse) {
+        return authResponse;
+      }
+
       return Response.json(db.query("SELECT * FROM audits").all());
     },
-    "/:password/stats": async (request) => {
-      enforceAuthorization(request);
+    "/stats": async (request) => {
+      const authResponse = enforceAuthorization(request);
+      if (authResponse) {
+        return authResponse;
+      }
+
       const stats = await fs.promises.statfs(VOLUME_PATH);
       return Response.json(stats);
     },
-    "/:password/attach": {
+    "/attach": {
       POST: async (request) => {
-        enforceAuthorization(request);
+        const authResponse = enforceAuthorization(request);
+        if (authResponse) {
+          return authResponse;
+        }
+
         const rowId = getRequestSearchParameter(request, "rowId");
 
         const formData = await request.formData();
@@ -156,7 +192,11 @@ Bun.serve({
         return new Response();
       },
       GET: async (request) => {
-        enforceAuthorization(request);
+        const authResponse = enforceAuthorization(request);
+        if (authResponse) {
+          return authResponse;
+        }
+
         const rowId = getRequestSearchParameter(request, "rowId");
         const uuid = getRequestSearchParameter(request, "uuid");
 
@@ -183,7 +223,11 @@ Bun.serve({
         });
       },
       DELETE: async (request) => {
-        enforceAuthorization(request);
+        const authResponse = enforceAuthorization(request);
+        if (authResponse) {
+          return authResponse;
+        }
+
         const rowId = getRequestSearchParameter(request, "rowId");
         const uuid = getRequestSearchParameter(request, "uuid");
 
@@ -211,9 +255,13 @@ Bun.serve({
         return new Response();
       },
     },
-    "/:password/volume": {
+    "/volume": {
       GET: async (request) => {
-        enforceAuthorization(request);
+        const authResponse = enforceAuthorization(request);
+        if (authResponse) {
+          return authResponse;
+        }
+
         const items = await fs.promises.readdir(VOLUME_PATH, {
           withFileTypes: true,
         });
@@ -229,19 +277,31 @@ Bun.serve({
         return Response.json(filesWithStats);
       },
       DELETE: async (request) => {
-        enforceAuthorization(request);
+        const authResponse = enforceAuthorization(request);
+        if (authResponse) {
+          return authResponse;
+        }
+
         const name = getRequestSearchParameter(request, "name");
         await Bun.file(`${VOLUME_PATH}/${name}`).unlink();
         return new Response();
       },
     },
-    "/:password/database": {
+    "/database": {
       GET: async (request) => {
-        enforceAuthorization(request);
+        const authResponse = enforceAuthorization(request);
+        if (authResponse) {
+          return authResponse;
+        }
+
         return Response.json(db.query("SELECT rowid, * FROM items").all());
       },
       PUT: async (request) => {
-        enforceAuthorization(request);
+        const authResponse = enforceAuthorization(request);
+        if (authResponse) {
+          return authResponse;
+        }
+
         const rowId = getRequestSearchParameter(request, "rowId");
         const key = getRequestSearchParameter(request, "key");
         const value = await request.text();
@@ -263,7 +323,11 @@ Bun.serve({
         return new Response();
       },
       DELETE: async (request) => {
-        enforceAuthorization(request);
+        const authResponse = enforceAuthorization(request);
+        if (authResponse) {
+          return authResponse;
+        }
+
         const rowId = getRequestSearchParameter(request, "rowId");
         if (!rowId) {
           return new Response("Missing 'rowId' parameter", { status: 400 });
@@ -275,3 +339,5 @@ Bun.serve({
     },
   },
 });
+
+console.log(server.url.href);

@@ -15,35 +15,22 @@ import Usage from "./Usage.tsx";
 
 export default function App() {
   const [draft, setDraft] = useState<string>("");
-  const [password, setPassword] = useState<string | null>(
-    localStorage.getItem("password")
-  );
-
   const [items, setItems] = useState<ItemType[]>([]);
   const [audits, setAudits] = useState<{ name: string; stamp: string }[]>([]);
   const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
     void (async function () {
-      setAudits(
-        await fetch(`/${password}/audits`).then((response) => response.json())
-      );
+      setAudits(await fetch("/audits").then((response) => response.json()));
 
-      setStats(
-        await fetch(`/${password}/stats`).then((response) => response.json())
-      );
+      setStats(await fetch("/stats").then((response) => response.json()));
     })();
   }, []);
 
   const refreshItems = useCallback(async () => {
-    if (!password) {
-      setItems([]);
-      return;
-    }
-
-    const response = await fetch(`/${password}`);
+    const response = await fetch("/items");
     setItems(await response.json());
-  }, [password]);
+  }, []);
 
   useEffect(() => {
     void refreshItems();
@@ -52,17 +39,6 @@ export default function App() {
     return () => {
       document.removeEventListener("visibilitychange", refreshItems);
     };
-  }, [refreshItems]);
-
-  const handleLogoutButtonClick = useCallback(async () => {
-    if (!confirm("Are you sure you want to log out?")) {
-      return;
-    }
-
-    localStorage.removeItem("password");
-    setPassword(null);
-    setItems([]);
-    await refreshItems();
   }, [refreshItems]);
 
   const search = useMemo(() => {
@@ -98,10 +74,8 @@ export default function App() {
   );
 
   const handleBackupAClick = useCallback(async () => {
-    setAudits(
-      await fetch(`/${password}/audits`).then((response) => response.json())
-    );
-  }, [password]);
+    setAudits(await fetch("/audits").then((response) => response.json()));
+  }, []);
 
   const lastBackup = useMemo(
     () => audits.find((audit) => audit.name === "backup")?.stamp,
@@ -110,13 +84,7 @@ export default function App() {
 
   return (
     <>
-      <Composer
-        draft={draft}
-        setDraft={setDraft}
-        password={password}
-        setPassword={setPassword}
-        onSubmit={refreshItems}
-      />
+      <Composer draft={draft} setDraft={setDraft} onSubmit={refreshItems} />
       <fieldset>
         <legend>
           {tool && <button onClick={handleToolResetButtonClick}>✕</button>}
@@ -136,36 +104,20 @@ export default function App() {
               >
                 Database Explorer
               </button>
+              <a href="/backup" target="_blank" onClick={handleBackupAClick}>
+                Backup{lastBackup ? ` (${formatHumanStamp(lastBackup)})` : ""}
+              </a>
             </>
           )}
         </legend>
-        {tool === "volume-explorer" && password && (
-          <VolumeExplorer password={password} stats={stats} />
-        )}
-        {tool === "database-explorer" && password && (
-          <DatabaseExplorer password={password} />
-        )}
+        {tool === "volume-explorer" && <VolumeExplorer stats={stats} />}
+        {tool === "database-explorer" && <DatabaseExplorer />}
       </fieldset>
       {matches.length > 0 && `Items matching "${search}":`}
-      {password && (
-        <>
-          <List
-            items={matches.length ? matches : items}
-            password={password}
-            refreshItems={refreshItems}
-          />
-          <div className="controls">
-            <a
-              href={`/${password}/backup`}
-              target="_blank"
-              onClick={handleBackupAClick}
-            >
-              Backup{lastBackup ? ` (${formatHumanStamp(lastBackup)})` : ""}
-            </a>
-            <button onClick={handleLogoutButtonClick}>Log out</button>
-          </div>
-        </>
-      )}
+      <List
+        items={matches.length ? matches : items}
+        refreshItems={refreshItems}
+      />
     </>
   );
 }

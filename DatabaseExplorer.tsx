@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import type { Item } from "./ItemType.ts";
 
-type DatabaseExplorerProps = {
-  password: string;
-};
-
-export default function DatabaseExplorer({ password }: DatabaseExplorerProps) {
+export default function DatabaseExplorer() {
   const [items, setItems] = useState<Item[]>([]);
 
   useEffect(() => {
     void (async function () {
-      const response = await fetch(`/${password}/database`);
+      const response = await fetch("/database");
       setItems(await response.json());
     })();
   }, []);
@@ -25,14 +21,14 @@ export default function DatabaseExplorer({ password }: DatabaseExplorerProps) {
         return;
       }
 
-      await fetch(`/${password}/database?rowId=${rowId}&key=${key}`, {
+      await fetch(`/database?rowId=${rowId}&key=${key}`, {
         method: "PUT",
         body: value,
       });
 
-      setItems(await (await fetch(`/${password}/database`)).json());
+      setItems(await (await fetch("/database")).json());
     },
-    [items, password]
+    [items]
   );
 
   const handleDeleteButtonClick = useCallback(
@@ -43,13 +39,13 @@ export default function DatabaseExplorer({ password }: DatabaseExplorerProps) {
         return;
       }
 
-      await fetch(`/${password}/database?rowId=${rowId}`, {
+      await fetch(`/database?rowId=${rowId}`, {
         method: "DELETE",
       });
 
-      setItems(await (await fetch(`/${password}/database`)).json());
+      setItems(await (await fetch("/database")).json());
     },
-    [items, password]
+    [items]
   );
 
   return (

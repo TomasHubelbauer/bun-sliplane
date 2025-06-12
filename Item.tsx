@@ -10,7 +10,6 @@ import RichText from "./RichText.tsx";
 import Stamp from "./Stamp.tsx";
 
 type ItemProps = ItemType & {
-  password: string;
   onDelete: () => Promise<void>;
   onRename: () => Promise<void>;
   onAttach: () => Promise<void>;
@@ -22,7 +21,6 @@ export default function Item({
   name,
   text,
   attachments,
-  password,
   onDelete,
   onRename,
   onAttach,
@@ -32,9 +30,9 @@ export default function Item({
       return;
     }
 
-    await fetch(`/${password}?rowId=${rowid}`, { method: "DELETE" });
+    await fetch(`/items?rowId=${rowid}`, { method: "DELETE" });
     await onDelete();
-  }, [password, onDelete, rowid, name]);
+  }, [onDelete, rowid, name]);
 
   const handleNameSpanClick = useCallback(async () => {
     const newName = prompt("Name:", name);
@@ -42,13 +40,13 @@ export default function Item({
       return;
     }
 
-    await fetch(`/${password}?rowId=${rowid}`, {
+    await fetch(`/items?rowId=${rowid}`, {
       method: "PUT",
       body: JSON.stringify({ name: newName }),
     });
 
     await onRename();
-  }, [password, onRename, rowid, name]);
+  }, [onRename, rowid, name]);
 
   const handleTextSpanClick = useCallback(async () => {
     const newText = prompt("Text:", text);
@@ -56,13 +54,13 @@ export default function Item({
       return;
     }
 
-    await fetch(`/${password}?rowId=${rowid}`, {
+    await fetch(`/items?rowId=${rowid}`, {
       method: "PUT",
       body: JSON.stringify({ text: newText }),
     });
 
     await onRename();
-  }, [password, onRename, rowid, text]);
+  }, [onRename, rowid, text]);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -80,7 +78,7 @@ export default function Item({
       for (const file of event.currentTarget.files) {
         const formData = new FormData();
         formData.append("file", file);
-        await fetch(`/${password}/attach?rowId=${rowid}`, {
+        await fetch(`/attach?rowId=${rowid}`, {
           method: "POST",
           body: formData,
         });
@@ -88,7 +86,7 @@ export default function Item({
 
       await onAttach();
     },
-    [password, onAttach, rowid]
+    [onAttach, rowid]
   );
 
   const files: { uuid: string; name: string; type: string }[] = useMemo(
@@ -116,13 +114,13 @@ export default function Item({
         return;
       }
 
-      await fetch(`/${password}/attach?rowId=${rowid}&uuid=${uuid}`, {
+      await fetch(`/attach?rowId=${rowid}&uuid=${uuid}`, {
         method: "DELETE",
       });
 
       await onAttach();
     },
-    [password, onAttach, rowid, files]
+    [onAttach, rowid, files]
   );
 
   return (
@@ -142,7 +140,7 @@ export default function Item({
           <span key={file.uuid} className="attachment">
             {file.type.startsWith("image/") && <span>🖼️</span>}
             <a
-              href={`/${password}/attach?rowId=${rowid}&uuid=${file.uuid}`}
+              href={`/attach?rowId=${rowid}&uuid=${file.uuid}`}
               target="_blank"
             >
               {file.name}
