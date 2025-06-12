@@ -25,6 +25,12 @@ time {
   cursor: default;
 }
 
+legend {
+  align-items: center;
+  display: flex;
+  gap: 1ch;
+}
+
 table {
   border-collapse: collapse;
   width: 100%;
