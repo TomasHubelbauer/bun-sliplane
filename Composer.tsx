@@ -59,7 +59,7 @@ export default function Composer({ ws, draft, setDraft }: ComposerProps) {
     [ws, setDraft]
   );
 
-  const rows = useMemo(() => draft.split("\n").length, [draft]);
+  const rows = useMemo(() => draft.trim().split("\n").length, [draft]);
 
   return (
     <div className="composer">
