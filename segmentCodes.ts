@@ -16,16 +16,32 @@ export default function* segmentCodes(parts: (string | URL)[]) {
           yield part.slice(i, codeStart);
         }
 
-        const codeEnd = part.indexOf("`", codeStart + 1);
+        // Find the end of the code segment, handling escaped backticks
+        let codeEnd = codeStart + 1;
+        while (codeEnd < part.length) {
+          if (part[codeEnd] === "`") {
+            // Check if this backtick is escaped
+            if (codeEnd > 0 && part[codeEnd - 1] === "\\") {
+              codeEnd++;
+              continue;
+            }
+            break;
+          }
+          codeEnd++;
+        }
 
-        if (codeEnd === -1) {
+        if (codeEnd >= part.length) {
           yield { type: "code" as const, text: part.slice(codeStart + 1) };
           break;
         }
 
+        // Extract the code text and unescape backticks
+        const codeText = part.slice(codeStart + 1, codeEnd);
+        const unescapedText = codeText.replace(/\\`/g, "`");
+
         yield {
           type: "code" as const,
-          text: part.slice(codeStart + 1, codeEnd),
+          text: unescapedText,
         };
         i = codeEnd + 1;
       }
@@ -84,6 +100,19 @@ if (import.meta.main) {
         { type: "code", text: "World" },
         "!",
         new URL("https://google.com"),
+      ],
+    },
+    {
+      test: () => segmentCodes(["start `\\`escaped\\`` end"]),
+      expected: ["start ", { type: "code", text: "`escaped`" }, " end"],
+    },
+    {
+      test: () =>
+        segmentCodes(["start `start \\`escaped\\` \\`escaped 2\\` end` end"]),
+      expected: [
+        "start ",
+        { type: "code", text: "start `escaped` `escaped 2` end" },
+        " end",
       ],
     },
   ]) {
