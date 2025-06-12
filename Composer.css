@@ -1,0 +1,13 @@
+[class^="Composer"] {
+  display: flex;
+  gap: 1ch;
+
+  .hint {
+    padding: 2px;
+    margin: 1px;
+  }
+
+  textarea {
+    flex: 1;
+  }
+}

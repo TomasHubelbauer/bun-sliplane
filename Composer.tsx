@@ -62,7 +62,7 @@ export default function Composer({ ws, draft, setDraft }: ComposerProps) {
   const rows = useMemo(() => draft.trim().split("\n").length, [draft]);
 
   return (
-    <div className="composer">
+    <div className={Composer.name}>
       {rows > 1 && (
         <div className="hint">
           <div>Name:</div>

@@ -127,7 +127,7 @@ export default function Item({
   );
 
   return (
-    <fieldset className="item">
+    <fieldset className={Item.name}>
       <legend>
         <button onClick={handleDeleteButtonClick}>✕</button>
         <span

@@ -1,0 +1,7 @@
+[class^="List"] {
+  display: flex;
+  flex-direction: column;
+  gap: 1ch;
+  list-style-type: none;
+  padding: 0;
+}

@@ -8,7 +8,7 @@ type ListProps = {
 
 export default function List({ ws, items }: ListProps) {
   return (
-    <div className="list">
+    <div className={List.name}>
       {items.map((item) => (
         <Item key={item.rowid} ws={ws} {...item} />
       ))}

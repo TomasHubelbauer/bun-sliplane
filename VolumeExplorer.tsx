@@ -63,7 +63,7 @@ export default function VolumeExplorer({ ws, stats }: VolumeExplorerProps) {
   );
 
   return (
-    <>
+    <div className={VolumeExplorer.name}>
       {stats && <Usage stats={stats} />}
       <table>
         <thead>
@@ -103,6 +103,6 @@ export default function VolumeExplorer({ ws, stats }: VolumeExplorerProps) {
           ))}
         </tbody>
       </table>
-    </>
+    </div>
   );
 }

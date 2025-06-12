@@ -1,3 +1,8 @@
+@import url("./Composer.css");
+@import url("./List.css");
+@import url("./Item.css");
+@import url("./VolumeExplorer.css");
+
 body {
   display: flex;
   flex-direction: column;
@@ -5,62 +10,9 @@ body {
   gap: 1ch;
 }
 
-div.composer {
-  display: flex;
-  gap: 1ch;
-}
-
-div.hint {
-  padding: 2px;
-  margin: 1px;
-}
-
-textarea {
-  flex: 1;
+textarea,
+button {
   font: inherit;
-}
-
-div.list {
-  display: flex;
-  flex-direction: column;
-  gap: 1ch;
-  list-style-type: none;
-  padding: 0;
-}
-
-fieldset.item {
-  display: flex;
-  flex-direction: column;
-  gap: 1ch;
-}
-
-input[type="file"] {
-  display: none;
-}
-
-fieldset.item:hover {
-  background: whitesmoke;
-}
-
-legend {
-  align-items: center;
-  display: flex;
-  gap: 1ch;
-}
-
-span.placeholder {
-  color: gray;
-}
-
-div.metadata {
-  display: flex;
-  gap: 1ch;
-}
-
-span.attachment {
-  align-items: center;
-  display: flex;
-  gap: 1ch;
 }
 
 button {
@@ -70,10 +22,6 @@ button {
 time {
   color: gray;
   cursor: default;
-}
-
-:not(button) > progress {
-  width: 100%;
 }
 
 table {
@@ -94,30 +42,4 @@ code {
   border: 1px solid silver;
   border-radius: 3px;
   padding: 0 3px;
-}
-
-@media (orientation: portrait) {
-  html {
-    display: flex;
-    height: 100vh;
-  }
-
-  body {
-    flex: 1;
-  }
-
-  div.list {
-    flex: 1;
-    overflow: auto;
-  }
-
-  div.composer {
-    order: 2;
-    position: sticky;
-  }
-
-  textarea {
-    /* Prevent iOS Safari from zooming in when the user focuses the element */
-    font-size: 16px;
-  }
 }
