@@ -134,8 +134,10 @@ export default function Item({
           onClick={handleNameSpanClick}
           className={name ? "" : "placeholder"}
         >
-          <RichText text={name} />
-          {!name && "(unnamed)"}
+          <RichText
+            text={name}
+            fallback={<span className="placeholder">(no name)</span>}
+          />
         </span>
         <input
           type="file"
@@ -163,7 +165,10 @@ export default function Item({
         ))}
       </legend>
       <span onClick={handleTextSpanClick}>
-        <RichText text={text} />
+        <RichText
+          text={text}
+          fallback={<span className="placeholder">(no text)</span>}
+        />
       </span>
       <div className="metadata">
         <span className="placeholder">#{rowid}</span>

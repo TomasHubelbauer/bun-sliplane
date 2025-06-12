@@ -1,12 +1,13 @@
-import { useCallback, useMemo, type MouseEvent } from "react";
+import { useCallback, useMemo, type MouseEvent, type ReactNode } from "react";
 import segmentUrls from "./segmentUrls.ts";
 import segmentCodes from "./segmentCodes.ts";
 
 type RichTextProps = {
   text: string;
+  fallback: ReactNode;
 };
 
-export default function RichText({ text }: RichTextProps) {
+export default function RichText({ text, fallback }: RichTextProps) {
   const parts = useMemo(
     () => [...segmentCodes([...segmentUrls(text)])],
     [text]
@@ -18,6 +19,7 @@ export default function RichText({ text }: RichTextProps) {
 
   return (
     <span>
+      {!text && fallback}
       {parts.map((part, index) =>
         typeof part === "string" ? (
           part
