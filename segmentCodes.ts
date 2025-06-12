@@ -1,4 +1,6 @@
-export default function* segmentCodes(parts: (string | URL)[]) {
+export default function* segmentCodes(
+  parts: (string | { type: "link"; url: string })[]
+) {
   for (const part of parts) {
     if (typeof part === "string") {
       let i = 0;
@@ -84,9 +86,12 @@ if (import.meta.main) {
     },
     {
       test: () =>
-        segmentCodes([new URL("https://google.com"), "Hello, `World`!"]),
+        segmentCodes([
+          { type: "link", url: "https://google.com" },
+          "Hello, `World`!",
+        ]),
       expected: [
-        new URL("https://google.com"),
+        { type: "link", url: "https://google.com" },
         "Hello, ",
         { type: "code", text: "World" },
         "!",
@@ -94,12 +99,15 @@ if (import.meta.main) {
     },
     {
       test: () =>
-        segmentCodes(["Hello, `World`!", new URL("https://google.com")]),
+        segmentCodes([
+          "Hello, `World`!",
+          { type: "link", url: "https://google.com" },
+        ]),
       expected: [
         "Hello, ",
         { type: "code", text: "World" },
         "!",
-        new URL("https://google.com"),
+        { type: "link", url: "https://google.com" },
       ],
     },
     {

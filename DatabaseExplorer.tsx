@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useState, type MouseEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+} from "react";
 import type { Item } from "./ItemType.ts";
 
 type DatabaseExplorerProps = {
@@ -60,6 +66,38 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
     [ws, items]
   );
 
+  const handleTextAreaKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (event.key !== "Enter" || !event.shiftKey) {
+        return;
+      }
+
+      if (
+        !event.currentTarget.dataset.rowid ||
+        !event.currentTarget.dataset.key
+      ) {
+        return;
+      }
+
+      const rowId = +event.currentTarget.dataset.rowid;
+      const key = event.currentTarget.dataset.key;
+      const item = items.find((item) => item.rowid === rowId);
+      if (!item) {
+        return;
+      }
+
+      ws.send(
+        JSON.stringify({
+          type: "updateDatabaseItem",
+          rowId,
+          key,
+          value: event.currentTarget.value.trim(),
+        })
+      );
+    },
+    [ws, items]
+  );
+
   const handleDeleteButtonClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       const rowId = +event.currentTarget.dataset.rowid!;
@@ -79,7 +117,7 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
   );
 
   return (
-    <table>
+    <table className={DatabaseExplorer.name}>
       <thead>
         <tr>
           <th>RowID</th>
@@ -101,18 +139,29 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
             >
               {item.stamp}
             </td>
-            <td data-key="name" data-rowid={item.rowid} onClick={handleTdClick}>
-              {item.name}
+            <td data-key="name">
+              <textarea
+                data-rowid={item.rowid}
+                data-key="name"
+                onKeyDown={handleTextAreaKeyDown}
+                defaultValue={item.name}
+              />
             </td>
-            <td data-key="text" data-rowid={item.rowid} onClick={handleTdClick}>
-              {item.text}
+            <td data-key="text">
+              <textarea
+                data-rowid={item.rowid}
+                data-key="text"
+                onKeyDown={handleTextAreaKeyDown}
+                defaultValue={item.text}
+              />
             </td>
-            <td
-              data-key="attachments"
-              data-rowid={item.rowid}
-              onClick={handleTdClick}
-            >
-              {item.attachments}
+            <td data-key="attachments">
+              <textarea
+                data-rowid={item.rowid}
+                data-key="attachments"
+                onKeyDown={handleTextAreaKeyDown}
+                defaultValue={item.attachments}
+              />
             </td>
             <td>
               <button data-rowid={item.rowid} onClick={handleDeleteButtonClick}>

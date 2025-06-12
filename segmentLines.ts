@@ -21,7 +21,7 @@ export default function* segmentLines(text: string) {
       yield {
         type: "code-block" as const,
         language: language || undefined,
-        text: codeLines.join("\n"),
+        lines: codeLines,
       };
 
       // Check if there's text after the closing ```
@@ -73,7 +73,7 @@ export default function* segmentLines(text: string) {
         i++;
       }
 
-      const result: any = { type: "ordered-list" as const, items };
+      const result = { type: "ordered-list" as const, items, start: 1 };
       if (startNumber !== 1) {
         result.start = startNumber;
       }
@@ -130,14 +130,14 @@ if (import.meta.main) {
       test: () => segmentLines("hello\n1. item 1\n2. item 2\n3. item 3\nworld"),
       expected: [
         "hello",
-        { type: "ordered-list", items: ["item 1", "item 2", "item 3"] },
+        { type: "ordered-list", items: ["item 1", "item 2", "item 3"], start: 1 },
         "world",
       ],
     },
     {
       test: () => segmentLines("1. item 1\n2. item 2\n3. item 3\nworld"),
       expected: [
-        { type: "ordered-list", items: ["item 1", "item 2", "item 3"] },
+        { type: "ordered-list", items: ["item 1", "item 2", "item 3"], start: 1 },
         "world",
       ],
     },
@@ -145,7 +145,7 @@ if (import.meta.main) {
       test: () => segmentLines("hello\n1. item 1\n2. item 2\n3. item 3"),
       expected: [
         "hello",
-        { type: "ordered-list", items: ["item 1", "item 2", "item 3"] },
+        { type: "ordered-list", items: ["item 1", "item 2", "item 3"], start: 1 },
       ],
     },
     {
@@ -153,11 +153,11 @@ if (import.meta.main) {
         segmentLines("hello\n1. item 1\n2. item 2\n\n---\n\n1. item 1\nworld"),
       expected: [
         "hello",
-        { type: "ordered-list", items: ["item 1", "item 2"] },
+        { type: "ordered-list", items: ["item 1", "item 2"], start: 1 },
         "",
         "---",
         "",
-        { type: "ordered-list", items: ["item 1"] },
+        { type: "ordered-list", items: ["item 1"], start: 1 },
         "world",
       ],
     },
@@ -176,14 +176,14 @@ if (import.meta.main) {
     {
       test: () =>
         segmentLines(
-          "hello\n```typescript\nconsole.log('hello, world')\n```\nworld"
+          "hello\n```typescript\nconsole.log('hello, world')\nline 2\nline 3\n```\nworld"
         ),
       expected: [
         "hello",
         {
           type: "code-block",
           language: "typescript",
-          text: "console.log('hello, world')",
+          lines: ["console.log('hello, world')", "line 2", "line 3"],
         },
         "world",
       ],
@@ -195,7 +195,7 @@ if (import.meta.main) {
         {
           type: "code-block",
           language: "typescript",
-          text: "console.log('hello, world')",
+          lines: ["console.log('hello, world')"],
         },
         "world",
       ],
@@ -208,7 +208,7 @@ if (import.meta.main) {
         {
           type: "code-block",
           language: "typescript",
-          text: "console.log('hello, world')",
+          lines: ["console.log('hello, world')"],
         },
       ],
     },
@@ -222,14 +222,14 @@ if (import.meta.main) {
         {
           type: "code-block",
           language: "typescript",
-          text: "console.log('hello, world')",
+          lines: ["console.log('hello, world')"],
         },
         "world",
         "hello",
         {
           type: "code-block",
           language: "javascript",
-          text: "console.log('hello, world')",
+          lines: ["console.log('hello, world')"],
         },
         "world",
       ],

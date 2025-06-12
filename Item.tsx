@@ -29,35 +29,31 @@ export default function Item({
     ws.send(JSON.stringify({ type: "deleteItem", rowId: rowid }));
   }, [ws, rowid, name]);
 
-  const handleNameSpanClick = useCallback(async () => {
-    const newName = prompt("Name:", name);
-    if (!newName || newName === name) {
-      return;
-    }
+  const handleNameRichTextChange = useCallback(
+    async (value: string) => {
+      ws.send(
+        JSON.stringify({
+          type: "updateItem",
+          rowId: rowid,
+          name: value,
+        })
+      );
+    },
+    [ws, rowid]
+  );
 
-    ws.send(
-      JSON.stringify({
-        type: "updateItem",
-        rowId: rowid,
-        name: newName,
-      })
-    );
-  }, [ws, rowid, name]);
-
-  const handleTextSpanClick = useCallback(async () => {
-    const newText = prompt("Text:", text);
-    if (!newText || newText === text) {
-      return;
-    }
-
-    ws.send(
-      JSON.stringify({
-        type: "updateItem",
-        rowId: rowid,
-        text: newText,
-      })
-    );
-  }, [ws, rowid, text]);
+  const handleTextRichTextChange = useCallback(
+    async (value: string) => {
+      ws.send(
+        JSON.stringify({
+          type: "updateItem",
+          rowId: rowid,
+          text: value,
+        })
+      );
+    },
+    [ws, rowid]
+  );
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -130,15 +126,11 @@ export default function Item({
     <fieldset className={Item.name}>
       <legend>
         <button onClick={handleDeleteButtonClick}>✕</button>
-        <span
-          onClick={handleNameSpanClick}
-          className={name ? "" : "placeholder"}
-        >
-          <RichText
-            text={name}
-            fallback={<span className="placeholder">(no name)</span>}
-          />
-        </span>
+        <RichText
+          text={name}
+          fallback={<span className="placeholder">(no name)</span>}
+          onChange={handleNameRichTextChange}
+        />
         <input
           type="file"
           ref={inputRef}
@@ -164,12 +156,11 @@ export default function Item({
           </span>
         ))}
       </legend>
-      <span onClick={handleTextSpanClick}>
-        <RichText
-          text={text}
-          fallback={<span className="placeholder">(no text)</span>}
-        />
-      </span>
+      <RichText
+        text={text}
+        fallback={<span className="placeholder">(no text)</span>}
+        onChange={handleTextRichTextChange}
+      />
       <div className="metadata">
         <span className="placeholder">#{rowid}</span>
         <Stamp stamp={stamp} />
