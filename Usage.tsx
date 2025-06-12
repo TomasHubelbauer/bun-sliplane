@@ -22,7 +22,7 @@ export default function Usage({ stats }: UsageProps) {
 
   const used = useMemo(() => size - free, [size, free]);
 
-  const ratio = useMemo(() => used / size, [free, size]);
+  const ratio = useMemo(() => used / size, [used, size]);
 
   const title = useMemo(
     () =>

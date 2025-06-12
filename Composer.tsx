@@ -8,12 +8,12 @@ import {
 } from "react";
 
 type ComposerProps = {
+  ws: WebSocket;
   draft: string;
   setDraft: Dispatch<SetStateAction<string>>;
-  onSubmit: () => Promise<void>;
 };
 
-export default function Composer({ draft, setDraft, onSubmit }: ComposerProps) {
+export default function Composer({ ws, draft, setDraft }: ComposerProps) {
   const handleTextAreaChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       localStorage.setItem("draft", event.currentTarget.value);
@@ -27,7 +27,7 @@ export default function Composer({ draft, setDraft, onSubmit }: ComposerProps) {
   }, [setDraft]);
 
   const handleTextAreaKeyDown = useCallback(
-    async (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    (event: KeyboardEvent<HTMLTextAreaElement>) => {
       if (event.key === "Escape") {
         setDraft("");
         return;
@@ -45,16 +45,18 @@ export default function Composer({ draft, setDraft, onSubmit }: ComposerProps) {
       const [name, ...lines] = value.split("\n");
       const text = lines.join("\n").trim();
 
-      await fetch("/items", {
-        method: "POST",
-        body: JSON.stringify({ name, text }),
-      });
+      ws.send(
+        JSON.stringify({
+          type: "createItem",
+          name,
+          text,
+        })
+      );
 
       setDraft("");
       localStorage.setItem("draft", "");
-      await onSubmit();
     },
-    [onSubmit, setDraft]
+    [ws, setDraft]
   );
 
   const rows = useMemo(() => draft.split("\n").length, [draft]);

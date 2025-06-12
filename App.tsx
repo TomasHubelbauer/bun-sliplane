@@ -17,29 +17,55 @@ export default function App() {
   const [draft, setDraft] = useState<string>("");
   const [items, setItems] = useState<ItemType[]>([]);
   const [audits, setAudits] = useState<{ name: string; stamp: string }[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<{
+    bsize: number;
+    bfree: number;
+    blocks: number;
+  }>();
+
+  const ws = useMemo(() => new WebSocket("/ws"), []);
 
   useEffect(() => {
-    void (async function () {
-      setAudits(await fetch("/audits").then((response) => response.json()));
+    const abortController = new AbortController();
+    ws.addEventListener(
+      "message",
+      (event) => {
+        const { type, ...data } = JSON.parse(event.data);
+        switch (type) {
+          case "getItems": {
+            setItems(data.data);
+            break;
+          }
+          case "getAudits": {
+            setAudits(data.data);
+            break;
+          }
+          case "getStats": {
+            setStats(data.data);
+            break;
+          }
+        }
+      },
+      { signal: abortController.signal }
+    );
 
-      setStats(await fetch("/stats").then((response) => response.json()));
-    })();
-  }, []);
-
-  const refreshItems = useCallback(async () => {
-    const response = await fetch("/items");
-    setItems(await response.json());
-  }, []);
-
-  useEffect(() => {
-    void refreshItems();
-
-    document.addEventListener("visibilitychange", refreshItems);
     return () => {
-      document.removeEventListener("visibilitychange", refreshItems);
+      ws.close();
+      abortController.abort();
     };
-  }, [refreshItems]);
+  }, [ws]);
+
+  useEffect(() => {
+    const abortController = new AbortController();
+    document.addEventListener(
+      "visibilitychange",
+      () => ws.send(JSON.stringify({ type: "getItems" })),
+      { signal: abortController.signal }
+    );
+    return () => {
+      abortController.abort();
+    };
+  }, [ws]);
 
   const search = useMemo(() => {
     const search = draft.trim().toUpperCase();
@@ -73,9 +99,9 @@ export default function App() {
     []
   );
 
-  const handleBackupAClick = useCallback(async () => {
-    setAudits(await fetch("/audits").then((response) => response.json()));
-  }, []);
+  const handleBackupAClick = useCallback(() => {
+    ws.send(JSON.stringify({ type: "getAudits" }));
+  }, [ws]);
 
   const lastBackup = useMemo(
     () => audits.find((audit) => audit.name === "backup")?.stamp,
@@ -84,7 +110,7 @@ export default function App() {
 
   return (
     <>
-      <Composer draft={draft} setDraft={setDraft} onSubmit={refreshItems} />
+      <Composer ws={ws} draft={draft} setDraft={setDraft} />
       <fieldset>
         <legend>
           {tool && <button onClick={handleToolResetButtonClick}>✕</button>}
@@ -110,14 +136,11 @@ export default function App() {
             </>
           )}
         </legend>
-        {tool === "volume-explorer" && <VolumeExplorer stats={stats} />}
-        {tool === "database-explorer" && <DatabaseExplorer />}
+        {tool === "volume-explorer" && <VolumeExplorer ws={ws} stats={stats} />}
+        {tool === "database-explorer" && <DatabaseExplorer ws={ws} />}
       </fieldset>
       {matches.length > 0 && `Items matching "${search}":`}
-      <List
-        items={matches.length ? matches : items}
-        refreshItems={refreshItems}
-      />
+      <List ws={ws} items={matches.length ? matches : items} />
     </>
   );
 }

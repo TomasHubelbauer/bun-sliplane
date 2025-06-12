@@ -9,30 +9,25 @@ import type { Item as ItemType } from "./ItemType.ts";
 import RichText from "./RichText.tsx";
 import Stamp from "./Stamp.tsx";
 
-type ItemProps = ItemType & {
-  onDelete: () => Promise<void>;
-  onRename: () => Promise<void>;
-  onAttach: () => Promise<void>;
-};
+type ItemProps = {
+  ws: WebSocket;
+} & ItemType;
 
 export default function Item({
+  ws,
   rowid,
   stamp,
   name,
   text,
   attachments,
-  onDelete,
-  onRename,
-  onAttach,
 }: ItemProps) {
   const handleDeleteButtonClick = useCallback(async () => {
     if (!confirm(`Delete item "${name}"?`)) {
       return;
     }
 
-    await fetch(`/items?rowId=${rowid}`, { method: "DELETE" });
-    await onDelete();
-  }, [onDelete, rowid, name]);
+    ws.send(JSON.stringify({ type: "deleteItem", rowId: rowid }));
+  }, [ws, rowid, name]);
 
   const handleNameSpanClick = useCallback(async () => {
     const newName = prompt("Name:", name);
@@ -40,13 +35,14 @@ export default function Item({
       return;
     }
 
-    await fetch(`/items?rowId=${rowid}`, {
-      method: "PUT",
-      body: JSON.stringify({ name: newName }),
-    });
-
-    await onRename();
-  }, [onRename, rowid, name]);
+    ws.send(
+      JSON.stringify({
+        type: "updateItem",
+        rowId: rowid,
+        name: newName,
+      })
+    );
+  }, [ws, rowid, name]);
 
   const handleTextSpanClick = useCallback(async () => {
     const newText = prompt("Text:", text);
@@ -54,13 +50,14 @@ export default function Item({
       return;
     }
 
-    await fetch(`/items?rowId=${rowid}`, {
-      method: "PUT",
-      body: JSON.stringify({ text: newText }),
-    });
-
-    await onRename();
-  }, [onRename, rowid, text]);
+    ws.send(
+      JSON.stringify({
+        type: "updateItem",
+        rowId: rowid,
+        text: newText,
+      })
+    );
+  }, [ws, rowid, text]);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -78,15 +75,19 @@ export default function Item({
       for (const file of event.currentTarget.files) {
         const formData = new FormData();
         formData.append("file", file);
-        await fetch(`/attach?rowId=${rowid}`, {
+        await fetch(`/attachment?rowId=${rowid}`, {
           method: "POST",
           body: formData,
         });
       }
 
-      await onAttach();
+      ws.send(
+        JSON.stringify({
+          type: "getItems",
+        })
+      );
     },
-    [onAttach, rowid]
+    [ws, rowid]
   );
 
   const files: { uuid: string; name: string; type: string }[] = useMemo(
@@ -114,13 +115,15 @@ export default function Item({
         return;
       }
 
-      await fetch(`/attach?rowId=${rowid}&uuid=${uuid}`, {
-        method: "DELETE",
-      });
-
-      await onAttach();
+      ws.send(
+        JSON.stringify({
+          type: "deleteAttachment",
+          rowId: rowid,
+          uuid,
+        })
+      );
     },
-    [onAttach, rowid, files]
+    [ws, rowid, files]
   );
 
   return (
@@ -134,13 +137,18 @@ export default function Item({
           <RichText text={name} />
           {!name && "(unnamed)"}
         </span>
-        <input type="file" ref={inputRef} onChange={handleInputChange} />
+        <input
+          type="file"
+          ref={inputRef}
+          onChange={handleInputChange}
+          multiple
+        />
         <button onClick={handleAttachButtonClick}>+</button>
         {files.map((file) => (
           <span key={file.uuid} className="attachment">
             {file.type.startsWith("image/") && <span>🖼️</span>}
             <a
-              href={`/attach?rowId=${rowid}&uuid=${file.uuid}`}
+              href={`/attachment?rowId=${rowid}&uuid=${file.uuid}`}
               target="_blank"
             >
               {file.name}

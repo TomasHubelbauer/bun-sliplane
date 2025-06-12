@@ -1,51 +1,81 @@
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import type { Item } from "./ItemType.ts";
 
-export default function DatabaseExplorer() {
+type DatabaseExplorerProps = {
+  ws: WebSocket;
+};
+
+export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
   const [items, setItems] = useState<Item[]>([]);
 
   useEffect(() => {
-    void (async function () {
-      const response = await fetch("/database");
-      setItems(await response.json());
-    })();
-  }, []);
+    const abortController = new AbortController();
+    ws.addEventListener(
+      "message",
+      (event) => {
+        const { type, data } = JSON.parse(event.data);
+        if (type === "getDatabaseItems") {
+          setItems(data);
+        }
+      },
+      { signal: abortController.signal }
+    );
+
+    ws.send(JSON.stringify({ type: "getDatabaseItems" }));
+    return () => {
+      abortController.abort();
+    };
+  }, [ws]);
 
   const handleTdClick = useCallback(
-    async (event: MouseEvent<HTMLTableCellElement>) => {
-      const rowId = +event.currentTarget.dataset.rowid!;
-      const key = event.currentTarget.dataset.key!;
-      const item = items.find((item) => item.rowid === rowId)!;
+    (event: MouseEvent<HTMLTableCellElement>) => {
+      if (
+        !event.currentTarget.dataset.rowid ||
+        !event.currentTarget.dataset.key
+      ) {
+        return;
+      }
+
+      const rowId = +event.currentTarget.dataset.rowid;
+      const key = event.currentTarget.dataset.key;
+      const item = items.find((item) => item.rowid === rowId);
+      if (!item) {
+        return;
+      }
+
       const value = prompt(`Edit ${key}`, item[key]);
       if (value === null || value === item[key]) {
         return;
       }
 
-      await fetch(`/database?rowId=${rowId}&key=${key}`, {
-        method: "PUT",
-        body: value,
-      });
-
-      setItems(await (await fetch("/database")).json());
+      ws.send(
+        JSON.stringify({
+          type: "updateDatabaseItem",
+          rowId,
+          key,
+          value,
+        })
+      );
     },
-    [items]
+    [ws, items]
   );
 
   const handleDeleteButtonClick = useCallback(
-    async (event: MouseEvent<HTMLButtonElement>) => {
+    (event: MouseEvent<HTMLButtonElement>) => {
       const rowId = +event.currentTarget.dataset.rowid!;
       const item = items.find((item) => item.rowid === rowId)!;
       if (!confirm(`Are you sure you want to delete "${item.name}"?`)) {
         return;
       }
 
-      await fetch(`/database?rowId=${rowId}`, {
-        method: "DELETE",
-      });
-
-      setItems(await (await fetch("/database")).json());
+      ws.send(
+        JSON.stringify({
+          type: "deleteDatabaseItem",
+          rowId,
+        })
+      );
     },
-    [items]
+    [ws, items]
   );
 
   return (

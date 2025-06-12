@@ -1,33 +1,26 @@
 import Bun from "bun";
-import { Database } from "bun:sqlite";
 import index from "./index.html";
-import fs from "fs";
 import enforceAuthorization from "./enforceAuthorization.ts";
+import db from "./db.ts";
+import getItems from "./getItems.ts";
+import getAudits from "./getAudits.ts";
+import getStats from "./getStats.ts";
 import getRequestSearchParameter from "./getRequestSearchParameter.ts";
-
-const VOLUME_PATH = process.env.VOLUME_PATH ?? ".";
-const DATABASE_PATH = VOLUME_PATH + "/db.sqlite";
-const db = new Database(DATABASE_PATH);
-
-db.run(
-  "CREATE TABLE IF NOT EXISTS items (stamp TEXT PRIMARY KEY, name TEXT, text TEXT)"
-);
-
-try {
-  db.run('ALTER TABLE items ADD COLUMN attachments TEXT DEFAULT "[]"');
-} catch (error) {
-  if (error.message !== "duplicate column name: attachments") {
-    throw error;
-  }
-}
-
-db.run("CREATE TABLE IF NOT EXISTS audits (name TEXT PRIMARY KEY, stamp TEXT)");
+import volumePath from "./volumePath.ts";
+import getVolumeFiles from "./getVolumeFiles.ts";
+import getDatabaseItems from "./getDatabaseItems.ts";
 
 const nonce = crypto.randomUUID();
 
 const server = Bun.serve({
   routes: {
+    // Public
+    "/manifest.json": () => new Response(Bun.file("./manifest.json")),
+
+    // Secret
     [`/${nonce}`]: index,
+
+    // Private
     "/": (request) => {
       const authResponse = enforceAuthorization(request);
       if (authResponse) {
@@ -36,119 +29,19 @@ const server = Bun.serve({
 
       return fetch(`${server.url}/${nonce}`);
     },
-    "/manifest.json": () => new Response(Bun.file("./manifest.json")),
-    "/items": {
-      GET: async (request) => {
-        const authResponse = enforceAuthorization(request);
-        if (authResponse) {
-          return authResponse;
-        }
-
-        return Response.json(
-          db.query("SELECT rowid, * FROM items ORDER BY stamp DESC").all()
-        );
-      },
-      POST: async (request) => {
-        const authResponse = enforceAuthorization(request);
-        if (authResponse) {
-          return authResponse;
-        }
-
-        const { name, text } = await request.json();
-        db.run("INSERT INTO items (stamp, name, text) VALUES (?, ?, ?)", [
-          new Date().toISOString(),
-          name,
-          text,
-        ]);
-
-        return new Response();
-      },
-      DELETE: async (request) => {
-        const authResponse = enforceAuthorization(request);
-        if (authResponse) {
-          return authResponse;
-        }
-
-        const rowId = getRequestSearchParameter(request, "rowId");
-
-        const { attachments } = db
-          .query("SELECT attachments FROM items WHERE rowid = ?")
-          .get(rowId) as { attachments: string };
-        const files = JSON.parse(attachments || "[]").map((attachment) =>
-          JSON.parse(attachment)
-        );
-
-        for (const file of files) {
-          const filePath = `${VOLUME_PATH}/${file.path}`;
-          await Bun.file(filePath).unlink();
-        }
-
-        db.run("DELETE FROM items WHERE rowid = ?", [rowId]);
-        return new Response();
-      },
-      PUT: async (request) => {
-        const authResponse = enforceAuthorization(request);
-        if (authResponse) {
-          return authResponse;
-        }
-
-        const rowId = getRequestSearchParameter(request, "rowId");
-
-        const item = await request.json();
-
-        if ("name" in item) {
-          db.run("UPDATE items SET name = ? WHERE rowid = ?", [
-            item.name,
-            rowId,
-          ]);
-        }
-
-        if ("text" in item) {
-          db.run("UPDATE items SET text = ? WHERE rowid = ?", [
-            item.text,
-            rowId,
-          ]);
-        }
-
-        return new Response();
-      },
-    },
-    "/backup": (request) => {
+    "/ws": (request) => {
       const authResponse = enforceAuthorization(request);
       if (authResponse) {
         return authResponse;
       }
 
-      db.run(
-        "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
-        ["backup", new Date().toISOString(), new Date().toISOString()]
-      );
-
-      return new Response(db.serialize(), {
-        headers: {
-          "Content-Type": "application/x-sqlite3",
-          "Content-Disposition": `attachment; filename="backup-${new Date().toISOString()}.db"`,
-        },
-      });
-    },
-    "/audits": (request) => {
-      const authResponse = enforceAuthorization(request);
-      if (authResponse) {
-        return authResponse;
+      if (server.upgrade(request)) {
+        return;
       }
 
-      return Response.json(db.query("SELECT * FROM audits").all());
+      return new Response("Upgrade failed", { status: 500 });
     },
-    "/stats": async (request) => {
-      const authResponse = enforceAuthorization(request);
-      if (authResponse) {
-        return authResponse;
-      }
-
-      const stats = await fs.promises.statfs(VOLUME_PATH);
-      return Response.json(stats);
-    },
-    "/attach": {
+    "/attachment": {
       POST: async (request) => {
         const authResponse = enforceAuthorization(request);
         if (authResponse) {
@@ -183,7 +76,7 @@ const server = Bun.serve({
           path,
         };
 
-        await Bun.write(VOLUME_PATH + "/" + path, await file.arrayBuffer());
+        await Bun.write(`${volumePath}/${path}`, await file.arrayBuffer());
         db.run(
           "UPDATE items SET attachments = json_insert(attachments, '$[#]', ?) WHERE rowid = ?",
           [JSON.stringify(attachment), rowId]
@@ -215,127 +108,207 @@ const server = Bun.serve({
           return new Response("Attachment not found", { status: 404 });
         }
 
-        return new Response(Bun.file(`${VOLUME_PATH}/${file.path}`), {
+        return new Response(Bun.file(`${volumePath}/${file.path}`), {
           headers: {
             "Content-Type": file.type,
             "Content-Disposition": `filename="${file.name}"`,
           },
         });
       },
-      DELETE: async (request) => {
-        const authResponse = enforceAuthorization(request);
-        if (authResponse) {
-          return authResponse;
-        }
-
-        const rowId = getRequestSearchParameter(request, "rowId");
-        const uuid = getRequestSearchParameter(request, "uuid");
-
-        const { attachments } = db
-          .query("SELECT attachments FROM items WHERE rowid = ?")
-          .get(rowId) as { attachments: string };
-        const files = JSON.parse(attachments || "[]").map((attachment) =>
-          JSON.parse(attachment)
-        );
-
-        const fileIndex = files.findIndex((f) => f.uuid === uuid);
-        if (fileIndex === -1) {
-          return new Response("Attachment not found", { status: 404 });
-        }
-
-        const filePath = `${VOLUME_PATH}/${files[fileIndex].path}`;
-        await Bun.file(filePath).unlink();
-
-        files.splice(fileIndex, 1);
-        db.run("UPDATE items SET attachments = ? WHERE rowid = ?", [
-          JSON.stringify(files),
-          rowId,
-        ]);
-
-        return new Response();
-      },
     },
-    "/volume": {
-      GET: async (request) => {
-        const authResponse = enforceAuthorization(request);
-        if (authResponse) {
-          return authResponse;
-        }
+    "/backup": (request) => {
+      const authResponse = enforceAuthorization(request);
+      if (authResponse) {
+        return authResponse;
+      }
 
-        const items = await fs.promises.readdir(VOLUME_PATH, {
-          withFileTypes: true,
-        });
+      db.run(
+        "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
+        ["backup", new Date().toISOString(), new Date().toISOString()]
+      );
 
-        const files = items.filter((item) => item.isFile());
-        const filesWithStats = await Promise.all(
-          files.map(async (file) => {
-            const stats = await fs.promises.stat(`${VOLUME_PATH}/${file.name}`);
-            return { ...file, ...stats };
-          })
-        );
-
-        return Response.json(filesWithStats);
-      },
-      DELETE: async (request) => {
-        const authResponse = enforceAuthorization(request);
-        if (authResponse) {
-          return authResponse;
-        }
-
-        const name = getRequestSearchParameter(request, "name");
-        await Bun.file(`${VOLUME_PATH}/${name}`).unlink();
-        return new Response();
-      },
+      return new Response(db.serialize(), {
+        headers: {
+          "Content-Type": "application/x-sqlite3",
+          "Content-Disposition": `attachment; filename="backup-${new Date().toISOString()}.db"`,
+        },
+      });
     },
-    "/database": {
-      GET: async (request) => {
-        const authResponse = enforceAuthorization(request);
-        if (authResponse) {
-          return authResponse;
+  },
+  websocket: {
+    perMessageDeflate: true,
+    async open(ws) {
+      ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
+      ws.send(JSON.stringify({ type: getAudits.name, data: getAudits() }));
+      ws.send(JSON.stringify({ type: getStats.name, data: await getStats() }));
+    },
+    async message(ws, message) {
+      const { type, ...data } = JSON.parse(message as string);
+      switch (type) {
+        case "getAudits": {
+          ws.send(JSON.stringify({ type: getAudits.name, data: getAudits() }));
+          break;
         }
-
-        return Response.json(db.query("SELECT rowid, * FROM items").all());
-      },
-      PUT: async (request) => {
-        const authResponse = enforceAuthorization(request);
-        if (authResponse) {
-          return authResponse;
+        case "getItems": {
+          ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
+          break;
         }
+        case "createItem": {
+          const { name, text } = data;
+          db.run("INSERT INTO items (stamp, name, text) VALUES (?, ?, ?)", [
+            new Date().toISOString(),
+            name,
+            text,
+          ]);
 
-        const rowId = getRequestSearchParameter(request, "rowId");
-        const key = getRequestSearchParameter(request, "key");
-        const value = await request.text();
-
-        if (!rowId || !key || !value) {
-          return new Response("Missing required parameters", { status: 400 });
+          ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
+          break;
         }
+        case "deleteItem": {
+          const { attachments } = db
+            .query("SELECT attachments FROM items WHERE rowid = ?")
+            .get(data.rowId) as { attachments: string };
+          const files = JSON.parse(attachments || "[]").map((attachment) =>
+            JSON.parse(attachment)
+          );
 
-        if (
-          key !== "stamp" &&
-          key !== "name" &&
-          key !== "text" &&
-          key !== "attachments"
-        ) {
-          return new Response("Invalid key", { status: 400 });
+          for (const file of files) {
+            const filePath = `${volumePath}/${file.path}`;
+            await Bun.file(filePath).unlink();
+          }
+
+          db.run("DELETE FROM items WHERE rowid = ?", [data.rowId]);
+          ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
+          break;
         }
+        case "updateItem": {
+          if ("name" in data) {
+            db.run("UPDATE items SET name = ? WHERE rowid = ?", [
+              data.name,
+              data.rowId,
+            ]);
+          }
 
-        db.run(`UPDATE items SET ${key} = ? WHERE rowid = ?`, [value, rowId]);
-        return new Response();
-      },
-      DELETE: async (request) => {
-        const authResponse = enforceAuthorization(request);
-        if (authResponse) {
-          return authResponse;
+          if ("text" in data) {
+            db.run("UPDATE items SET text = ? WHERE rowid = ?", [
+              data.text,
+              data.rowId,
+            ]);
+          }
+
+          ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
+          break;
         }
+        case "deleteAttachment": {
+          const { attachments } = db
+            .query("SELECT attachments FROM items WHERE rowid = ?")
+            .get(data.rowId) as { attachments: string };
+          const files = JSON.parse(attachments || "[]").map((attachment) =>
+            JSON.parse(attachment)
+          );
 
-        const rowId = getRequestSearchParameter(request, "rowId");
-        if (!rowId) {
-          return new Response("Missing 'rowId' parameter", { status: 400 });
+          const fileIndex = files.findIndex((f) => f.uuid === data.uuid);
+          if (fileIndex === -1) {
+            throw new Error("Attachment not found");
+          }
+
+          const filePath = `${volumePath}/${files[fileIndex].path}`;
+          await Bun.file(filePath).unlink();
+
+          files.splice(fileIndex, 1);
+          db.run("UPDATE items SET attachments = ? WHERE rowid = ?", [
+            JSON.stringify(files),
+            data.rowId,
+          ]);
+
+          ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
+          break;
         }
+        case "getVolumeFiles": {
+          ws.send(
+            JSON.stringify({
+              type: "getVolumeFiles",
+              data: await getVolumeFiles(),
+            })
+          );
 
-        db.run("DELETE FROM items WHERE rowid = ?", [rowId]);
-        return new Response();
-      },
+          break;
+        }
+        case "deleteVolumeFile": {
+          await Bun.file(`${volumePath}/${data.name}`).unlink();
+          ws.send(
+            JSON.stringify({
+              type: "getVolumeFiles",
+              data: await getVolumeFiles(),
+            })
+          );
+        }
+        case "getDatabaseItems": {
+          ws.send(
+            JSON.stringify({
+              type: "getDatabaseItems",
+              data: getDatabaseItems(),
+            })
+          );
+          break;
+        }
+        case "updateDatabaseItem": {
+          const { rowId, key, value } = data;
+
+          if (!rowId || !key || !value) {
+            throw new Error("Missing required parameters");
+          }
+
+          if (
+            key !== "stamp" &&
+            key !== "name" &&
+            key !== "text" &&
+            key !== "attachments"
+          ) {
+            throw new Error("Invalid key");
+          }
+
+          db.run(`UPDATE items SET ${key} = ? WHERE rowid = ?`, [value, rowId]);
+
+          ws.send(
+            JSON.stringify({
+              type: "getDatabaseItems",
+              data: getDatabaseItems(),
+            })
+          );
+
+          ws.send(
+            JSON.stringify({
+              type: "getItems",
+              data: getItems(),
+            })
+          );
+
+          break;
+        }
+        case "deleteDatabaseItem": {
+          db.run("DELETE FROM items WHERE rowid = ?", [data.rowId]);
+
+          ws.send(
+            JSON.stringify({
+              type: "getDatabaseItems",
+              data: getDatabaseItems(),
+            })
+          );
+
+          ws.send(
+            JSON.stringify({
+              type: "getItems",
+              data: getItems(),
+            })
+          );
+
+          break;
+        }
+        default: {
+          throw new Error(`Unknown message type: ${type}`);
+        }
+      }
     },
   },
 });

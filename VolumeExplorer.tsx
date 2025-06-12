@@ -4,11 +4,14 @@ import Stamp from "./Stamp.tsx";
 import Usage from "./Usage.tsx";
 
 type VolumeExplorerProps = {
-  stats: {
-    bsize: number;
-    bfree: number;
-    blocks: number;
-  };
+  ws: WebSocket;
+  stats:
+    | {
+        bsize: number;
+        bfree: number;
+        blocks: number;
+      }
+    | undefined;
 };
 
 type Item = {
@@ -20,15 +23,27 @@ type Item = {
   birthtimeMs: number;
 };
 
-export default function VolumeExplorer({ stats }: VolumeExplorerProps) {
+export default function VolumeExplorer({ ws, stats }: VolumeExplorerProps) {
   const [items, setItems] = useState<Item[]>([]);
 
   useEffect(() => {
-    void (async function () {
-      const response = await fetch("/volume");
-      setItems(await response.json());
-    })();
-  }, []);
+    const abortController = new AbortController();
+    ws.addEventListener(
+      "message",
+      (event) => {
+        const { type, data } = JSON.parse(event.data);
+        if (type === "getVolumeFiles") {
+          setItems(data);
+        }
+      },
+      { signal: abortController.signal }
+    );
+
+    ws.send(JSON.stringify({ type: "getVolumeFiles" }));
+    return () => {
+      abortController.abort();
+    };
+  }, [ws]);
 
   const handleDeleteButtonClick = useCallback(
     async (event: MouseEvent<HTMLButtonElement>) => {
@@ -37,14 +52,14 @@ export default function VolumeExplorer({ stats }: VolumeExplorerProps) {
         return;
       }
 
-      await fetch(`/volume?name=${name}`, {
-        method: "DELETE",
-      });
-
-      const response = await fetch("/volume");
-      setItems(await response.json());
+      ws.send(
+        JSON.stringify({
+          type: "deleteVolumeFile",
+          name,
+        })
+      );
     },
-    []
+    [ws]
   );
 
   return (
