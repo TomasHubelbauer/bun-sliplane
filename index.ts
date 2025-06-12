@@ -1,4 +1,4 @@
-import Bun from "bun";
+import Bun, { type ServerWebSocket } from "bun";
 import index from "./index.html";
 import enforceAuthorization from "./enforceAuthorization.ts";
 import db from "./db.ts";
@@ -12,6 +12,7 @@ import getDatabaseItems from "./getDatabaseItems.ts";
 
 const nonce = crypto.randomUUID();
 
+let webSocket: ServerWebSocket<unknown> | undefined;
 const server = Bun.serve({
   routes: {
     // Public
@@ -127,6 +128,10 @@ const server = Bun.serve({
         ["backup", new Date().toISOString(), new Date().toISOString()]
       );
 
+      webSocket?.send(
+        JSON.stringify({ type: getAudits.name, data: getAudits() })
+      );
+
       return new Response(db.serialize(), {
         headers: {
           "Content-Type": "application/x-sqlite3",
@@ -138,6 +143,7 @@ const server = Bun.serve({
   websocket: {
     perMessageDeflate: true,
     async open(ws) {
+      webSocket = ws;
       ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
       ws.send(JSON.stringify({ type: getAudits.name, data: getAudits() }));
       ws.send(JSON.stringify({ type: getStats.name, data: await getStats() }));

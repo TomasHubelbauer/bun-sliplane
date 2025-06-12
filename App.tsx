@@ -10,8 +10,8 @@ import Composer from "./Composer.tsx";
 import List from "./List.tsx";
 import VolumeExplorer from "./VolumeExplorer.tsx";
 import DatabaseExplorer from "./DatabaseExplorer.tsx";
-import formatHumanStamp from "./formatHumanStamp.ts";
 import Usage from "./Usage.tsx";
+import Stamp from "./Stamp.tsx";
 
 export default function App() {
   const [draft, setDraft] = useState<string>("");
@@ -99,10 +99,6 @@ export default function App() {
     []
   );
 
-  const handleBackupAClick = useCallback(() => {
-    ws.send(JSON.stringify({ type: "getAudits" }));
-  }, [ws]);
-
   const lastBackup = useMemo(
     () => audits.find((audit) => audit.name === "backup")?.stamp,
     [audits]
@@ -130,8 +126,16 @@ export default function App() {
               >
                 Database Explorer
               </button>
-              <a href="/backup" target="_blank" onClick={handleBackupAClick}>
-                Backup{lastBackup ? ` (${formatHumanStamp(lastBackup)})` : ""}
+              <a href="/backup" target="_blank">
+                Backup
+                {lastBackup ? (
+                  <>
+                    {" "}
+                    (<Stamp stamp={lastBackup} />)
+                  </>
+                ) : (
+                  ""
+                )}
               </a>
             </>
           )}
