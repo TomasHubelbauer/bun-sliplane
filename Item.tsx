@@ -123,20 +123,16 @@ export default function Item({
   );
 
   return (
-    <fieldset className={Item.name}>
-      <legend>
-        <button onClick={handleDeleteButtonClick}>✕</button>
+    <div className={Item.name}>
+      <input type="file" ref={inputRef} onChange={handleInputChange} multiple />
+      <div className="header">
+        <span className="placeholder">#{rowid}</span>
         <RichText
           text={name}
           fallback={<span className="placeholder">(no name)</span>}
           onChange={handleNameRichTextChange}
         />
-        <input
-          type="file"
-          ref={inputRef}
-          onChange={handleInputChange}
-          multiple
-        />
+        <Stamp stamp={stamp} />
         <button onClick={handleAttachButtonClick}>+</button>
         {files.map((file) => (
           <span key={file.uuid} className="attachment">
@@ -155,16 +151,13 @@ export default function Item({
             </button>
           </span>
         ))}
-      </legend>
+        <button onClick={handleDeleteButtonClick}>✕</button>
+      </div>
       <RichText
         text={text}
         fallback={<span className="placeholder">(no text)</span>}
         onChange={handleTextRichTextChange}
       />
-      <div className="metadata">
-        <span className="placeholder">#{rowid}</span>
-        <Stamp stamp={stamp} />
-      </div>
-    </fieldset>
+    </div>
   );
 }

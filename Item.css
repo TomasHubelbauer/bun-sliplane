@@ -1,25 +1,26 @@
 [class^="Item"] {
+  border-left: 2px solid silver;
   display: flex;
   flex-direction: column;
   gap: 1ch;
-
-  legend {
-    align-items: center;
-    display: flex;
-    gap: 1ch;
-  }
+  padding: 1ch 1ch;
 
   &:hover {
     background: whitesmoke;
   }
 
-  .placeholder {
-    color: gray;
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 1ch;
+
+    :last-child {
+      margin-left: auto;
+    }
   }
 
-  .metadata {
-    display: flex;
-    gap: 1ch;
+  .placeholder {
+    color: gray;
   }
 
   .attachment {

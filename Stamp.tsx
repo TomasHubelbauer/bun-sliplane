@@ -17,7 +17,7 @@ export default function Stamp({ stamp }: StampProps) {
   }, [stamp]);
 
   return (
-    <time dateTime={stamp} title={stamp}>
+    <time dateTime={stamp} title={stamp} className={Stamp.name}>
       {humanStamp}
     </time>
   );
