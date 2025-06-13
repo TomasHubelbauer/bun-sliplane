@@ -128,6 +128,7 @@ export default function Item({
       <div className="header">
         <span className="placeholder">#{rowid}</span>
         <RichText
+          ws={ws}
           text={name}
           fallback={<span className="placeholder">(no name)</span>}
           onChange={handleNameRichTextChange}
@@ -156,6 +157,7 @@ export default function Item({
         </button>
       </div>
       <RichText
+        ws={ws}
         text={text}
         fallback={<span className="placeholder">(no text)</span>}
         onChange={handleTextRichTextChange}

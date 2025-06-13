@@ -1,0 +1,22 @@
+[class^="LinkPreview"] {
+  align-items: center;
+  display: inline-flex;
+  gap: 1ch;
+
+  img {
+    height: 16px;
+    margin-left: 1ch;
+    width: 16px;
+  }
+
+  q {
+    color: gray;
+    display: none;
+  }
+
+  &:hover {
+    q {
+      display: initial;
+    }
+  }
+}

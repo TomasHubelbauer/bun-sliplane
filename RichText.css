@@ -1,0 +1,7 @@
+[class^="RichText"] {
+  p {
+    align-items: center;
+    display: flex;
+    gap: 1ex;
+  }
+}

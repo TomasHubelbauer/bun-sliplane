@@ -19,6 +19,7 @@ import getUserName from "./getUserName.ts";
 import getDatabaseTables from "./getDatabaseTables.ts";
 import getDatabaseColumns from "./getDatabaseColumns.ts";
 import getDatabaseRows from "./getDatabaseRows.ts";
+import fetchUrlMetadata from "./fetchUrlMetadata.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -37,6 +38,7 @@ const handlers = [
   getDatabaseTables,
   getDatabaseColumns,
   getDatabaseRows,
+  fetchUrlMetadata,
 ] as const;
 
 let webSocket: ServerWebSocket<unknown> | undefined;

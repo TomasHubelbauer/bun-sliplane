@@ -5,6 +5,8 @@
 @import url("./DatabaseExplorer.css");
 @import url("./Tools.css");
 @import url("./Stamp.css");
+@import url("./LinkPreview.css");
+@import url("./RichText.css");
 
 body {
   display: flex;

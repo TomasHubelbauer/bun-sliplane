@@ -4,12 +4,18 @@ import RichLine from "./RichLine.tsx";
 import serializeSegments from "./serializeSegments.ts";
 
 type RichTextProps = {
+  ws: WebSocket;
   text: string;
   onChange: (text: string) => void;
   fallback: ReactNode;
 };
 
-export default function RichText({ text, onChange, fallback }: RichTextProps) {
+export default function RichText({
+  text,
+  onChange,
+  fallback,
+  ws,
+}: RichTextProps) {
   const lines = useMemo(() => segmentText(text), [text]);
 
   const handleClick = useCallback(
@@ -71,7 +77,7 @@ export default function RichText({ text, onChange, fallback }: RichTextProps) {
   }, [onChange]);
 
   return (
-    <div>
+    <div className={RichText.name}>
       {!text && fallback && (
         <div onClick={handleFallbackDivClick}>{fallback}</div>
       )}
@@ -80,7 +86,7 @@ export default function RichText({ text, onChange, fallback }: RichTextProps) {
           case "paragraph": {
             return (
               <p key={index} data-index={index} onClick={handleClick}>
-                <RichLine parts={line.parts} />
+                <RichLine ws={ws} parts={line.parts} />
               </p>
             );
           }
@@ -110,7 +116,7 @@ export default function RichText({ text, onChange, fallback }: RichTextProps) {
                     data-subindex={itemIndex}
                     onClick={handleClick}
                   >
-                    <RichLine parts={item.parts} />
+                    <RichLine ws={ws} parts={item.parts} />
                   </li>
                 ))}
               </ul>
@@ -126,7 +132,7 @@ export default function RichText({ text, onChange, fallback }: RichTextProps) {
                     data-subindex={itemIndex}
                     onClick={handleClick}
                   >
-                    <RichLine parts={item.parts} />
+                    <RichLine ws={ws} parts={item.parts} />
                   </li>
                 ))}
               </ol>
