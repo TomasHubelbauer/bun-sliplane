@@ -16,7 +16,6 @@ import deleteAttachment from "./deleteAttachment.ts";
 import deleteVolumeFile from "./deleteVolumeFile.ts";
 import updateDatabaseItem from "./updateDatabaseItem.ts";
 import deleteDatabaseItem from "./deleteDatabaseItem.ts";
-import httpBasicAuthResponse from "./httpBasicAuthResponse.ts";
 import getUserName from "./getUserName.ts";
 
 const nonce = crypto.randomUUID();
@@ -49,7 +48,12 @@ const server: Server = Bun.serve({
     "/": (request) => {
       const userName = validatePasswordAndGetUserName(request);
       if (!userName) {
-        return httpBasicAuthResponse;
+        return new Response(null, {
+          status: 401,
+          headers: {
+            "WWW-Authenticate": "Basic",
+          },
+        });
       }
 
       return fetch(`${server.url}/${nonce}`);
@@ -57,7 +61,12 @@ const server: Server = Bun.serve({
     "/ws": (request) => {
       const userName = validatePasswordAndGetUserName(request);
       if (!userName) {
-        return httpBasicAuthResponse;
+        return new Response(null, {
+          status: 401,
+          headers: {
+            "WWW-Authenticate": "Basic",
+          },
+        });
       }
 
       if (
@@ -74,7 +83,12 @@ const server: Server = Bun.serve({
       POST: async (request) => {
         const userName = validatePasswordAndGetUserName(request);
         if (!userName) {
-          return httpBasicAuthResponse;
+          return new Response(null, {
+            status: 401,
+            headers: {
+              "WWW-Authenticate": "Basic",
+            },
+          });
         }
 
         const rowId = getRequestSearchParameter(request, "rowId");
@@ -116,7 +130,12 @@ const server: Server = Bun.serve({
       GET: async (request) => {
         const userName = validatePasswordAndGetUserName(request);
         if (!userName) {
-          return httpBasicAuthResponse;
+          return new Response(null, {
+            status: 401,
+            headers: {
+              "WWW-Authenticate": "Basic",
+            },
+          });
         }
 
         const rowId = getRequestSearchParameter(request, "rowId");
@@ -148,7 +167,12 @@ const server: Server = Bun.serve({
     "/backup": (request) => {
       const userName = validatePasswordAndGetUserName(request);
       if (!userName) {
-        return httpBasicAuthResponse;
+        return new Response(null, {
+          status: 401,
+          headers: {
+            "WWW-Authenticate": "Basic",
+          },
+        });
       }
 
       db.run(
