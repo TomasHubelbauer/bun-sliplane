@@ -32,6 +32,10 @@ export default function App() {
       (event) => {
         const { type, ...data } = JSON.parse(event.data);
         switch (type) {
+          case "reportError": {
+            alert(`Error: ${data.message}\n\n${data.stack}`);
+            break;
+          }
           case "getItems": {
             setItems(data.data);
             break;

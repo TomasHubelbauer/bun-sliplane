@@ -9,8 +9,29 @@ import getRequestSearchParameter from "./getRequestSearchParameter.ts";
 import volumePath from "./volumePath.ts";
 import getVolumeFiles from "./getVolumeFiles.ts";
 import getDatabaseItems from "./getDatabaseItems.ts";
+import createItem from "./createItem.ts";
+import deleteItem from "./deleteItem.ts";
+import updateItem from "./updateItem.ts";
+import deleteAttachment from "./deleteAttachment.ts";
+import deleteVolumeFile from "./deleteVolumeFile.ts";
+import updateDatabaseItem from "./updateDatabaseItem.ts";
+import deleteDatabaseItem from "./deleteDatabaseItem.ts";
 
 const nonce = crypto.randomUUID();
+
+const handlers = [
+  getAudits,
+  getItems,
+  createItem,
+  deleteItem,
+  updateItem,
+  deleteAttachment,
+  getVolumeFiles,
+  deleteVolumeFile,
+  getDatabaseItems,
+  updateDatabaseItem,
+  deleteDatabaseItem,
+] as const;
 
 let webSocket: ServerWebSocket<unknown> | undefined;
 const server = Bun.serve({
@@ -149,171 +170,27 @@ const server = Bun.serve({
       ws.send(JSON.stringify({ type: getStats.name, data: await getStats() }));
     },
     async message(ws, message) {
-      const { type, ...data } = JSON.parse(message as string);
-      switch (type) {
-        case "getAudits": {
-          ws.send(JSON.stringify({ type: getAudits.name, data: getAudits() }));
-          break;
+      try {
+        const { type, ...args } = JSON.parse(message as string);
+        const handler = handlers.find((h) => h.name === type);
+        if (!handler) {
+          throw new Error(`Unknown handler: ${type}`);
         }
-        case "getItems": {
-          ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
-          break;
+
+        const data = await handler(ws, args);
+        if (data) {
+          ws.send(JSON.stringify({ type, data }));
         }
-        case "createItem": {
-          const { name, text } = data;
-          db.run("INSERT INTO items (stamp, name, text) VALUES (?, ?, ?)", [
-            new Date().toISOString(),
-            name,
-            text,
-          ]);
 
-          ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
-          break;
-        }
-        case "deleteItem": {
-          const { attachments } = db
-            .query("SELECT attachments FROM items WHERE rowid = ?")
-            .get(data.rowId) as { attachments: string };
-          const files = JSON.parse(attachments || "[]").map((attachment) =>
-            JSON.parse(attachment)
-          );
-
-          for (const file of files) {
-            const filePath = `${volumePath}/${file.path}`;
-            await Bun.file(filePath).unlink();
-          }
-
-          db.run("DELETE FROM items WHERE rowid = ?", [data.rowId]);
-          ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
-          break;
-        }
-        case "updateItem": {
-          if ("name" in data) {
-            db.run("UPDATE items SET name = ? WHERE rowid = ?", [
-              data.name,
-              data.rowId,
-            ]);
-          }
-
-          if ("text" in data) {
-            db.run("UPDATE items SET text = ? WHERE rowid = ?", [
-              data.text,
-              data.rowId,
-            ]);
-          }
-
-          ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
-          break;
-        }
-        case "deleteAttachment": {
-          const { attachments } = db
-            .query("SELECT attachments FROM items WHERE rowid = ?")
-            .get(data.rowId) as { attachments: string };
-          const files = JSON.parse(attachments || "[]").map((attachment) =>
-            JSON.parse(attachment)
-          );
-
-          const fileIndex = files.findIndex((f) => f.uuid === data.uuid);
-          if (fileIndex === -1) {
-            throw new Error("Attachment not found");
-          }
-
-          const filePath = `${volumePath}/${files[fileIndex].path}`;
-          await Bun.file(filePath).unlink();
-
-          files.splice(fileIndex, 1);
-          db.run("UPDATE items SET attachments = ? WHERE rowid = ?", [
-            JSON.stringify(files),
-            data.rowId,
-          ]);
-
-          ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
-          break;
-        }
-        case "getVolumeFiles": {
-          ws.send(
-            JSON.stringify({
-              type: "getVolumeFiles",
-              data: await getVolumeFiles(),
-            })
-          );
-
-          break;
-        }
-        case "deleteVolumeFile": {
-          await Bun.file(`${volumePath}/${data.name}`).unlink();
-          ws.send(
-            JSON.stringify({
-              type: "getVolumeFiles",
-              data: await getVolumeFiles(),
-            })
-          );
-        }
-        case "getDatabaseItems": {
-          ws.send(
-            JSON.stringify({
-              type: "getDatabaseItems",
-              data: getDatabaseItems(),
-            })
-          );
-          break;
-        }
-        case "updateDatabaseItem": {
-          const { rowId, key, value } = data;
-
-          if (!rowId || !key || !value) {
-            throw new Error("Missing required parameters");
-          }
-
-          if (
-            key !== "stamp" &&
-            key !== "name" &&
-            key !== "text" &&
-            key !== "attachments"
-          ) {
-            throw new Error("Invalid key");
-          }
-
-          db.run(`UPDATE items SET ${key} = ? WHERE rowid = ?`, [value, rowId]);
-
-          ws.send(
-            JSON.stringify({
-              type: "getDatabaseItems",
-              data: getDatabaseItems(),
-            })
-          );
-
-          ws.send(
-            JSON.stringify({
-              type: "getItems",
-              data: getItems(),
-            })
-          );
-
-          break;
-        }
-        case "deleteDatabaseItem": {
-          db.run("DELETE FROM items WHERE rowid = ?", [data.rowId]);
-
-          ws.send(
-            JSON.stringify({
-              type: "getDatabaseItems",
-              data: getDatabaseItems(),
-            })
-          );
-
-          ws.send(
-            JSON.stringify({
-              type: "getItems",
-              data: getItems(),
-            })
-          );
-
-          break;
-        }
-        default: {
-          throw new Error(`Unknown message type: ${type}`);
-        }
+        return;
+      } catch (error) {
+        ws.send(
+          JSON.stringify({
+            type: "reportError",
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          })
+        );
       }
     },
   },
