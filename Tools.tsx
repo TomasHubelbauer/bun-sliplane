@@ -81,38 +81,30 @@ export default function Tools({ ws }: ToolsProps) {
   );
 
   return (
-    <fieldset className={Tools.name}>
-      <legend>
+    <>
+      <div className={Tools.name}>
         {tool && <button onClick={handleToolResetButtonClick}>✕</button>}
-        {tool === "volume-explorer" && "Volume Explorer"}
-        {tool === "database-explorer" && "Database Explorer"}
-        {!tool && (
-          <>
-            <button data-tool="volume-explorer" onClick={handleToolButtonClick}>
-              Volume Explorer {stats && <Usage stats={stats} />}
-            </button>
-            <button
-              data-tool="database-explorer"
-              onClick={handleToolButtonClick}
-            >
-              Database Explorer
-            </button>
-            <a href="/backup" target="_blank">
-              Backup
-              {lastBackup ? (
-                <>
-                  {" "}
-                  (<Stamp stamp={lastBackup} />)
-                </>
-              ) : (
-                ""
-              )}
-            </a>
-          </>
-        )}
-      </legend>
+        <button
+          data-tool="volume-explorer"
+          onClick={handleToolButtonClick}
+          disabled={tool === "volume-explorer"}
+        >
+          Volume Explorer {stats && <Usage stats={stats} />}
+        </button>
+        <button
+          data-tool="database-explorer"
+          onClick={handleToolButtonClick}
+          disabled={tool === "database-explorer"}
+        >
+          Database Explorer
+        </button>
+        <a href="/backup" target="_blank">
+          Backup
+          {lastBackup && <Stamp stamp={lastBackup} />}
+        </a>
+      </div>
       {tool === "volume-explorer" && <VolumeExplorer ws={ws} stats={stats} />}
       {tool === "database-explorer" && <DatabaseExplorer ws={ws} />}
-    </fieldset>
+    </>
   );
 }

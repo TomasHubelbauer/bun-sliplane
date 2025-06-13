@@ -1,7 +1,11 @@
 [class^="Tools"] {
-  legend {
-    align-items: center;
+  align-items: center;
+  display: flex;
+  gap: 1ch;
+
+  a {
     display: flex;
     gap: 1ch;
+    margin-left: auto;
   }
 }
