@@ -4,6 +4,7 @@
 @import url("./VolumeExplorer.css");
 @import url("./DatabaseExplorer.css");
 @import url("./Tools.css");
+@import url("./Stamp.css");
 
 body {
   display: flex;
@@ -19,11 +20,6 @@ button {
 
 button {
   cursor: pointer;
-}
-
-time {
-  color: gray;
-  cursor: default;
 }
 
 table {
