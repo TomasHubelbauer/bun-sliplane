@@ -1,0 +1,7 @@
+[class^="Tools"] {
+  legend {
+    align-items: center;
+    display: flex;
+    gap: 1ch;
+  }
+}

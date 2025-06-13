@@ -3,6 +3,7 @@
 @import url("./Item.css");
 @import url("./VolumeExplorer.css");
 @import url("./DatabaseExplorer.css");
+@import url("./Tools.css");
 
 body {
   display: flex;
@@ -23,12 +24,6 @@ button {
 time {
   color: gray;
   cursor: default;
-}
-
-legend {
-  align-items: center;
-  display: flex;
-  gap: 1ch;
 }
 
 table {

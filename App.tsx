@@ -1,27 +1,12 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type MouseEvent,
-} from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Item as ItemType } from "./ItemType.ts";
 import Composer from "./Composer.tsx";
 import List from "./List.tsx";
-import VolumeExplorer from "./VolumeExplorer.tsx";
-import DatabaseExplorer from "./DatabaseExplorer.tsx";
-import Usage from "./Usage.tsx";
-import Stamp from "./Stamp.tsx";
+import Tools from "./Tools.tsx";
 
 export default function App() {
   const [draft, setDraft] = useState<string>("");
   const [items, setItems] = useState<ItemType[]>([]);
-  const [audits, setAudits] = useState<{ name: string; stamp: string }[]>([]);
-  const [stats, setStats] = useState<{
-    bsize: number;
-    bfree: number;
-    blocks: number;
-  }>();
 
   const ws = useMemo(() => new WebSocket("/ws"), []);
 
@@ -38,14 +23,6 @@ export default function App() {
           }
           case "getItems": {
             setItems(data.data);
-            break;
-          }
-          case "getAudits": {
-            setAudits(data.data);
-            break;
-          }
-          case "getStats": {
-            setStats(data.data);
             break;
           }
         }
@@ -86,67 +63,10 @@ export default function App() {
       : [];
   }, [items, search]);
 
-  const [tool, setTool] = useState<"volume-explorer" | "database-explorer">();
-
-  const handleToolResetButtonClick = useCallback(() => {
-    setTool(undefined);
-  }, []);
-
-  const handleToolButtonClick = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      setTool(
-        event.currentTarget.dataset.tool as
-          | "volume-explorer"
-          | "database-explorer"
-      );
-    },
-    []
-  );
-
-  const lastBackup = useMemo(
-    () => audits.find((audit) => audit.name === "backup")?.stamp,
-    [audits]
-  );
-
   return (
     <>
       <Composer ws={ws} draft={draft} setDraft={setDraft} />
-      <fieldset>
-        <legend>
-          {tool && <button onClick={handleToolResetButtonClick}>✕</button>}
-          {tool === "volume-explorer" && "Volume Explorer"}
-          {tool === "database-explorer" && "Database Explorer"}
-          {!tool && (
-            <>
-              <button
-                data-tool="volume-explorer"
-                onClick={handleToolButtonClick}
-              >
-                Volume Explorer {stats && <Usage stats={stats} />}
-              </button>
-              <button
-                data-tool="database-explorer"
-                onClick={handleToolButtonClick}
-              >
-                Database Explorer
-              </button>
-              <a href="/backup" target="_blank">
-                Backup
-                {lastBackup ? (
-                  <>
-                    {" "}
-                    (<Stamp stamp={lastBackup} />)
-                  </>
-                ) : (
-                  ""
-                )}
-              </a>
-            </>
-          )}
-        </legend>
-        {tool === "volume-explorer" && <VolumeExplorer ws={ws} stats={stats} />}
-        {tool === "database-explorer" && <DatabaseExplorer ws={ws} />}
-      </fieldset>
+      <Tools ws={ws} />
       {matches.length > 0 && `Items matching "${search}":`}
       <List ws={ws} items={matches.length ? matches : items} />
     </>

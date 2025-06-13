@@ -3,6 +3,12 @@
   flex-direction: column;
   gap: 1ch;
 
+  legend {
+    align-items: center;
+    display: flex;
+    gap: 1ch;
+  }
+
   &:hover {
     background: whitesmoke;
   }
