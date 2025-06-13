@@ -151,7 +151,9 @@ export default function Item({
             </button>
           </span>
         ))}
-        <button onClick={handleDeleteButtonClick}>✕</button>
+        <button onClick={handleDeleteButtonClick} title={`Delete "${name}"`}>
+          ✕
+        </button>
       </div>
       <RichText
         text={text}
