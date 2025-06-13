@@ -234,6 +234,7 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
                       data-rowid={row.rowid}
                       data-cid={column.cid}
                       onClick={handleCodeClick}
+                      title={String(row[column.name])}
                     >
                       {row[column.name]}
                     </code>
