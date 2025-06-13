@@ -1,6 +1,6 @@
-import Bun, { type ServerWebSocket } from "bun";
+import Bun, { type Server, type ServerWebSocket } from "bun";
 import index from "./index.html";
-import enforceAuthorization from "./enforceAuthorization.ts";
+import validatePasswordAndGetUserName from "./validatePasswordAndGetUserName.ts";
 import db from "./db.ts";
 import getItems from "./getItems.ts";
 import getAudits from "./getAudits.ts";
@@ -16,6 +16,8 @@ import deleteAttachment from "./deleteAttachment.ts";
 import deleteVolumeFile from "./deleteVolumeFile.ts";
 import updateDatabaseItem from "./updateDatabaseItem.ts";
 import deleteDatabaseItem from "./deleteDatabaseItem.ts";
+import httpBasicAuthResponse from "./httpBasicAuthResponse.ts";
+import getUserName from "./getUserName.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -31,10 +33,11 @@ const handlers = [
   getDatabaseItems,
   updateDatabaseItem,
   deleteDatabaseItem,
+  getUserName,
 ] as const;
 
 let webSocket: ServerWebSocket<unknown> | undefined;
-const server = Bun.serve({
+const server: Server = Bun.serve({
   routes: {
     // Public
     "/manifest.json": () => new Response(Bun.file("./manifest.json")),
@@ -44,20 +47,24 @@ const server = Bun.serve({
 
     // Private
     "/": (request) => {
-      const authResponse = enforceAuthorization(request);
-      if (authResponse) {
-        return authResponse;
+      const userName = validatePasswordAndGetUserName(request);
+      if (!userName) {
+        return httpBasicAuthResponse;
       }
 
       return fetch(`${server.url}/${nonce}`);
     },
     "/ws": (request) => {
-      const authResponse = enforceAuthorization(request);
-      if (authResponse) {
-        return authResponse;
+      const userName = validatePasswordAndGetUserName(request);
+      if (!userName) {
+        return httpBasicAuthResponse;
       }
 
-      if (server.upgrade(request)) {
+      if (
+        server.upgrade(request, {
+          data: userName,
+        })
+      ) {
         return;
       }
 
@@ -65,9 +72,9 @@ const server = Bun.serve({
     },
     "/attachment": {
       POST: async (request) => {
-        const authResponse = enforceAuthorization(request);
-        if (authResponse) {
-          return authResponse;
+        const userName = validatePasswordAndGetUserName(request);
+        if (!userName) {
+          return httpBasicAuthResponse;
         }
 
         const rowId = getRequestSearchParameter(request, "rowId");
@@ -107,9 +114,9 @@ const server = Bun.serve({
         return new Response();
       },
       GET: async (request) => {
-        const authResponse = enforceAuthorization(request);
-        if (authResponse) {
-          return authResponse;
+        const userName = validatePasswordAndGetUserName(request);
+        if (!userName) {
+          return httpBasicAuthResponse;
         }
 
         const rowId = getRequestSearchParameter(request, "rowId");
@@ -139,14 +146,18 @@ const server = Bun.serve({
       },
     },
     "/backup": (request) => {
-      const authResponse = enforceAuthorization(request);
-      if (authResponse) {
-        return authResponse;
+      const userName = validatePasswordAndGetUserName(request);
+      if (!userName) {
+        return httpBasicAuthResponse;
       }
 
       db.run(
         "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
-        ["backup", new Date().toISOString(), new Date().toISOString()]
+        [
+          `backup-${userName}`,
+          new Date().toISOString(),
+          new Date().toISOString(),
+        ]
       );
 
       webSocket?.send(

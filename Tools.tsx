@@ -30,8 +30,18 @@ export default function Tools({ ws }: ToolsProps) {
             setStats(data.data);
             break;
           }
+          case "getUserName": {
+            setUserName(data.data);
+            break;
+          }
         }
       },
+      { signal: abortController.signal }
+    );
+
+    ws.addEventListener(
+      "open",
+      () => ws.send(JSON.stringify({ type: "getUserName" })),
       { signal: abortController.signal }
     );
 
@@ -40,6 +50,7 @@ export default function Tools({ ws }: ToolsProps) {
     };
   }, [ws]);
 
+  const [userName, setUserName] = useState<string>();
   const [audits, setAudits] = useState<{ name: string; stamp: string }[]>([]);
   const [stats, setStats] = useState<{
     bsize: number;
@@ -65,8 +76,8 @@ export default function Tools({ ws }: ToolsProps) {
   );
 
   const lastBackup = useMemo(
-    () => audits.find((audit) => audit.name === "backup")?.stamp,
-    [audits]
+    () => audits.find((audit) => audit.name === `backup-${userName}`)?.stamp,
+    [audits, userName]
   );
 
   return (
