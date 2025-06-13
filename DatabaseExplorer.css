@@ -1,5 +1,5 @@
 [class^="DatabaseExplorer"] {
   textarea {
-    width: 100%;
+    width: calc(100% - 2ch);
   }
 }

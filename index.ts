@@ -8,15 +8,17 @@ import getStats from "./getStats.ts";
 import getRequestSearchParameter from "./getRequestSearchParameter.ts";
 import volumePath from "./volumePath.ts";
 import getVolumeFiles from "./getVolumeFiles.ts";
-import getDatabaseItems from "./getDatabaseItems.ts";
 import createItem from "./createItem.ts";
 import deleteItem from "./deleteItem.ts";
 import updateItem from "./updateItem.ts";
 import deleteAttachment from "./deleteAttachment.ts";
 import deleteVolumeFile from "./deleteVolumeFile.ts";
-import updateDatabaseItem from "./updateDatabaseItem.ts";
-import deleteDatabaseItem from "./deleteDatabaseItem.ts";
+import updateDatabaseCell from "./updateDatabaseCell.ts";
+import deleteDatabaseRow from "./deleteDatabaseRow.ts";
 import getUserName from "./getUserName.ts";
+import getDatabaseTables from "./getDatabaseTables.ts";
+import getDatabaseColumns from "./getDatabaseColumns.ts";
+import getDatabaseRows from "./getDatabaseRows.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -29,10 +31,12 @@ const handlers = [
   deleteAttachment,
   getVolumeFiles,
   deleteVolumeFile,
-  getDatabaseItems,
-  updateDatabaseItem,
-  deleteDatabaseItem,
+  updateDatabaseCell,
+  deleteDatabaseRow,
   getUserName,
+  getDatabaseTables,
+  getDatabaseColumns,
+  getDatabaseRows,
 ] as const;
 
 let webSocket: ServerWebSocket<unknown> | undefined;

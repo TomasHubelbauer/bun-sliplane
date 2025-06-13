@@ -2,17 +2,37 @@ import {
   useCallback,
   useEffect,
   useState,
-  type KeyboardEvent,
+  type ChangeEvent,
   type MouseEvent,
+  type KeyboardEvent,
 } from "react";
-import type { Item } from "./ItemType.ts";
 
 type DatabaseExplorerProps = {
   ws: WebSocket;
 };
 
+type Table = {
+  name: string;
+};
+
+type Column = {
+  cid: number;
+  name: string;
+  type: string;
+  pk: 0 | 1;
+  notnull: 0 | 1;
+};
+
+type Row = {
+  rowid: number;
+  [key: string]: string | number | null;
+};
+
 export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
-  const [items, setItems] = useState<Item[]>([]);
+  const [tables, setTables] = useState<Table[]>([]);
+  const [table, setTable] = useState<Table>();
+  const [columns, setColumns] = useState<Column[]>([]);
+  const [rows, setRows] = useState<Row[]>([]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -20,157 +40,218 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
       "message",
       (event) => {
         const { type, data } = JSON.parse(event.data);
-        if (type === "getDatabaseItems") {
-          setItems(data);
+        switch (type) {
+          case "getDatabaseTables": {
+            setTables(data);
+            setTable(data[0]);
+            break;
+          }
+          case "getDatabaseColumns": {
+            setColumns(data);
+            break;
+          }
+          case "getDatabaseRows": {
+            setRows(data);
+            break;
+          }
         }
       },
       { signal: abortController.signal }
     );
 
-    ws.send(JSON.stringify({ type: "getDatabaseItems" }));
+    ws.send(JSON.stringify({ type: "getDatabaseTables" }));
     return () => {
       abortController.abort();
     };
   }, [ws]);
 
-  const handleTdClick = useCallback(
-    (event: MouseEvent<HTMLTableCellElement>) => {
-      if (
-        !event.currentTarget.dataset.rowid ||
-        !event.currentTarget.dataset.key
-      ) {
-        return;
-      }
-
-      const rowId = +event.currentTarget.dataset.rowid;
-      const key = event.currentTarget.dataset.key;
-      const item = items.find((item) => item.rowid === rowId);
-      if (!item) {
-        return;
-      }
-
-      const value = prompt(`Edit ${key}`, item[key]);
-      if (value === null || value === item[key]) {
-        return;
-      }
-
-      ws.send(
-        JSON.stringify({
-          type: "updateDatabaseItem",
-          rowId,
-          key,
-          value,
-        })
+  const handleTableSelectChange = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      const table = tables.find(
+        (table) => table.name === event.currentTarget.value
       );
+
+      setTable(table);
     },
-    [ws, items]
+    [ws, tables]
   );
+
+  useEffect(() => {
+    if (!table) {
+      return;
+    }
+
+    ws.send(
+      JSON.stringify({
+        type: "getDatabaseColumns",
+        table: table.name,
+      })
+    );
+
+    ws.send(
+      JSON.stringify({
+        type: "getDatabaseRows",
+        table: table.name,
+      })
+    );
+  }, [ws, table]);
 
   const handleTextAreaKeyDown = useCallback(
     (event: KeyboardEvent<HTMLTextAreaElement>) => {
+      const rowId = +event.currentTarget.dataset.rowid!;
+      const row = rows.find((row) => row.rowid === rowId);
+      if (!row) {
+        return;
+      }
+
+      const cid = +event.currentTarget.dataset.cid!;
+      const column = columns.find((column) => column.cid === cid);
+      if (!column) {
+        return;
+      }
+
       if (event.key !== "Enter" || !event.shiftKey) {
         return;
       }
 
-      if (
-        !event.currentTarget.dataset.rowid ||
-        !event.currentTarget.dataset.key
-      ) {
+      event.preventDefault();
+      const value = event.currentTarget.value;
+
+      ws.send(
+        JSON.stringify({
+          type: "updateDatabaseCell",
+          table: table?.name,
+          column: column.name,
+          rowId,
+          value,
+        })
+      );
+    },
+    [ws, table, columns, rows]
+  );
+
+  const handleCodeClick = useCallback(
+    (event: MouseEvent<HTMLElement>) => {
+      const rowId = +event.currentTarget.dataset.rowid!;
+      const row = rows.find((row) => row.rowid === rowId);
+      if (!row) {
         return;
       }
 
-      const rowId = +event.currentTarget.dataset.rowid;
-      const key = event.currentTarget.dataset.key;
-      const item = items.find((item) => item.rowid === rowId);
-      if (!item) {
+      const cid = +event.currentTarget.dataset.cid!;
+      const column = columns.find((column) => column.cid === cid);
+      if (!column) {
+        return;
+      }
+
+      const value = prompt(
+        `${table?.name}.${column.name} #${row.rowid}:`,
+        String(row[column.name])
+      );
+
+      if (value === null) {
         return;
       }
 
       ws.send(
         JSON.stringify({
-          type: "updateDatabaseItem",
+          type: "updateDatabaseCell",
+          table: table?.name,
+          column: column.name,
           rowId,
-          key,
-          value: event.currentTarget.value.trim(),
+          value,
         })
       );
     },
-    [ws, items]
+    [ws, table, columns, rows]
   );
 
   const handleDeleteButtonClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       const rowId = +event.currentTarget.dataset.rowid!;
-      const item = items.find((item) => item.rowid === rowId)!;
-      if (!confirm(`Are you sure you want to delete "${item.name}"?`)) {
+      const row = rows.find((row) => row.rowid === rowId);
+      if (!row) {
+        return;
+      }
+
+      if (
+        !confirm(
+          `Are you sure you want to delete row #${row.rowid} in ${table?.name}?`
+        )
+      ) {
         return;
       }
 
       ws.send(
         JSON.stringify({
-          type: "deleteDatabaseItem",
+          type: "deleteDatabaseRow",
+          table: table?.name,
           rowId,
         })
       );
     },
-    [ws, items]
+    [ws, table, rows]
   );
 
   return (
-    <table className={DatabaseExplorer.name}>
-      <thead>
-        <tr>
-          <th>RowID</th>
-          <th>Stamp</th>
-          <th>Name</th>
-          <th>Text</th>
-          <th>Attachments</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.map((item) => (
-          <tr key={item.rowid}>
-            <td>{item.rowid}</td>
-            <td
-              data-key="stamp"
-              data-rowid={item.rowid}
-              onClick={handleTdClick}
-            >
-              {item.stamp}
-            </td>
-            <td data-key="name">
-              <textarea
-                data-rowid={item.rowid}
-                data-key="name"
-                onKeyDown={handleTextAreaKeyDown}
-                defaultValue={item.name}
-              />
-            </td>
-            <td data-key="text">
-              <textarea
-                data-rowid={item.rowid}
-                data-key="text"
-                onKeyDown={handleTextAreaKeyDown}
-                defaultValue={item.text}
-              />
-            </td>
-            <td data-key="attachments">
-              <textarea
-                data-rowid={item.rowid}
-                data-key="attachments"
-                onKeyDown={handleTextAreaKeyDown}
-                defaultValue={item.attachments}
-              />
-            </td>
-            <td>
-              <button data-rowid={item.rowid} onClick={handleDeleteButtonClick}>
-                Delete
-              </button>
-            </td>
-          </tr>
+    <div className={DatabaseExplorer.name}>
+      <select value={table?.name} onChange={handleTableSelectChange}>
+        {tables.map((table) => (
+          <option key={table.name} value={table.name}>
+            {table.name}
+          </option>
         ))}
-      </tbody>
-    </table>
+      </select>
+      <table>
+        <thead>
+          <tr>
+            <th>Row ID</th>
+            {columns.map((column) => (
+              <th key={column.name}>
+                <code>{column.name}</code>
+              </th>
+            ))}
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.rowid}>
+              <td>{row.rowid}</td>
+              {columns.map((column) => (
+                <td key={column.name}>
+                  {row[column.name]?.toString().includes("\n") ? (
+                    <textarea
+                      defaultValue={row[column.name]?.toString()}
+                      key={column.name}
+                      data-rowid={row.rowid}
+                      data-cid={column.cid}
+                      onKeyDown={handleTextAreaKeyDown}
+                      rows={5}
+                    />
+                  ) : (
+                    <code
+                      data-rowid={row.rowid}
+                      data-cid={column.cid}
+                      onClick={handleCodeClick}
+                    >
+                      {row[column.name]}
+                    </code>
+                  )}
+                </td>
+              ))}
+              <td>
+                <button
+                  data-rowid={row.rowid}
+                  onClick={handleDeleteButtonClick}
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
