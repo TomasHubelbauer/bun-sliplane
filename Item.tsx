@@ -127,15 +127,28 @@ export default function Item({
       <input type="file" ref={inputRef} onChange={handleInputChange} multiple />
       <div className="header">
         <span className="placeholder">#{rowid}</span>
+        ·
         <RichText
           ws={ws}
           text={name}
           fallback={<span className="placeholder">(no name)</span>}
           onChange={handleNameRichTextChange}
         />
+        ·
         <Stamp stamp={stamp} />
         <button onClick={handleAttachButtonClick}>+</button>
-        {files.map((file) => (
+        <button onClick={handleDeleteButtonClick} title={`Delete "${name}"`}>
+          ✕
+        </button>
+      </div>
+      <RichText
+        ws={ws}
+        text={text}
+        fallback={<span className="placeholder">(no text)</span>}
+        onChange={handleTextRichTextChange}
+      />
+      {files.length > 0 &&
+        files.map((file) => (
           <span key={file.uuid} className="attachment">
             {file.type.startsWith("image/") && <span>🖼️</span>}
             <a
@@ -152,16 +165,6 @@ export default function Item({
             </button>
           </span>
         ))}
-        <button onClick={handleDeleteButtonClick} title={`Delete "${name}"`}>
-          ✕
-        </button>
-      </div>
-      <RichText
-        ws={ws}
-        text={text}
-        fallback={<span className="placeholder">(no text)</span>}
-        onChange={handleTextRichTextChange}
-      />
     </div>
   );
 }

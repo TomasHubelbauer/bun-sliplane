@@ -22,8 +22,8 @@
     align-items: center;
     gap: 1ch;
 
-    :last-child {
-      margin-left: auto;
+    [class^="Stamp"] {
+      margin-right: auto;
     }
   }
 
