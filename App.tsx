@@ -70,7 +70,11 @@ export default function App() {
 
   const matches = useMemo(() => {
     return search
-      ? items.filter((item) => item.text.toUpperCase().includes(search))
+      ? items.filter(
+          (item) =>
+            item.name.toUpperCase().includes(search) ||
+            item.text.toUpperCase().includes(search)
+        )
       : [];
   }, [items, search]);
 
