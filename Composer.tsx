@@ -16,15 +16,27 @@ type ComposerProps = {
 export default function Composer({ ws, draft, setDraft }: ComposerProps) {
   const handleTextAreaChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      localStorage.setItem("draft", event.currentTarget.value);
       setDraft(event.currentTarget.value);
     },
     [setDraft]
   );
 
   useEffect(() => {
-    setDraft(localStorage.getItem("draft") || "");
-  }, [setDraft]);
+    if (!draft) {
+      return;
+    }
+
+    const abortController = new AbortController();
+
+    // Prevent HMR reloads from losing the draft
+    window.addEventListener("beforeunload", (event) => event.preventDefault(), {
+      signal: abortController.signal,
+    });
+
+    return () => {
+      abortController.abort();
+    };
+  }, [draft, setDraft]);
 
   const handleTextAreaKeyDown = useCallback(
     (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -54,7 +66,6 @@ export default function Composer({ ws, draft, setDraft }: ComposerProps) {
       );
 
       setDraft("");
-      localStorage.setItem("draft", "");
     },
     [ws, setDraft]
   );
