@@ -56,8 +56,9 @@ export default async function fetchBasicHtml(url: string) {
       },
     })
     .transform(html)
-    .split("\n")
-    .filter((line) => line.trim() !== "")
+    .split(/\r?\n/g)
+    .map((line) => line.trim())
+    .filter((line) => line)
     .join("\n");
 }
 
