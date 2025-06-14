@@ -4,16 +4,15 @@ import List from "./List.tsx";
 import Header from "./Header.tsx";
 import VolumeExplorer from "./VolumeExplorer.tsx";
 import DatabaseExplorer from "./DatabaseExplorer.tsx";
+import type { Tool } from "./Tool.ts";
+import type { Stats } from "./Stats.ts";
+import LinkWatcher from "./LinkWatcher.tsx";
 
 export default function App() {
   const [draft, setDraft] = useState<string>("");
   const [items, setItems] = useState<ItemType[]>([]);
-  const [tool, setTool] = useState<"volume-explorer" | "database-explorer">();
-  const [stats, setStats] = useState<{
-    bsize: number;
-    bfree: number;
-    blocks: number;
-  }>();
+  const [tool, setTool] = useState<Tool | undefined>();
+  const [stats, setStats] = useState<Stats | undefined>();
 
   const ws = useMemo(() => new WebSocket("/ws"), []);
 
@@ -90,6 +89,7 @@ export default function App() {
       />
       {tool === "volume-explorer" && <VolumeExplorer ws={ws} stats={stats} />}
       {tool === "database-explorer" && <DatabaseExplorer ws={ws} />}
+      {tool == "link-watcher" && <LinkWatcher ws={ws} />}
       {tool && <hr />}
       {matches.length > 0 && `Items matching "${search}":`}
       <List ws={ws} items={matches.length ? matches : items} />

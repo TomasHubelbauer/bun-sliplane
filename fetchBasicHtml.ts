@@ -1,0 +1,66 @@
+const BANNED_TAGS = ["script", "style", "link", "meta", "svg", "img"];
+const FLATTENED_TAGS = [
+  "html",
+  "head",
+  "body",
+  "header",
+  "footer",
+  "div",
+  "section",
+  "article",
+  "aside",
+  "nav",
+  "ul",
+  "ol",
+];
+
+const BANNED_ATTRIBUTES = ["style", "class", "id", "aria-label", "aria-hidden"];
+
+export default async function fetchBasicHtml(url: string) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${url} (status: ${response.status})`);
+  }
+
+  const html = await response.text();
+  return new HTMLRewriter()
+    .onDocument({
+      doctype(doctype) {
+        doctype.remove();
+      },
+    })
+    .on("*", {
+      element(element) {
+        if (BANNED_TAGS.includes(element.tagName)) {
+          element.remove();
+          return;
+        }
+
+        if (FLATTENED_TAGS.includes(element.tagName)) {
+          element.removeAndKeepContent();
+        }
+
+        for (const attribute of BANNED_ATTRIBUTES) {
+          element.removeAttribute(attribute);
+        }
+
+        element.before("\n");
+        element.onEndTag((tag) => {
+          tag.after("\n");
+        });
+      },
+      text(text) {
+        if (!text.text.trim()) {
+          return;
+        }
+      },
+    })
+    .transform(html)
+    .split("\n")
+    .filter((line) => line.trim() !== "")
+    .join("\n");
+}
+
+if (import.meta.main) {
+  console.log(await fetchBasicHtml("https://bun.sh/blog"));
+}

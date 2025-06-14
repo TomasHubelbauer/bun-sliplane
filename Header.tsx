@@ -1,22 +1,16 @@
 import type { Dispatch, SetStateAction } from "react";
 import Tools from "./Tools.tsx";
 import Composer from "./Composer.tsx";
+import type { Tool } from "./Tool.ts";
+import type { Stats } from "./Stats.ts";
 
 type HeaderProps = {
   ws: WebSocket;
   draft: string;
   setDraft: Dispatch<SetStateAction<string>>;
-  stats:
-    | {
-        bsize: number;
-        bfree: number;
-        blocks: number;
-      }
-    | undefined;
-  tool: "volume-explorer" | "database-explorer" | undefined;
-  setTool: Dispatch<
-    SetStateAction<"volume-explorer" | "database-explorer" | undefined>
-  >;
+  stats: Stats | undefined;
+  tool: Tool | undefined;
+  setTool: Dispatch<SetStateAction<Tool | undefined>>;
 };
 
 export default function Header({

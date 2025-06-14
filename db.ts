@@ -18,4 +18,8 @@ try {
 
 db.run("CREATE TABLE IF NOT EXISTS audits (name TEXT PRIMARY KEY, stamp TEXT)");
 
+db.run(
+  "CREATE TABLE IF NOT EXISTS links (url TEXT PRIMARY KEY, checkStamp TEXT, changeStamp TEXT, html TEXT)"
+);
+
 export default db;

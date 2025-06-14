@@ -4,4 +4,14 @@
     display: flex;
     gap: 1ex;
   }
+
+  pre {
+    div.added {
+      color: green;
+    }
+
+    div.removed {
+      color: maroon;
+    }
+  }
 }

@@ -1,0 +1,19 @@
+[class^="LinkWatcher"] {
+  display: flex;
+  flex-direction: column;
+  gap: 1ch;
+
+  div {
+    align-items: center;
+    display: flex;
+    gap: 1ch;
+  }
+
+  div:hover {
+    background: whitesmoke;
+  }
+
+  button:first-of-type {
+    margin-left: auto;
+  }
+}

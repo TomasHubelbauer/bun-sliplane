@@ -193,6 +193,26 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
     [ws, table, rows]
   );
 
+  const handleDeleteTableButtonClick = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      const table = event.currentTarget.dataset.table;
+      if (
+        !table ||
+        !confirm(`Are you sure you want to delete table "${table}"?`)
+      ) {
+        return;
+      }
+
+      ws.send(
+        JSON.stringify({
+          type: "deleteDatabaseTable",
+          table,
+        })
+      );
+    },
+    [ws]
+  );
+
   return (
     <div className={DatabaseExplorer.name}>
       <select value={table?.name} onChange={handleTableSelectChange}>
@@ -202,6 +222,11 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
           </option>
         ))}
       </select>
+      {table && (
+        <button data-table={table?.name} onClick={handleDeleteTableButtonClick}>
+          Delete
+        </button>
+      )}
       <table>
         <thead>
           <tr>

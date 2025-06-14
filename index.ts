@@ -20,6 +20,13 @@ import getDatabaseTables from "./getDatabaseTables.ts";
 import getDatabaseColumns from "./getDatabaseColumns.ts";
 import getDatabaseRows from "./getDatabaseRows.ts";
 import fetchUrlMetadata from "./fetchUrlMetadata.ts";
+import trackLink from "./trackLink.ts";
+import listLinks from "./listLinks.ts";
+import deleteLink from "./deleteLink.ts";
+import deleteDatabaseTable from "./deleteDatabaseTable.ts";
+import forceCheckLinks from "./forceCheckLinks.ts";
+import forceCheckLink from "./forceCheckLink.ts";
+import monitorLinks from "./monitorLinks.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -39,6 +46,12 @@ const handlers = [
   getDatabaseColumns,
   getDatabaseRows,
   fetchUrlMetadata,
+  trackLink,
+  listLinks,
+  deleteLink,
+  deleteDatabaseTable,
+  forceCheckLinks,
+  forceCheckLink,
 ] as const;
 
 let webSocket: ServerWebSocket<unknown> | undefined;
@@ -209,6 +222,8 @@ const server: Server = Bun.serve({
       ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
       ws.send(JSON.stringify({ type: getAudits.name, data: getAudits() }));
       ws.send(JSON.stringify({ type: getStats.name, data: await getStats() }));
+
+      monitorLinks(ws);
     },
     async message(ws, message) {
       try {

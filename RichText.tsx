@@ -99,6 +99,15 @@ export default function RichText({
                     data-index={index}
                     data-subindex={codeIndex}
                     onClick={handleClick}
+                    className={
+                      line.language === "diff"
+                        ? codeLine.startsWith("-")
+                          ? "removed"
+                          : codeLine.startsWith("+")
+                          ? "added"
+                          : ""
+                        : ""
+                    }
                   >
                     {codeLine}
                   </div>

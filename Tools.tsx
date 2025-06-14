@@ -9,20 +9,14 @@ import {
 } from "react";
 import Usage from "./Usage.tsx";
 import Stamp from "./Stamp.tsx";
+import type { Tool } from "./Tool.ts";
+import type { Stats } from "./Stats.ts";
 
 type ToolsProps = {
   ws: WebSocket;
-  stats:
-    | {
-        bsize: number;
-        bfree: number;
-        blocks: number;
-      }
-    | undefined;
-  tool: "volume-explorer" | "database-explorer" | undefined;
-  setTool: Dispatch<
-    SetStateAction<"volume-explorer" | "database-explorer" | undefined>
-  >;
+  stats: Stats | undefined;
+  tool: Tool | undefined;
+  setTool: Dispatch<SetStateAction<Tool | undefined>>;
 };
 
 export default function Tools({ ws, stats, tool, setTool }: ToolsProps) {
@@ -98,6 +92,13 @@ export default function Tools({ ws, stats, tool, setTool }: ToolsProps) {
           disabled={tool === "database-explorer"}
         >
           Database Explorer
+        </button>
+        <button
+          data-tool="link-watcher"
+          onClick={handleToolButtonClick}
+          disabled={tool === "link-watcher"}
+        >
+          Link Watcher
         </button>
         <a href="/backup" target="_blank">
           Backup
