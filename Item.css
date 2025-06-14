@@ -5,8 +5,16 @@
   gap: 1ch;
   padding: 1ch 1ch;
 
+  button {
+    visibility: hidden;
+  }
+
   &:hover {
     background: whitesmoke;
+
+    button {
+      visibility: initial;
+    }
   }
 
   .header {
