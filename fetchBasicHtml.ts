@@ -70,6 +70,10 @@ export default async function fetchBasicHtml(url: string) {
 
         if (FLATTENED_TAGS.includes(element.tagName)) {
           element.removeAndKeepContent();
+        } else if (element.canHaveContent) {
+          element.onEndTag((tag) => {
+            tag.after("\n");
+          });
         }
 
         for (const attribute of BANNED_ATTRIBUTES) {
@@ -77,9 +81,6 @@ export default async function fetchBasicHtml(url: string) {
         }
 
         element.before("\n");
-        element.onEndTag((tag) => {
-          tag.after("\n");
-        });
       },
       text(text) {
         if (!text.text.trim()) {
