@@ -57,6 +57,9 @@ export default async function fetchBasicHtml(url: string) {
       doctype(doctype) {
         doctype.remove();
       },
+      comments(comment) {
+        comment.remove();
+      },
     })
     .on("*", {
       element(element) {
@@ -82,6 +85,9 @@ export default async function fetchBasicHtml(url: string) {
         if (!text.text.trim()) {
           return;
         }
+      },
+      comments(comment) {
+        comment.remove();
       },
     })
     .transform(html)
