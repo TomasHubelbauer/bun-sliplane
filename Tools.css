@@ -3,6 +3,10 @@
   display: flex;
   gap: 1ch;
 
+  button {
+    align-self: stretch;
+  }
+
   a {
     display: flex;
     gap: 1ch;
