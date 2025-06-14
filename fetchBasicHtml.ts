@@ -1,4 +1,20 @@
-const BANNED_TAGS = ["script", "style", "link", "meta", "svg", "img"];
+const BANNED_TAGS = [
+  "script",
+  "style",
+  "link",
+  "meta",
+  "svg",
+  "img",
+  "audio",
+  "video",
+  "iframe",
+  "button",
+  "select",
+  "input",
+  "form",
+  "hr",
+];
+
 const FLATTENED_TAGS = [
   "html",
   "head",
@@ -6,15 +22,28 @@ const FLATTENED_TAGS = [
   "header",
   "footer",
   "div",
+  "span",
   "section",
   "article",
   "aside",
   "nav",
   "ul",
   "ol",
+  "main",
 ];
 
-const BANNED_ATTRIBUTES = ["style", "class", "id", "aria-label", "aria-hidden"];
+const BANNED_ATTRIBUTES = [
+  "style",
+  "class",
+  "id",
+  "aria-label",
+  "aria-hidden",
+  "tabindex",
+  "role",
+  "rel",
+  "for",
+  "target",
+];
 
 export default async function fetchBasicHtml(url: string) {
   const response = await fetch(url);
