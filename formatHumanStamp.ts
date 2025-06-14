@@ -37,21 +37,3 @@ export default function formatHumanStamp(stamp: string) {
     Math.floor(seconds / 86400) === 1 ? "" : "s"
   } ago`;
 }
-
-if (import.meta.main) {
-  for (const { test, expected } of [
-    { test: () => formatHumanStamp(""), expected: "" },
-    { test: () => formatHumanStamp(new Date().toISOString()), expected: "now" },
-  ]) {
-    const actual = test();
-    if (actual !== expected) {
-      console.log(
-        test
-          .toString()
-          .slice(`() => ${formatHumanStamp.name}(`.length, -")".length)
-      );
-      console.log("\t", actual);
-      console.log("\t", expected);
-    }
-  }
-}
