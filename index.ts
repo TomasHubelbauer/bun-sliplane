@@ -197,7 +197,7 @@ const server: Server = Bun.serve({
       return new Response(db.serialize(), {
         headers: {
           "Content-Type": "application/x-sqlite3",
-          "Content-Disposition": `attachment; filename="backup-${new Date().toISOString()}.db"`,
+          "Content-Disposition": `attachment; filename="backup-${userName}-${new Date().toISOString()}.db"`,
         },
       });
     },
