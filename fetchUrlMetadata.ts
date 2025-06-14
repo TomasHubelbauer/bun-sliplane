@@ -27,8 +27,6 @@ export default async function fetchUrlMetadata(
     }
   }
 
-  console.log("Fetching metadata for URL:", url);
-
   const { origin } = new URL(url);
   let icon: string | undefined;
   let type: string | undefined;
