@@ -1,0 +1,9 @@
+[class^="Header"] {
+  background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 1ch;
+  padding: 1ch 0;
+  position: sticky;
+  top: 0;
+}

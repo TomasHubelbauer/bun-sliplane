@@ -3,18 +3,29 @@ import {
   useEffect,
   useMemo,
   useState,
+  type Dispatch,
   type MouseEvent,
+  type SetStateAction,
 } from "react";
 import Usage from "./Usage.tsx";
 import Stamp from "./Stamp.tsx";
-import VolumeExplorer from "./VolumeExplorer.tsx";
-import DatabaseExplorer from "./DatabaseExplorer.tsx";
 
 type ToolsProps = {
   ws: WebSocket;
+  stats:
+    | {
+        bsize: number;
+        bfree: number;
+        blocks: number;
+      }
+    | undefined;
+  tool: "volume-explorer" | "database-explorer" | undefined;
+  setTool: Dispatch<
+    SetStateAction<"volume-explorer" | "database-explorer" | undefined>
+  >;
 };
 
-export default function Tools({ ws }: ToolsProps) {
+export default function Tools({ ws, stats, tool, setTool }: ToolsProps) {
   useEffect(() => {
     const abortController = new AbortController();
     ws.addEventListener(
@@ -26,10 +37,7 @@ export default function Tools({ ws }: ToolsProps) {
             setAudits(data.data);
             break;
           }
-          case "getStats": {
-            setStats(data.data);
-            break;
-          }
+
           case "getUserName": {
             setUserName(data.data);
             break;
@@ -52,17 +60,10 @@ export default function Tools({ ws }: ToolsProps) {
 
   const [userName, setUserName] = useState<string>();
   const [audits, setAudits] = useState<{ name: string; stamp: string }[]>([]);
-  const [stats, setStats] = useState<{
-    bsize: number;
-    bfree: number;
-    blocks: number;
-  }>();
-
-  const [tool, setTool] = useState<"volume-explorer" | "database-explorer">();
 
   const handleToolResetButtonClick = useCallback(() => {
     setTool(undefined);
-  }, []);
+  }, [setTool]);
 
   const handleToolButtonClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
@@ -72,7 +73,7 @@ export default function Tools({ ws }: ToolsProps) {
           | "database-explorer"
       );
     },
-    []
+    [setTool]
   );
 
   const lastBackup = useMemo(
@@ -103,8 +104,6 @@ export default function Tools({ ws }: ToolsProps) {
           {lastBackup && <Stamp stamp={lastBackup} />}
         </a>
       </div>
-      {tool === "volume-explorer" && <VolumeExplorer ws={ws} stats={stats} />}
-      {tool === "database-explorer" && <DatabaseExplorer ws={ws} />}
     </>
   );
 }
