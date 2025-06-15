@@ -29,7 +29,6 @@ export default function Tools({
   readyState,
 }: ToolsProps) {
   const [dbSize, setDbSize] = useState<number>();
-  const [topCommit, setTopCommit] = useState<{ hash: string; text: string }>();
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -61,10 +60,6 @@ export default function Tools({
 
             break;
           }
-          case "getTopCommit": {
-            setTopCommit(data.data);
-            break;
-          }
         }
       },
       { signal: abortController.signal }
@@ -76,7 +71,6 @@ export default function Tools({
         ws.send(JSON.stringify({ type: "getUserName" }));
         ws.send(JSON.stringify({ type: "getAudits" }));
         ws.send(JSON.stringify({ type: "calculateDatabaseSize" }));
-        ws.send(JSON.stringify({ type: "getTopCommit" }));
       },
       { signal: abortController.signal }
     );
@@ -172,13 +166,6 @@ export default function Tools({
           Backup
           {lastBackup && <Stamp stamp={lastBackup} />}
         </a>
-        {topCommit && "·"}
-        {topCommit && (
-          <>
-            <code>{topCommit.hash}</code>
-            <span>{topCommit.text}</span>
-          </>
-        )}
         ·
         <span className={`led ${readyStateName}`} title={readyStateName} />
         {readyStateName}

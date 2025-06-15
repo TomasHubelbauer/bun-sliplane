@@ -28,7 +28,6 @@ import forceCheckLinks from "./forceCheckLinks.ts";
 import forceCheckLink from "./forceCheckLink.ts";
 import calculateDatabaseSize from "./calculateDatabaseSize.ts";
 import compareLinks from "./compareLinks.ts";
-import getTopCommit from "./getTopCommit.ts";
 import getMachineFiles from "./getMachineFiles.ts";
 import zipDirectory from "./zipDirectory.ts";
 
@@ -57,7 +56,6 @@ const handlers = [
   forceCheckLinks,
   forceCheckLink,
   calculateDatabaseSize,
-  getTopCommit,
   getMachineFiles,
 ] as const;
 
