@@ -42,11 +42,11 @@ export default function App() {
       { signal: abortController.signal }
     );
 
-    ws.addEventListener("error", location.reload, {
+    ws.addEventListener("error", () => location.reload(), {
       signal: abortController.signal,
     });
 
-    ws.addEventListener("close", location.reload, {
+    ws.addEventListener("close", () => location.reload(), {
       signal: abortController.signal,
     });
 
