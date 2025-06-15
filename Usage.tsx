@@ -1,27 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 import formatHumanBytes from "./formatHumanBytes.ts";
+import type { Stats } from "./Stats.ts";
 
-type UsageProps = {
-  stats: {
-    bsize: number;
-    bfree: number;
-    blocks: number;
-  };
-};
+type UsageProps = Stats;
 
-export default function Usage({ stats }: UsageProps) {
-  const free = useMemo(
-    () => stats.bsize * stats.bfree,
-    [stats.bsize, stats.bfree]
-  );
-
-  const size = useMemo(
-    () => stats.bsize * stats.blocks,
-    [stats.bsize, stats.blocks]
-  );
-
+export default memo(function Usage({ bsize, bfree, blocks }: UsageProps) {
+  const free = useMemo(() => bsize * bfree, [bsize, bfree]);
+  const size = useMemo(() => bsize * blocks, [bsize, blocks]);
   const used = useMemo(() => size - free, [size, free]);
-
   const ratio = useMemo(() => used / size, [used, size]);
 
   const title = useMemo(
@@ -35,4 +21,4 @@ export default function Usage({ stats }: UsageProps) {
   );
 
   return <progress max={1} value={ratio} title={title} />;
-}
+});

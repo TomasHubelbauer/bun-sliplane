@@ -2,16 +2,11 @@ import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import formatHumanBytes from "./formatHumanBytes.ts";
 import Stamp from "./Stamp.tsx";
 import Usage from "./Usage.tsx";
+import type { Stats } from "./Stats.ts";
 
 type VolumeExplorerProps = {
   ws: WebSocket;
-  stats:
-    | {
-        bsize: number;
-        bfree: number;
-        blocks: number;
-      }
-    | undefined;
+  stats: Stats | undefined;
 };
 
 type Item = {
@@ -64,7 +59,7 @@ export default function VolumeExplorer({ ws, stats }: VolumeExplorerProps) {
 
   return (
     <div className={VolumeExplorer.name}>
-      {stats && <Usage stats={stats} />}
+      {stats && <Usage {...stats} />}
       <table>
         <thead>
           <tr>

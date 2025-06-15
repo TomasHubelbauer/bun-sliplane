@@ -90,7 +90,7 @@ export default function Tools({ ws, stats, tool, setTool }: ToolsProps) {
           onClick={handleToolButtonClick}
           disabled={tool === "volume-explorer"}
         >
-          Volume Explorer {stats && <Usage stats={stats} />}
+          Volume Explorer {stats && <Usage {...stats} />}
         </button>
         <button
           data-tool="database-explorer"
