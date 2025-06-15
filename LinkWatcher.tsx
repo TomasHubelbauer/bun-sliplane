@@ -21,7 +21,7 @@ type Link = {
 export default function LinkWatcher({ ws }: LinkWatcherProps) {
   const [draft, setDraft] = useState("");
   const [links, setLinks] = useState<Link[]>([]);
-  const [logs, setLogs] = useState<string[]>([]);
+  const [logs, setLogs] = useState(localStorage.getItem("linkCheckLog") || "");
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -34,11 +34,12 @@ export default function LinkWatcher({ ws }: LinkWatcherProps) {
             setLinks(data);
             break;
           }
-          case "reportForceCheckLog": {
-            setLogs((logs) => [
-              `${new Date().toISOString()}: ${data}`,
-              ...logs.slice(0, 100),
-            ]);
+          case "reportLinkCheckLog": {
+            setLogs(
+              (logs) =>
+                `${new Date().toISOString()}: ${data}` +
+                logs.split("\n").slice(0, 100).join("\n")
+            );
 
             break;
           }
@@ -135,7 +136,7 @@ export default function LinkWatcher({ ws }: LinkWatcherProps) {
           </button>
         </div>
       ))}
-      <textarea readOnly value={logs.join("\n")} rows={5} />
+      <textarea readOnly value={logs} rows={5} />
       <button onClick={handleForceCheckButtonClick}>Force check all</button>
     </div>
   );

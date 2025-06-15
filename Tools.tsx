@@ -49,6 +49,17 @@ export default function Tools({
             setDbSize(data.data);
             break;
           }
+
+          // Watch the link check log even when Link Watcher is not open
+          case "reportLinkCheckLog": {
+            const log = localStorage.getItem("linkCheckLog") || "";
+            localStorage.setItem(
+              "linkCheckLog",
+              `${new Date().toISOString()}: ${data.data}\n${log}`
+            );
+
+            break;
+          }
         }
       },
       { signal: abortController.signal }

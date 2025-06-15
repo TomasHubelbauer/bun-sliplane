@@ -15,7 +15,7 @@ export default async function compareLink(
 ) {
   ws.send(
     JSON.stringify({
-      type: "reportForceCheckLog",
+      type: "reportLinkCheckLog",
       data: `Checking link: ${link.url}`,
     })
   );
@@ -24,14 +24,14 @@ export default async function compareLink(
 
   ws.send(
     JSON.stringify({
-      type: "reportForceCheckLog",
+      type: "reportLinkCheckLog",
       data: `Fetch: ${formatHumanBytes(html.length)} (${html.length} B)`,
     })
   );
 
   ws.send(
     JSON.stringify({
-      type: "reportForceCheckLog",
+      type: "reportLinkCheckLog",
       data: `Cache: ${formatHumanBytes(link.html.length)} (${
         link.html.length
       } B)`,
@@ -48,7 +48,7 @@ export default async function compareLink(
   if (!diff) {
     ws.send(
       JSON.stringify({
-        type: "reportForceCheckLog",
+        type: "reportLinkCheckLog",
         data: "No diff",
       })
     );
@@ -81,7 +81,7 @@ export default async function compareLink(
 
   ws.send(
     JSON.stringify({
-      type: "reportForceCheckLog",
+      type: "reportLinkCheckLog",
       data: diff,
     })
   );
