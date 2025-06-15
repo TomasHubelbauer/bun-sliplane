@@ -15,9 +15,11 @@ export default function App() {
   const [stats, setStats] = useState<Stats | undefined>();
 
   const ws = useMemo(() => new WebSocket("/ws"), []);
+  const [readState, setReadState] = useState(ws.readyState);
 
   useEffect(() => {
     const abortController = new AbortController();
+
     ws.addEventListener(
       "message",
       (event) => {
@@ -40,9 +42,20 @@ export default function App() {
       { signal: abortController.signal }
     );
 
+    ws.addEventListener("error", () => alert("WebSocket connection error!"), {
+      signal: abortController.signal,
+    });
+
+    ws.addEventListener("close", () => alert("WebSocket connection closure!"), {
+      signal: abortController.signal,
+    });
+
+    const handle = setInterval(() => setReadState(ws.readyState), 1000);
+
     return () => {
       ws.close();
       abortController.abort();
+      clearInterval(handle);
     };
   }, [ws]);
 
@@ -86,6 +99,7 @@ export default function App() {
         stats={stats}
         tool={tool}
         setTool={setTool}
+        readyState={readState}
       />
       {tool === "volume-explorer" && <VolumeExplorer ws={ws} stats={stats} />}
       {tool === "database-explorer" && <DatabaseExplorer ws={ws} />}

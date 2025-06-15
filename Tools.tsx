@@ -17,9 +17,16 @@ type ToolsProps = {
   stats: Stats | undefined;
   tool: Tool | undefined;
   setTool: Dispatch<SetStateAction<Tool | undefined>>;
+  readyState?: number;
 };
 
-export default function Tools({ ws, stats, tool, setTool }: ToolsProps) {
+export default function Tools({
+  ws,
+  stats,
+  tool,
+  setTool,
+  readyState,
+}: ToolsProps) {
   useEffect(() => {
     const abortController = new AbortController();
     ws.addEventListener(
@@ -84,6 +91,29 @@ export default function Tools({ ws, stats, tool, setTool }: ToolsProps) {
     [audits, userName]
   );
 
+  const readyStateName = useMemo(() => {
+    switch (readyState) {
+      case WebSocket.CONNECTING:
+        return "connecting";
+      case WebSocket.OPEN:
+        return "open";
+      case WebSocket.CLOSING:
+        return "closing";
+      case WebSocket.CLOSED:
+        return "closed";
+      default:
+        return "unknown";
+    }
+  }, [readyState]);
+
+  const [readyStateStamp, setReadyStateStamp] = useState(
+    new Date().toISOString()
+  );
+
+  useEffect(() => {
+    setReadyStateStamp(new Date().toISOString());
+  }, [readyState]);
+
   return (
     <>
       <div className={Tools.name}>
@@ -114,6 +144,8 @@ export default function Tools({ ws, stats, tool, setTool }: ToolsProps) {
           Backup
           {lastBackup && <Stamp stamp={lastBackup} />}
         </a>
+        <span className={`led ${readyStateName}`} title={readyStateName} />
+        <Stamp stamp={readyStateStamp} />
       </div>
     </>
   );

@@ -3,16 +3,43 @@
   display: flex;
   gap: 1ch;
 
+  .led {
+    border: 1px solid whitesmoke;
+    border-radius: 50%;
+    display: inline-block;
+    height: 1ch;
+    width: 1ch;
+
+    &.connecting {
+      background: yellow;
+    }
+
+    &.open {
+      background: green;
+    }
+
+    &.closing {
+      background: red;
+    }
+
+    &.closed {
+      background: maroon;
+    }
+  }
+
   button {
     align-items: center;
     align-self: stretch;
     display: flex;
     gap: 1ch;
+
+    &:last-of-type {
+      margin-right: auto;
+    }
   }
 
   a {
     display: flex;
     gap: 1ch;
-    margin-left: auto;
   }
 }

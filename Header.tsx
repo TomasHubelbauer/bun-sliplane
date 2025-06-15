@@ -11,6 +11,7 @@ type HeaderProps = {
   stats: Stats | undefined;
   tool: Tool | undefined;
   setTool: Dispatch<SetStateAction<Tool | undefined>>;
+  readyState: number;
 };
 
 export default function Header({
@@ -20,10 +21,17 @@ export default function Header({
   stats,
   tool,
   setTool,
+  readyState,
 }: HeaderProps) {
   return (
     <div className={Header.name}>
-      <Tools ws={ws} tool={tool} setTool={setTool} stats={stats} />
+      <Tools
+        ws={ws}
+        tool={tool}
+        setTool={setTool}
+        stats={stats}
+        readyState={readyState}
+      />
       {!tool && <Composer ws={ws} draft={draft} setDraft={setDraft} />}
     </div>
   );
