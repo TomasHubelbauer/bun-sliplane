@@ -42,4 +42,8 @@
     display: flex;
     gap: 1ch;
   }
+
+  .muted {
+    color: gray;
+  }
 }

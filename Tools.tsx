@@ -11,6 +11,7 @@ import Usage from "./Usage.tsx";
 import Stamp from "./Stamp.tsx";
 import type { Tool } from "./Tool.ts";
 import type { Stats } from "./Stats.ts";
+import formatHumanBytes from "./formatHumanBytes.ts";
 
 type ToolsProps = {
   ws: WebSocket;
@@ -27,6 +28,8 @@ export default function Tools({
   setTool,
   readyState,
 }: ToolsProps) {
+  const [dbSize, setDbSize] = useState<number>();
+
   useEffect(() => {
     const abortController = new AbortController();
     ws.addEventListener(
@@ -38,9 +41,12 @@ export default function Tools({
             setAudits(data.data);
             break;
           }
-
           case "getUserName": {
             setUserName(data.data);
+            break;
+          }
+          case "calculateDatabaseSize": {
+            setDbSize(data.data);
             break;
           }
         }
@@ -53,6 +59,7 @@ export default function Tools({
       () => {
         ws.send(JSON.stringify({ type: "getUserName" }));
         ws.send(JSON.stringify({ type: "getAudits" }));
+        ws.send(JSON.stringify({ type: "calculateDatabaseSize" }));
       },
       { signal: abortController.signal }
     );
@@ -131,6 +138,7 @@ export default function Tools({
           disabled={tool === "database-explorer"}
         >
           Database Explorer
+          {dbSize && <span className="muted">{formatHumanBytes(dbSize)}</span>}
         </button>
         <button
           data-tool="link-watcher"

@@ -27,6 +27,7 @@ import deleteDatabaseTable from "./deleteDatabaseTable.ts";
 import forceCheckLinks from "./forceCheckLinks.ts";
 import forceCheckLink from "./forceCheckLink.ts";
 import monitorLinks from "./monitorLinks.ts";
+import calculateDatabaseSize from "./calculateDatabaseSize.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -52,6 +53,7 @@ const handlers = [
   deleteDatabaseTable,
   forceCheckLinks,
   forceCheckLink,
+  calculateDatabaseSize,
 ] as const;
 
 let webSocket: ServerWebSocket<unknown> | undefined;
