@@ -266,6 +266,7 @@ const server: Server = Bun.serve({
   },
   websocket: {
     perMessageDeflate: true,
+    idleTimeout: undefined,
     async open(ws) {
       webSocket = ws;
       ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
