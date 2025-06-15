@@ -43,7 +43,10 @@ export default function Tools({ ws, stats, tool, setTool }: ToolsProps) {
 
     ws.addEventListener(
       "open",
-      () => ws.send(JSON.stringify({ type: "getUserName" })),
+      () => {
+        ws.send(JSON.stringify({ type: "getUserName" }));
+        ws.send(JSON.stringify({ type: "getAudits" }));
+      },
       { signal: abortController.signal }
     );
 
