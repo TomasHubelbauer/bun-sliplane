@@ -28,6 +28,7 @@ import forceCheckLinks from "./forceCheckLinks.ts";
 import forceCheckLink from "./forceCheckLink.ts";
 import calculateDatabaseSize from "./calculateDatabaseSize.ts";
 import compareLinks from "./compareLinks.ts";
+import getTopCommit from "./getTopCommit.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -54,6 +55,7 @@ const handlers = [
   forceCheckLinks,
   forceCheckLink,
   calculateDatabaseSize,
+  getTopCommit,
 ] as const;
 
 // TODO: Split these per `userName`
