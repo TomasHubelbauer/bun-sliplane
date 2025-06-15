@@ -13,5 +13,5 @@ export default async function forceCheckLink(
     html: string;
   };
 
-  await compareLink(ws, true, link);
+  await compareLink(ws, link);
 }

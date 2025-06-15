@@ -4,42 +4,39 @@ import fetchBasicHtml from "./fetchBasicHtml.ts";
 import formatHumanBytes from "./formatHumanBytes.ts";
 import listLinks from "./listLinks.ts";
 import getItems from "./getItems.ts";
+import getAudits from "./getAudits.ts";
 
 export default async function compareLink(
   ws: ServerWebSocket<unknown>,
-  reportLogs: boolean,
   link: {
     url: string;
     html: string;
   }
 ) {
-  reportLogs &&
-    ws.send(
-      JSON.stringify({
-        type: "reportForceCheckLog",
-        data: `Checking link: ${link.url}`,
-      })
-    );
+  ws.send(
+    JSON.stringify({
+      type: "reportForceCheckLog",
+      data: `Checking link: ${link.url}`,
+    })
+  );
 
   const html = await fetchBasicHtml(link.url);
 
-  reportLogs &&
-    ws.send(
-      JSON.stringify({
-        type: "reportForceCheckLog",
-        data: `Fetch: ${formatHumanBytes(html.length)} (${html.length} B)`,
-      })
-    );
+  ws.send(
+    JSON.stringify({
+      type: "reportForceCheckLog",
+      data: `Fetch: ${formatHumanBytes(html.length)} (${html.length} B)`,
+    })
+  );
 
-  reportLogs &&
-    ws.send(
-      JSON.stringify({
-        type: "reportForceCheckLog",
-        data: `Cache: ${formatHumanBytes(link.html.length)} (${
-          link.html.length
-        } B)`,
-      })
-    );
+  ws.send(
+    JSON.stringify({
+      type: "reportForceCheckLog",
+      data: `Cache: ${formatHumanBytes(link.html.length)} (${
+        link.html.length
+      } B)`,
+    })
+  );
 
   // See https://github.com/oven-sh/bun/issues/20396 for `util.diff` support
   // Bun shell doesn't support process substitution, so we use bash -c
@@ -49,13 +46,12 @@ export default async function compareLink(
       .text();
 
   if (!diff) {
-    reportLogs &&
-      ws.send(
-        JSON.stringify({
-          type: "reportForceCheckLog",
-          data: "No diff",
-        })
-      );
+    ws.send(
+      JSON.stringify({
+        type: "reportForceCheckLog",
+        data: "No diff",
+      })
+    );
 
     db.run("UPDATE links SET checkStamp = ?, changeStamp = ? WHERE url = ?", [
       new Date().toISOString(),
@@ -70,16 +66,26 @@ export default async function compareLink(
       })
     );
 
+    db.run(
+      "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
+      [
+        `link-check-${ws.data}`,
+        new Date().toISOString(),
+        new Date().toISOString(),
+      ]
+    );
+
+    ws.send(JSON.stringify({ type: getAudits.name, data: getAudits() }));
+
     return;
   }
 
-  reportLogs &&
-    ws.send(
-      JSON.stringify({
-        type: "reportForceCheckLog",
-        data: diff,
-      })
-    );
+  ws.send(
+    JSON.stringify({
+      type: "reportForceCheckLog",
+      data: diff,
+    })
+  );
 
   db.run(
     "UPDATE links SET checkStamp = ?, changeStamp = ?, html = ? WHERE url = ?",
@@ -100,4 +106,15 @@ export default async function compareLink(
   ]);
 
   ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
+
+  db.run(
+    "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
+    [
+      `link-check-${ws.data}`,
+      new Date().toISOString(),
+      new Date().toISOString(),
+    ]
+  );
+
+  ws.send(JSON.stringify({ type: getAudits.name, data: getAudits() }));
 }
