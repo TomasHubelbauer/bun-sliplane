@@ -1,4 +1,5 @@
 import { $ } from "bun";
+import fs from "fs";
 
 export default async function getTopCommit() {
   const line = await $`git log --oneline -1`.nothrow().text();
@@ -8,4 +9,5 @@ export default async function getTopCommit() {
   }
 
   console.log("Failed to parse git log output:", JSON.stringify(line));
+  console.log(await fs.promises.readdir(".", { withFileTypes: true }));
 }
