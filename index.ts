@@ -26,8 +26,8 @@ import deleteLink from "./deleteLink.ts";
 import deleteDatabaseTable from "./deleteDatabaseTable.ts";
 import forceCheckLinks from "./forceCheckLinks.ts";
 import forceCheckLink from "./forceCheckLink.ts";
-import monitorLinks from "./monitorLinks.ts";
 import calculateDatabaseSize from "./calculateDatabaseSize.ts";
+import compareLinks from "./compareLinks.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -56,7 +56,9 @@ const handlers = [
   calculateDatabaseSize,
 ] as const;
 
+// TODO: Split these per `userName`
 let webSocket: ServerWebSocket<unknown> | undefined;
+let compareLinksHandle: NodeJS.Timeout | undefined;
 const server: Server = Bun.serve({
   routes: {
     // Public
@@ -224,8 +226,12 @@ const server: Server = Bun.serve({
       ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
       ws.send(JSON.stringify({ type: getAudits.name, data: getAudits() }));
       ws.send(JSON.stringify({ type: getStats.name, data: await getStats() }));
-
-      monitorLinks(ws);
+      compareLinksHandle = setInterval(() => compareLinks(ws), 60 * 1000);
+    },
+    close() {
+      webSocket = undefined;
+      clearInterval(compareLinksHandle);
+      compareLinksHandle = undefined;
     },
     async message(ws, message) {
       try {
