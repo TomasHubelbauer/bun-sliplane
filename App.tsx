@@ -42,11 +42,11 @@ export default function App() {
       { signal: abortController.signal }
     );
 
-    ws.addEventListener("error", () => alert("WebSocket connection error!"), {
+    ws.addEventListener("error", location.reload, {
       signal: abortController.signal,
     });
 
-    ws.addEventListener("close", () => alert("WebSocket connection closure!"), {
+    ws.addEventListener("close", location.reload, {
       signal: abortController.signal,
     });
 
