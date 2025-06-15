@@ -4,7 +4,10 @@
   gap: 1ch;
 
   button {
+    align-items: center;
     align-self: stretch;
+    display: flex;
+    gap: 1ch;
   }
 
   a {

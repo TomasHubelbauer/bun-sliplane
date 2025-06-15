@@ -75,6 +75,12 @@ export default function Tools({ ws, stats, tool, setTool }: ToolsProps) {
     [audits, userName]
   );
 
+  const lastLinkCheck = useMemo(
+    () =>
+      audits.find((audit) => audit.name === `link-check-${userName}`)?.stamp,
+    [audits, userName]
+  );
+
   return (
     <>
       <div className={Tools.name}>
@@ -99,6 +105,7 @@ export default function Tools({ ws, stats, tool, setTool }: ToolsProps) {
           disabled={tool === "link-watcher"}
         >
           Link Watcher
+          {lastLinkCheck && <Stamp stamp={lastLinkCheck} />}
         </button>
         <a href="/backup" target="_blank">
           Backup
