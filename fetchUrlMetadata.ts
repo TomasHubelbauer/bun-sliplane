@@ -46,16 +46,16 @@ export default async function fetchUrlMetadata(
     const text = await htmlResponse.text();
 
     const iconRelHrefMatch = text.match(
-      /<link[^>]+rel=["']?icon["']?[^>]*href=["']?([^"'>]+)["']?/i
+      /<link[^>]+rel=["']?(shortcut )?icon["']?[^>]*href=["']?(?<url>[^"'>]+)["']?/i
     );
 
     const iconHrefRelMatch = text.match(
-      /<link[^>]+href=["']?([^"'>]+)["']?[^>]*rel=["']?icon["']?/i
+      /<link[^>]+href=["']?(?<url>[^"'>]+)["']?[^>]*rel=["']?(shortcut )?icon["']?/i
     );
 
     const iconMatch = iconRelHrefMatch || iconHrefRelMatch;
-    if (iconMatch) {
-      const iconResponse = await fetch(new URL(iconMatch[1], url));
+    if (iconMatch?.groups?.url) {
+      const iconResponse = await fetch(new URL(iconMatch.groups.url, url));
       if (iconResponse.ok) {
         const blob = await iconResponse.blob();
         if (blob.type.startsWith("image/")) {
