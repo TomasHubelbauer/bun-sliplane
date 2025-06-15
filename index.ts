@@ -34,6 +34,7 @@ import zipDirectory from "./zipDirectory.ts";
 const nonce = crypto.randomUUID();
 
 const handlers = [
+  getStats,
   getAudits,
   getItems,
   createItem,
@@ -269,9 +270,6 @@ const server: Server = Bun.serve({
     idleTimeout: undefined,
     async open(ws) {
       webSocket = ws;
-      ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
-      ws.send(JSON.stringify({ type: getAudits.name, data: getAudits() }));
-      ws.send(JSON.stringify({ type: getStats.name, data: await getStats() }));
       compareLinksHandle = setInterval(() => compareLinks(ws), 60 * 1000);
     },
     close() {

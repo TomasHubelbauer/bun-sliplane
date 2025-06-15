@@ -10,12 +10,12 @@ import LinkWatcher from "./LinkWatcher.tsx";
 import MachineExplorer from "./MachineExplorer.tsx";
 
 export default function App() {
+  const [ws, setWs] = useState(new WebSocket("/ws"));
+
   const [draft, setDraft] = useState("");
   const [items, setItems] = useState<ItemType[]>([]);
   const [tool, setTool] = useState<Tool | undefined>();
   const [stats, setStats] = useState<Stats | undefined>();
-
-  const ws = useMemo(() => new WebSocket("/ws"), []);
   const [readState, setReadState] = useState(ws.readyState);
 
   useEffect(() => {
@@ -43,13 +43,40 @@ export default function App() {
       { signal: abortController.signal }
     );
 
-    ws.addEventListener("error", () => location.reload(), {
-      signal: abortController.signal,
-    });
+    ws.addEventListener(
+      "error",
+      () => {
+        setReadState(ws.readyState);
+        setWs(new WebSocket("/ws"));
+      },
+      {
+        signal: abortController.signal,
+      }
+    );
 
-    ws.addEventListener("close", () => location.reload(), {
-      signal: abortController.signal,
-    });
+    ws.addEventListener(
+      "close",
+      () => {
+        setReadState(ws.readyState);
+        setWs(new WebSocket("/ws"));
+      },
+      {
+        signal: abortController.signal,
+      }
+    );
+
+    ws.addEventListener(
+      "open",
+      () => {
+        ws.send(JSON.stringify({ type: "getItems" }));
+        ws.send(JSON.stringify({ type: "getStats" }));
+        ws.send(JSON.stringify({ type: "getAudits" }));
+        setReadState(ws.readyState);
+      },
+      {
+        signal: abortController.signal,
+      }
+    );
 
     const handle = setInterval(() => setReadState(ws.readyState), 1000);
 
@@ -64,7 +91,13 @@ export default function App() {
     const abortController = new AbortController();
     document.addEventListener(
       "visibilitychange",
-      () => ws.send(JSON.stringify({ type: "getItems" })),
+      () => {
+        if (ws.readyState !== WebSocket.OPEN) {
+          setWs(new WebSocket("/ws"));
+        } else {
+          ws.send(JSON.stringify({ type: "getItems" }));
+        }
+      },
       { signal: abortController.signal }
     );
     return () => {
