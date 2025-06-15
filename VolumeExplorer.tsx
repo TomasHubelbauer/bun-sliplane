@@ -1,25 +1,21 @@
-import { useCallback, useEffect, useState, type MouseEvent } from "react";
-import formatHumanBytes from "./formatHumanBytes.ts";
-import Stamp from "./Stamp.tsx";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type MouseEvent,
+} from "react";
 import Usage from "./Usage.tsx";
 import type { Stats } from "./Stats.ts";
+import FileSystem, { type Entry } from "./FileSystem.tsx";
 
 type VolumeExplorerProps = {
   ws: WebSocket;
   stats: Stats | undefined;
 };
 
-type Item = {
-  name: string;
-  size: number;
-  atimeMs: number;
-  mtimeMs: number;
-  ctimeMs: number;
-  birthtimeMs: number;
-};
-
 export default function VolumeExplorer({ ws, stats }: VolumeExplorerProps) {
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<Entry[]>([]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -57,47 +53,23 @@ export default function VolumeExplorer({ ws, stats }: VolumeExplorerProps) {
     [ws]
   );
 
+  const actions = useCallback(
+    (entry: Entry) => (
+      <button
+        key={entry.name}
+        data-name={entry.name}
+        onClick={handleDeleteButtonClick}
+      >
+        Delete
+      </button>
+    ),
+    [handleDeleteButtonClick]
+  );
+
   return (
     <div className={VolumeExplorer.name}>
       {stats && <Usage {...stats} />}
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Size (bytes)</th>
-            <th>Access Time</th>
-            <th>Modification Time</th>
-            <th>Change Time</th>
-            <th>Creation Time</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.name}>
-              <td>{item.name}</td>
-              <td>{formatHumanBytes(item.size)}</td>
-              <td>
-                <Stamp stamp={new Date(item.atimeMs).toISOString()} />
-              </td>
-              <td>
-                <Stamp stamp={new Date(item.mtimeMs).toISOString()} />
-              </td>
-              <td>
-                <Stamp stamp={new Date(item.ctimeMs).toISOString()} />
-              </td>
-              <td>
-                <Stamp stamp={new Date(item.birthtimeMs).toISOString()} />
-              </td>
-              <td>
-                <button data-name={item.name} onClick={handleDeleteButtonClick}>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <FileSystem entries={items} actions={actions} />
     </div>
   );
 }

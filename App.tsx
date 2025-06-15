@@ -7,6 +7,7 @@ import DatabaseExplorer from "./DatabaseExplorer.tsx";
 import type { Tool } from "./Tool.ts";
 import type { Stats } from "./Stats.ts";
 import LinkWatcher from "./LinkWatcher.tsx";
+import MachineExplorer from "./MachineExplorer.tsx";
 
 export default function App() {
   const [draft, setDraft] = useState("");
@@ -102,6 +103,7 @@ export default function App() {
         readyState={readState}
       />
       {tool === "volume-explorer" && <VolumeExplorer ws={ws} stats={stats} />}
+      {tool === "machine-explorer" && <MachineExplorer ws={ws} />}
       {tool === "database-explorer" && <DatabaseExplorer ws={ws} />}
       {tool == "link-watcher" && <LinkWatcher ws={ws} />}
       {tool && <hr />}

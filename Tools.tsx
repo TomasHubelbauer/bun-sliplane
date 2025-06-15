@@ -76,7 +76,7 @@ export default function Tools({
         ws.send(JSON.stringify({ type: "getUserName" }));
         ws.send(JSON.stringify({ type: "getAudits" }));
         ws.send(JSON.stringify({ type: "calculateDatabaseSize" }));
-        ws.send(JSON.stringify({ type: "getTopCommit" }));
+        //ws.send(JSON.stringify({ type: "getTopCommit" }));
       },
       { signal: abortController.signal }
     );
@@ -95,11 +95,7 @@ export default function Tools({
 
   const handleToolButtonClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
-      setTool(
-        event.currentTarget.dataset.tool as
-          | "volume-explorer"
-          | "database-explorer"
-      );
+      setTool(event.currentTarget.dataset.tool as Tool | undefined);
     },
     [setTool]
   );
@@ -148,6 +144,13 @@ export default function Tools({
           disabled={tool === "volume-explorer"}
         >
           Volume Explorer {stats && <Usage {...stats} />}
+        </button>
+        <button
+          data-tool="machine-explorer"
+          onClick={handleToolButtonClick}
+          disabled={tool === "machine-explorer"}
+        >
+          Machine Explorer
         </button>
         <button
           data-tool="database-explorer"

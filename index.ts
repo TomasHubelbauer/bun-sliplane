@@ -29,6 +29,8 @@ import forceCheckLink from "./forceCheckLink.ts";
 import calculateDatabaseSize from "./calculateDatabaseSize.ts";
 import compareLinks from "./compareLinks.ts";
 import getTopCommit from "./getTopCommit.ts";
+import getMachineFiles from "./getMachineFiles.ts";
+import zipDirectory from "./zipDirectory.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -56,6 +58,7 @@ const handlers = [
   forceCheckLink,
   calculateDatabaseSize,
   getTopCommit,
+  getMachineFiles,
 ] as const;
 
 // TODO: Split these per `userName`
@@ -189,36 +192,78 @@ const server: Server = Bun.serve({
         });
       },
     },
-    "/backup": (request) => {
-      const userName = validatePasswordAndGetUserName(request);
-      if (!userName) {
-        return new Response(null, {
-          status: 401,
+    "/backup": {
+      GET: (request) => {
+        const userName = validatePasswordAndGetUserName(request);
+        if (!userName) {
+          return new Response(null, {
+            status: 401,
+            headers: {
+              "WWW-Authenticate": "Basic",
+            },
+          });
+        }
+
+        db.run(
+          "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
+          [
+            `backup-${userName}`,
+            new Date().toISOString(),
+            new Date().toISOString(),
+          ]
+        );
+
+        webSocket?.send(
+          JSON.stringify({ type: getAudits.name, data: getAudits() })
+        );
+
+        return new Response(db.serialize(), {
           headers: {
-            "WWW-Authenticate": "Basic",
+            "Content-Type": "application/x-sqlite3",
+            "Content-Disposition": `attachment; filename="backup-${userName}-${new Date().toISOString()}.db"`,
           },
         });
-      }
+      },
+    },
+    "/download/:name": {
+      GET: async (request) => {
+        const userName = validatePasswordAndGetUserName(request);
+        if (!userName) {
+          return new Response(null, {
+            status: 401,
+            headers: {
+              "WWW-Authenticate": "Basic",
+            },
+          });
+        }
 
-      db.run(
-        "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
-        [
-          `backup-${userName}`,
-          new Date().toISOString(),
-          new Date().toISOString(),
-        ]
-      );
+        const entries = await getMachineFiles();
+        const entry = entries.find(
+          (entry) => entry.name === request.params.name
+        );
 
-      webSocket?.send(
-        JSON.stringify({ type: getAudits.name, data: getAudits() })
-      );
+        if (!entry) {
+          throw new Response("File not found", { status: 404 });
+        }
 
-      return new Response(db.serialize(), {
-        headers: {
-          "Content-Type": "application/x-sqlite3",
-          "Content-Disposition": `attachment; filename="backup-${userName}-${new Date().toISOString()}.db"`,
-        },
-      });
+        if (entry.isDirectory) {
+          const zip = await zipDirectory(entry.name);
+          return new Response(zip, {
+            headers: {
+              "Content-Type": "application/zip",
+              "Content-Disposition": `attachment; filename="${entry.name}.zip"`,
+            },
+          });
+        }
+
+        const file = Bun.file(entry.name);
+        return new Response(file, {
+          headers: {
+            "Content-Type": file.type,
+            "Content-Disposition": `attachment; filename="${entry.name}"`,
+          },
+        });
+      },
     },
   },
   websocket: {
