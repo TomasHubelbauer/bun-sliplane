@@ -76,7 +76,7 @@ export default function Tools({
         ws.send(JSON.stringify({ type: "getUserName" }));
         ws.send(JSON.stringify({ type: "getAudits" }));
         ws.send(JSON.stringify({ type: "calculateDatabaseSize" }));
-        //ws.send(JSON.stringify({ type: "getTopCommit" }));
+        ws.send(JSON.stringify({ type: "getTopCommit" }));
       },
       { signal: abortController.signal }
     );
