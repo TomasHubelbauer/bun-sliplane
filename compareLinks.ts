@@ -6,6 +6,7 @@ export default async function compareLinks(
   ws: ServerWebSocket<unknown>,
   reportLogs: boolean
 ) {
+  console.log("Comparing links…", reportLogs);
   const links = db.query("SELECT * FROM links").all() as {
     url: string;
     checkStamp: string;
