@@ -9,7 +9,7 @@ import type { Stats } from "./Stats.ts";
 import LinkWatcher from "./LinkWatcher.tsx";
 
 export default function App() {
-  const [draft, setDraft] = useState<string>("");
+  const [draft, setDraft] = useState("");
   const [items, setItems] = useState<ItemType[]>([]);
   const [tool, setTool] = useState<Tool | undefined>();
   const [stats, setStats] = useState<Stats | undefined>();

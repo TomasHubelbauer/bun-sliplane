@@ -19,7 +19,7 @@ type Link = {
 };
 
 export default function LinkWatcher({ ws }: LinkWatcherProps) {
-  const [draft, setDraft] = useState<string>();
+  const [draft, setDraft] = useState("");
   const [links, setLinks] = useState<Link[]>([]);
 
   useEffect(() => {
