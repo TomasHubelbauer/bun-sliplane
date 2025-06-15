@@ -53,8 +53,7 @@ export default async function compareLink(
       })
     );
 
-    db.run("UPDATE links SET checkStamp = ?, changeStamp = ? WHERE url = ?", [
-      new Date().toISOString(),
+    db.run("UPDATE links SET checkStamp = ? WHERE url = ?", [
       new Date().toISOString(),
       link.url,
     ]);
