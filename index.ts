@@ -275,6 +275,7 @@ const server: Server = Bun.serve({
       compareLinksHandle = setInterval(() => compareLinks(ws), 60 * 1000);
     },
     close() {
+      console.log(new Date().toISOString(), "WebSocket closed");
       webSocket = undefined;
       clearInterval(compareLinksHandle);
       compareLinksHandle = undefined;
