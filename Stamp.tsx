@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import formatHumanStamp from "./formatHumanStamp.ts";
 
 type StampProps = {
   stamp: string;
 };
 
-export default function Stamp({ stamp }: StampProps) {
+export default memo(function Stamp({ stamp }: StampProps) {
   const [humanStamp, setHumanStamp] = useState(formatHumanStamp(stamp));
 
   useEffect(() => {
@@ -13,7 +13,9 @@ export default function Stamp({ stamp }: StampProps) {
       () => setHumanStamp(formatHumanStamp(stamp)),
       1000
     );
-    return () => clearInterval(handle);
+    return () => {
+      clearInterval(handle);
+    };
   }, [stamp]);
 
   return (
@@ -21,4 +23,4 @@ export default function Stamp({ stamp }: StampProps) {
       {humanStamp}
     </time>
   );
-}
+});
