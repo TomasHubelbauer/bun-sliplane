@@ -6,6 +6,9 @@
   }
 
   pre {
+    max-height: 200px;
+    overflow: auto;
+
     div.added {
       color: green;
     }
