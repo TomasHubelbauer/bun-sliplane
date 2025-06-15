@@ -306,3 +306,6 @@ const server: Server = Bun.serve({
 });
 
 console.log(server.url.href);
+for (const key in process.env) {
+  console.log(`${key}=${process.env[key]}`);
+}
