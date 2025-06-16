@@ -62,7 +62,6 @@ const handlers = [
 
 // TODO: Split these per `userName`
 let webSocket: ServerWebSocket<unknown> | undefined;
-let compareLinksHandle: NodeJS.Timeout | undefined;
 const server: Server = Bun.serve({
   routes: {
     // Public
@@ -277,7 +276,7 @@ const server: Server = Bun.serve({
         }
 
         const url = new URL(request.url);
-        const linkUrl = url.pathname.slice("/preview/".length);
+        const linkUrl = url.href.slice(url.origin.length + "/preview/".length);
         if (!linkUrl) {
           return new Response("URL is required", { status: 400 });
         }
@@ -300,15 +299,11 @@ const server: Server = Bun.serve({
   websocket: {
     perMessageDeflate: true,
     idleTimeout: undefined,
-    async open(ws) {
+    open(ws) {
       webSocket = ws;
-      compareLinksHandle = setInterval(() => compareLinks(ws), 60 * 1000);
     },
     close() {
-      console.log(new Date().toISOString(), "WebSocket closed");
       webSocket = undefined;
-      clearInterval(compareLinksHandle);
-      compareLinksHandle = undefined;
     },
     async message(ws, message) {
       try {
@@ -344,3 +339,17 @@ const server: Server = Bun.serve({
 });
 
 console.log(server.url.href);
+
+// Use `globalThis` as it will be preserved between Bun hot reloads and thus
+// overlapping timers will be avoided.
+void (async function monitorLinks() {
+  if (globalThis.monitorLinksHandle) {
+    clearTimeout(globalThis.monitorLinksHandle);
+  }
+
+  if (webSocket && webSocket.readyState === 1) {
+    await compareLinks(webSocket);
+  }
+
+  globalThis.monitorLinksHandle = setTimeout(monitorLinks, 60 * 1000);
+})();
