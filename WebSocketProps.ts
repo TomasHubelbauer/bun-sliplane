@@ -1,6 +1,14 @@
 export type WebSocketProps = {
   send: (
-    data: { type: string } & { [key: string]: string | number | boolean }
+    data: { type: string } & {
+      [key: string]:
+        | string
+        | number
+        | boolean
+        | string[]
+        | number[]
+        | boolean[];
+    }
   ) => void;
   listen: (
     abortSignal: AbortSignal,

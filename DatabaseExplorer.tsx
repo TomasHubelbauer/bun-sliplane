@@ -32,9 +32,10 @@ export default function DatabaseExplorer({
   listen,
 }: DatabaseExplorerProps) {
   const [tables, setTables] = useState<Table[]>([]);
-  const [table, setTable] = useState<Table>();
+  const [selectedTable, setSelectedTable] = useState<Table>();
   const [columns, setColumns] = useState<Column[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
+  const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -42,7 +43,7 @@ export default function DatabaseExplorer({
     listen(abortController.signal, {
       getDatabaseTables: (data: Table[]) => {
         setTables(data);
-        setTable(data[0]);
+        setSelectedTable(data[0]);
       },
       getDatabaseColumns: (data: Column[]) => {
         setColumns(data);
@@ -64,30 +65,30 @@ export default function DatabaseExplorer({
         (table) => table.name === event.currentTarget.value
       );
 
-      setTable(table);
+      setSelectedTable(table);
     },
     [tables]
   );
 
   useEffect(() => {
-    if (!table) {
+    if (!selectedTable) {
       return;
     }
 
     send({
       type: "getDatabaseColumns",
-      table: table.name,
+      table: selectedTable.name,
     });
 
     send({
       type: "getDatabaseRows",
-      table: table.name,
+      table: selectedTable.name,
     });
-  }, [send, table]);
+  }, [send, selectedTable]);
 
   const handleTextAreaKeyDown = useCallback(
     (event: KeyboardEvent<HTMLTextAreaElement>) => {
-      if (!table) {
+      if (!selectedTable) {
         return;
       }
 
@@ -112,18 +113,18 @@ export default function DatabaseExplorer({
 
       send({
         type: "updateDatabaseCell",
-        table: table.name,
+        table: selectedTable.name,
         column: column.name,
         rowId,
         value,
       });
     },
-    [send, table, columns, rows]
+    [send, selectedTable, columns, rows]
   );
 
   const handleCodeClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
-      if (!table) {
+      if (!selectedTable) {
         return;
       }
 
@@ -140,7 +141,7 @@ export default function DatabaseExplorer({
       }
 
       const value = prompt(
-        `${table.name}.${column.name} #${row.rowid}:`,
+        `${selectedTable.name}.${column.name} #${row.rowid}:`,
         String(row[column.name])
       );
 
@@ -150,18 +151,18 @@ export default function DatabaseExplorer({
 
       send({
         type: "updateDatabaseCell",
-        table: table.name,
+        table: selectedTable.name,
         column: column.name,
         rowId,
         value,
       });
     },
-    [send, table, columns, rows]
+    [send, selectedTable, columns, rows]
   );
 
   const handleDeleteButtonClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
-      if (!table) {
+      if (!selectedTable) {
         return;
       }
 
@@ -173,7 +174,7 @@ export default function DatabaseExplorer({
 
       if (
         !confirm(
-          `Are you sure you want to delete row #${row.rowid} in ${table.name}?`
+          `Are you sure you want to delete row #${row.rowid} in ${selectedTable.name}?`
         )
       ) {
         return;
@@ -181,11 +182,11 @@ export default function DatabaseExplorer({
 
       send({
         type: "deleteDatabaseRow",
-        table: table.name,
+        table: selectedTable.name,
         rowId,
       });
     },
-    [send, table, rows]
+    [send, selectedTable, rows]
   );
 
   const handleDeleteTableButtonClick = useCallback(
@@ -206,23 +207,78 @@ export default function DatabaseExplorer({
     [send]
   );
 
+  const handleSelectInputChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      if (!selectedTable) {
+        return;
+      }
+
+      const rowId = +event.currentTarget.dataset.rowid!;
+      const row = rows.find((row) => row.rowid === rowId);
+      if (!row) {
+        return;
+      }
+
+      const checked = event.currentTarget.checked;
+      setSelectedRows((selectedRows) =>
+        checked
+          ? [...selectedRows, rowId]
+          : selectedRows.filter((id) => id !== rowId)
+      );
+    },
+    [selectedTable, rows]
+  );
+
+  const handleDeleteSelectedButtonClick = useCallback(() => {
+    if (!selectedTable || selectedRows.length === 0) {
+      return;
+    }
+
+    if (
+      !confirm(
+        `Are you sure you want to delete ${selectedRows.length} selected rows in ${selectedTable.name}?`
+      )
+    ) {
+      return;
+    }
+
+    send({
+      type: "deleteDatabaseRows",
+      table: selectedTable.name,
+      rowIds: selectedRows,
+    });
+
+    setSelectedRows([]);
+  }, [send, selectedTable, selectedRows]);
+
   return (
     <div className={DatabaseExplorer.name}>
-      <select value={table?.name} onChange={handleTableSelectChange}>
-        {tables.map((table) => (
-          <option key={table.name} value={table.name}>
-            {table.name}
-          </option>
-        ))}
-      </select>
-      {table && (
-        <button data-table={table?.name} onClick={handleDeleteTableButtonClick}>
-          Delete
-        </button>
-      )}
+      <div className="controls">
+        <select value={selectedTable?.name} onChange={handleTableSelectChange}>
+          {tables.map((table) => (
+            <option key={table.name} value={table.name}>
+              {table.name}
+            </option>
+          ))}
+        </select>
+        {selectedTable && (
+          <button
+            data-table={selectedTable?.name}
+            onClick={handleDeleteTableButtonClick}
+          >
+            Delete table
+          </button>
+        )}
+        {selectedRows.length > 0 && (
+          <button onClick={handleDeleteSelectedButtonClick}>
+            Delete {selectedRows.length} selected
+          </button>
+        )}
+      </div>
       <table>
         <thead>
           <tr>
+            <th />
             <th>Row ID</th>
             {columns.map((column) => (
               <th key={column.name}>
@@ -235,6 +291,14 @@ export default function DatabaseExplorer({
         <tbody>
           {rows.map((row) => (
             <tr key={row.rowid}>
+              <td>
+                <input
+                  type="checkbox"
+                  data-rowid={row.rowid}
+                  checked={selectedRows.includes(row.rowid)}
+                  onChange={handleSelectInputChange}
+                />
+              </td>
               <td>{row.rowid}</td>
               {columns.map((column) => (
                 <td key={column.name}>

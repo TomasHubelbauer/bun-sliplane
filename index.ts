@@ -30,6 +30,7 @@ import calculateDatabaseSize from "./calculateDatabaseSize.ts";
 import compareLinks from "./compareLinks.ts";
 import getMachineFiles from "./getMachineFiles.ts";
 import zipDirectory from "./zipDirectory.ts";
+import deleteDatabaseRows from "./deleteDatabaseRows.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -58,6 +59,7 @@ const handlers = [
   forceCheckLink,
   calculateDatabaseSize,
   getMachineFiles,
+  deleteDatabaseRows,
 ] as const;
 
 // TODO: Split these per `userName`

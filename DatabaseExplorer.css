@@ -14,4 +14,10 @@
     white-space: nowrap;
     width: calc(100% - 2ch);
   }
+
+  .controls {
+    align-items: center;
+    display: flex;
+    gap: 1ch;
+  }
 }
