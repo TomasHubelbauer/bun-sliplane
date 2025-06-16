@@ -342,6 +342,7 @@ console.log(server.url.href);
 
 // Use `globalThis` as it will be preserved between Bun hot reloads and thus
 // overlapping timers will be avoided.
+// See https://bun.sh/docs/runtime/hot#hot-mode
 void (async function monitorLinks() {
   if (globalThis.monitorLinksHandle) {
     clearTimeout(globalThis.monitorLinksHandle);
