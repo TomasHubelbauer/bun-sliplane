@@ -264,6 +264,38 @@ const server: Server = Bun.serve({
         });
       },
     },
+    "/preview/*": {
+      GET: async (request) => {
+        const userName = validatePasswordAndGetUserName(request);
+        if (!userName) {
+          return new Response(null, {
+            status: 401,
+            headers: {
+              "WWW-Authenticate": "Basic",
+            },
+          });
+        }
+
+        const url = new URL(request.url);
+        const linkUrl = url.pathname.slice("/preview/".length);
+        if (!linkUrl) {
+          return new Response("URL is required", { status: 400 });
+        }
+
+        const link = db
+          .query("SELECT * FROM links WHERE url = ?")
+          .get(linkUrl) as { html: string };
+        if (!link) {
+          return new Response("Link not found", { status: 404 });
+        }
+
+        return new Response(link.html, {
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+          },
+        });
+      },
+    },
   },
   websocket: {
     perMessageDeflate: true,

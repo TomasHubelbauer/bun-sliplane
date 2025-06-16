@@ -128,6 +128,10 @@ export default function LinkWatcher({ ws }: LinkWatcherProps) {
           <div>
             Last changed: <Stamp stamp={link.changeStamp} />
           </div>
+          ·
+          <a href={`/preview/` + link.url} target="_blank">
+            Preview
+          </a>
           <button data-url={link.url} onClick={handleForceCheckOneButtonClick}>
             Force check
           </button>
