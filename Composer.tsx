@@ -6,14 +6,14 @@ import {
   type KeyboardEvent,
   type SetStateAction,
 } from "react";
+import type { WebSocketProps } from "./WebSocketProps.ts";
 
-type ComposerProps = {
-  ws: WebSocket;
+type ComposerProps = WebSocketProps & {
   draft: string;
   setDraft: Dispatch<SetStateAction<string>>;
 };
 
-export default function Composer({ ws, draft, setDraft }: ComposerProps) {
+export default function Composer({ send, draft, setDraft }: ComposerProps) {
   const handleTextAreaChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       setDraft(event.currentTarget.value);
@@ -57,17 +57,15 @@ export default function Composer({ ws, draft, setDraft }: ComposerProps) {
       const [name, ...lines] = value.split("\n");
       const text = lines.join("\n").trim();
 
-      ws.send(
-        JSON.stringify({
-          type: "createItem",
-          name,
-          text,
-        })
-      );
+      send({
+        type: "createItem",
+        name,
+        text,
+      });
 
       setDraft("");
     },
-    [ws, setDraft]
+    [send, setDraft]
   );
 
   const rows = useMemo(() => draft.trim().split("\n").length, [draft]);

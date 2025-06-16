@@ -12,9 +12,9 @@ import Stamp from "./Stamp.tsx";
 import type { Tool } from "./Tool.ts";
 import type { Stats } from "./Stats.ts";
 import formatHumanBytes from "./formatHumanBytes.ts";
+import type { WebSocketProps } from "./WebSocketProps.ts";
 
-type ToolsProps = {
-  ws: WebSocket;
+type ToolsProps = WebSocketProps & {
   stats: Stats | undefined;
   tool: Tool | undefined;
   setTool: Dispatch<SetStateAction<Tool | undefined>>;
@@ -22,7 +22,8 @@ type ToolsProps = {
 };
 
 export default function Tools({
-  ws,
+  send,
+  listen,
   stats,
   tool,
   setTool,
@@ -32,53 +33,35 @@ export default function Tools({
 
   useEffect(() => {
     const abortController = new AbortController();
-    ws.addEventListener(
-      "message",
-      (event) => {
-        const { type, ...data } = JSON.parse(event.data);
-        switch (type) {
-          case "getAudits": {
-            setAudits(data.data);
-            break;
-          }
-          case "getUserName": {
-            setUserName(data.data);
-            break;
-          }
-          case "calculateDatabaseSize": {
-            setDbSize(data.data);
-            break;
-          }
 
-          // Watch the link check log even when Link Watcher is not open
-          case "reportLinkCheckLog": {
-            const log = localStorage.getItem("linkCheckLog") || "";
-            localStorage.setItem(
-              "linkCheckLog",
-              `${new Date().toISOString()}: ${data.data}\n${log}`
-            );
-
-            break;
-          }
-        }
+    listen(abortController.signal, {
+      calculateDatabaseSize: (data: number) => {
+        setDbSize(data);
       },
-      { signal: abortController.signal }
-    );
-
-    ws.addEventListener(
-      "open",
-      () => {
-        ws.send(JSON.stringify({ type: "getUserName" }));
-        ws.send(JSON.stringify({ type: "getAudits" }));
-        ws.send(JSON.stringify({ type: "calculateDatabaseSize" }));
+      getUserName: (data: string) => {
+        setUserName(data);
       },
-      { signal: abortController.signal }
-    );
+      getAudits: (data: { name: string; stamp: string }[]) => {
+        setAudits(data);
+      },
+      // Watch the link check log even when Link Watcher is not open
+      reportLinkCheckLog: (data: string) => {
+        const log = localStorage.getItem("linkCheckLog") || "";
+        localStorage.setItem(
+          "linkCheckLog",
+          `${new Date().toISOString()}: ${data}\n${log}`
+        );
+      },
+    });
+
+    send({ type: "getUserName" });
+    send({ type: "getAudits" });
+    send({ type: "calculateDatabaseSize" });
 
     return () => {
       abortController.abort();
     };
-  }, [ws]);
+  }, [send, listen]);
 
   const [userName, setUserName] = useState<string>();
   const [audits, setAudits] = useState<{ name: string; stamp: string }[]>([]);

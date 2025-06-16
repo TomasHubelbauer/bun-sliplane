@@ -3,9 +3,9 @@ import Tools from "./Tools.tsx";
 import Composer from "./Composer.tsx";
 import type { Tool } from "./Tool.ts";
 import type { Stats } from "./Stats.ts";
+import type { WebSocketProps } from "./WebSocketProps.ts";
 
-type HeaderProps = {
-  ws: WebSocket;
+type HeaderProps = WebSocketProps & {
   draft: string;
   setDraft: Dispatch<SetStateAction<string>>;
   stats: Stats | undefined;
@@ -15,7 +15,8 @@ type HeaderProps = {
 };
 
 export default function Header({
-  ws,
+  send,
+  listen,
   draft,
   setDraft,
   stats,
@@ -26,13 +27,21 @@ export default function Header({
   return (
     <div className={Header.name}>
       <Tools
-        ws={ws}
+        send={send}
+        listen={listen}
         tool={tool}
         setTool={setTool}
         stats={stats}
         readyState={readyState}
       />
-      {!tool && <Composer ws={ws} draft={draft} setDraft={setDraft} />}
+      {!tool && (
+        <Composer
+          send={send}
+          listen={listen}
+          draft={draft}
+          setDraft={setDraft}
+        />
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Item as ItemType } from "./ItemType.ts";
 import List from "./List.tsx";
 import Header from "./Header.tsx";
@@ -17,6 +17,7 @@ export default function App() {
   const [tool, setTool] = useState<Tool | undefined>();
   const [stats, setStats] = useState<Stats | undefined>();
   const [readState, setReadState] = useState(ws.readyState);
+  const [sendQueue, setSendQueue] = useState<unknown[]>([]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -71,6 +72,10 @@ export default function App() {
         ws.send(JSON.stringify({ type: "getItems" }));
         ws.send(JSON.stringify({ type: "getStats" }));
         ws.send(JSON.stringify({ type: "getAudits" }));
+        for (const data of sendQueue) {
+          ws.send(JSON.stringify(data));
+        }
+
         setReadState(ws.readyState);
       },
       {
@@ -124,10 +129,44 @@ export default function App() {
       : [];
   }, [items, search]);
 
+  const send = useCallback(
+    (data: { type: string } & object) => {
+      if (ws.readyState !== WebSocket.OPEN) {
+        setSendQueue((queue) => [...queue, data]);
+        return;
+      }
+
+      ws.send(JSON.stringify(data));
+    },
+    [ws]
+  );
+
+  // TODO: Change the `any` to `unknown` or make the method generic
+  const listen = useCallback(
+    (
+      abortSignal: AbortSignal,
+      handlers: { [type: string]: (data: unknown) => void }
+    ) => {
+      ws.addEventListener(
+        "message",
+        (event) => {
+          const { type, data } = JSON.parse(event.data);
+          const handler = handlers[type];
+          if (handler) {
+            handler(data);
+          }
+        },
+        { signal: abortSignal }
+      );
+    },
+    [ws]
+  );
+
   return (
     <>
       <Header
-        ws={ws}
+        send={send}
+        listen={listen}
         draft={draft}
         setDraft={setDraft}
         stats={stats}
@@ -135,13 +174,23 @@ export default function App() {
         setTool={setTool}
         readyState={readState}
       />
-      {tool === "volume-explorer" && <VolumeExplorer ws={ws} stats={stats} />}
-      {tool === "machine-explorer" && <MachineExplorer ws={ws} />}
-      {tool === "database-explorer" && <DatabaseExplorer ws={ws} />}
-      {tool == "link-watcher" && <LinkWatcher ws={ws} />}
+      {tool === "volume-explorer" && (
+        <VolumeExplorer send={send} listen={listen} stats={stats} />
+      )}
+      {tool === "machine-explorer" && (
+        <MachineExplorer send={send} listen={listen} />
+      )}
+      {tool === "database-explorer" && (
+        <DatabaseExplorer send={send} listen={listen} />
+      )}
+      {tool == "link-watcher" && <LinkWatcher send={send} listen={listen} />}
       {tool && <hr />}
       {matches.length > 0 && `Items matching "${search}":`}
-      <List ws={ws} items={matches.length ? matches : items} />
+      <List
+        send={send}
+        listen={listen}
+        items={matches.length ? matches : items}
+      />
     </>
   );
 }

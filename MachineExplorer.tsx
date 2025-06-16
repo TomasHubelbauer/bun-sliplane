@@ -1,31 +1,29 @@
 import { useCallback, useEffect, useState } from "react";
 import FileSystem, { type Entry } from "./FileSystem.tsx";
+import type { WebSocketProps } from "./WebSocketProps.ts";
 
-type MachineExplorerProps = {
-  ws: WebSocket;
-};
+type MachineExplorerProps = WebSocketProps;
 
-export default function MachineExplorer({ ws }: MachineExplorerProps) {
+export default function MachineExplorer({
+  send,
+  listen,
+}: MachineExplorerProps) {
   const [items, setItems] = useState<Entry[]>([]);
 
   useEffect(() => {
     const abortController = new AbortController();
-    ws.addEventListener(
-      "message",
-      (event) => {
-        const { type, data } = JSON.parse(event.data);
-        if (type === "getMachineFiles") {
-          setItems(data);
-        }
-      },
-      { signal: abortController.signal }
-    );
 
-    ws.send(JSON.stringify({ type: "getMachineFiles" }));
+    listen(abortController.signal, {
+      getMachineFiles: (data: Entry[]) => {
+        setItems(data);
+      },
+    });
+
+    send({ type: "getMachineFiles" });
     return () => {
       abortController.abort();
     };
-  }, [ws]);
+  }, [send, listen]);
 
   const actions = useCallback(
     (entry: Entry) => (

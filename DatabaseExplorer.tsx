@@ -6,10 +6,9 @@ import {
   type MouseEvent,
   type KeyboardEvent,
 } from "react";
+import type { WebSocketProps } from "./WebSocketProps.ts";
 
-type DatabaseExplorerProps = {
-  ws: WebSocket;
-};
+type DatabaseExplorerProps = WebSocketProps;
 
 type Table = {
   name: string;
@@ -28,7 +27,10 @@ type Row = {
   [key: string]: string | number | null;
 };
 
-export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
+export default function DatabaseExplorer({
+  send,
+  listen,
+}: DatabaseExplorerProps) {
   const [tables, setTables] = useState<Table[]>([]);
   const [table, setTable] = useState<Table>();
   const [columns, setColumns] = useState<Column[]>([]);
@@ -36,34 +38,25 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
 
   useEffect(() => {
     const abortController = new AbortController();
-    ws.addEventListener(
-      "message",
-      (event) => {
-        const { type, data } = JSON.parse(event.data);
-        switch (type) {
-          case "getDatabaseTables": {
-            setTables(data);
-            setTable(data[0]);
-            break;
-          }
-          case "getDatabaseColumns": {
-            setColumns(data);
-            break;
-          }
-          case "getDatabaseRows": {
-            setRows(data);
-            break;
-          }
-        }
-      },
-      { signal: abortController.signal }
-    );
 
-    ws.send(JSON.stringify({ type: "getDatabaseTables" }));
+    listen(abortController.signal, {
+      getDatabaseTables: (data: Table[]) => {
+        setTables(data);
+        setTable(data[0]);
+      },
+      getDatabaseColumns: (data: Column[]) => {
+        setColumns(data);
+      },
+      getDatabaseRows: (data: Row[]) => {
+        setRows(data);
+      },
+    });
+
+    send({ type: "getDatabaseTables" });
     return () => {
       abortController.abort();
     };
-  }, [ws]);
+  }, [send, listen]);
 
   const handleTableSelectChange = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
@@ -73,7 +66,7 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
 
       setTable(table);
     },
-    [ws, tables]
+    [tables]
   );
 
   useEffect(() => {
@@ -81,23 +74,23 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
       return;
     }
 
-    ws.send(
-      JSON.stringify({
-        type: "getDatabaseColumns",
-        table: table.name,
-      })
-    );
+    send({
+      type: "getDatabaseColumns",
+      table: table.name,
+    });
 
-    ws.send(
-      JSON.stringify({
-        type: "getDatabaseRows",
-        table: table.name,
-      })
-    );
-  }, [ws, table]);
+    send({
+      type: "getDatabaseRows",
+      table: table.name,
+    });
+  }, [send, table]);
 
   const handleTextAreaKeyDown = useCallback(
     (event: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (!table) {
+        return;
+      }
+
       const rowId = +event.currentTarget.dataset.rowid!;
       const row = rows.find((row) => row.rowid === rowId);
       if (!row) {
@@ -117,21 +110,23 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
       event.preventDefault();
       const value = event.currentTarget.value;
 
-      ws.send(
-        JSON.stringify({
-          type: "updateDatabaseCell",
-          table: table?.name,
-          column: column.name,
-          rowId,
-          value,
-        })
-      );
+      send({
+        type: "updateDatabaseCell",
+        table: table.name,
+        column: column.name,
+        rowId,
+        value,
+      });
     },
-    [ws, table, columns, rows]
+    [send, table, columns, rows]
   );
 
   const handleCodeClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
+      if (!table) {
+        return;
+      }
+
       const rowId = +event.currentTarget.dataset.rowid!;
       const row = rows.find((row) => row.rowid === rowId);
       if (!row) {
@@ -145,7 +140,7 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
       }
 
       const value = prompt(
-        `${table?.name}.${column.name} #${row.rowid}:`,
+        `${table.name}.${column.name} #${row.rowid}:`,
         String(row[column.name])
       );
 
@@ -153,21 +148,23 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
         return;
       }
 
-      ws.send(
-        JSON.stringify({
-          type: "updateDatabaseCell",
-          table: table?.name,
-          column: column.name,
-          rowId,
-          value,
-        })
-      );
+      send({
+        type: "updateDatabaseCell",
+        table: table.name,
+        column: column.name,
+        rowId,
+        value,
+      });
     },
-    [ws, table, columns, rows]
+    [send, table, columns, rows]
   );
 
   const handleDeleteButtonClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
+      if (!table) {
+        return;
+      }
+
       const rowId = +event.currentTarget.dataset.rowid!;
       const row = rows.find((row) => row.rowid === rowId);
       if (!row) {
@@ -176,21 +173,19 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
 
       if (
         !confirm(
-          `Are you sure you want to delete row #${row.rowid} in ${table?.name}?`
+          `Are you sure you want to delete row #${row.rowid} in ${table.name}?`
         )
       ) {
         return;
       }
 
-      ws.send(
-        JSON.stringify({
-          type: "deleteDatabaseRow",
-          table: table?.name,
-          rowId,
-        })
-      );
+      send({
+        type: "deleteDatabaseRow",
+        table: table.name,
+        rowId,
+      });
     },
-    [ws, table, rows]
+    [send, table, rows]
   );
 
   const handleDeleteTableButtonClick = useCallback(
@@ -203,14 +198,12 @@ export default function DatabaseExplorer({ ws }: DatabaseExplorerProps) {
         return;
       }
 
-      ws.send(
-        JSON.stringify({
-          type: "deleteDatabaseTable",
-          table,
-        })
-      );
+      send({
+        type: "deleteDatabaseTable",
+        table,
+      });
     },
-    [ws]
+    [send]
   );
 
   return (

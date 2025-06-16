@@ -5,9 +5,9 @@ import {
   useEffect,
   useState,
 } from "react";
+import type { WebSocketProps } from "./WebSocketProps.ts";
 
-type LinkPreviewProps = {
-  ws: WebSocket;
+type LinkPreviewProps = WebSocketProps & {
   url: string;
 };
 
@@ -18,7 +18,7 @@ type Metadata = {
   title: string;
 };
 
-export default function LinkPreview({ ws, url }: LinkPreviewProps) {
+export default function LinkPreview({ send, listen, url }: LinkPreviewProps) {
   const { href, host, origin } = useMemo(() => new URL(url), [url]);
   const [metadata, setMetadata] = useState<Metadata>();
 
@@ -28,22 +28,20 @@ export default function LinkPreview({ ws, url }: LinkPreviewProps) {
 
   useEffect(() => {
     const abortController = new AbortController();
-    ws.addEventListener(
-      "message",
-      (event) => {
-        const { type, data } = JSON.parse(event.data);
-        if (type === "fetchUrlMetadata" && data.url === url) {
+
+    listen(abortController.signal, {
+      fetchUrlMetadata: (data) => {
+        if (data.url === url) {
           setMetadata(data);
         }
       },
-      { signal: abortController.signal }
-    );
+    });
 
-    ws.send(JSON.stringify({ type: "fetchUrlMetadata", url }));
+    send({ type: "fetchUrlMetadata", url });
     return () => {
       abortController.abort();
     };
-  }, [ws, url]);
+  }, [send, url]);
 
   useEffect(() => {
     setMetadata(undefined);

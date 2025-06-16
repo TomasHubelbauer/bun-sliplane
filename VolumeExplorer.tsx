@@ -1,56 +1,52 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type MouseEvent,
-} from "react";
+import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import Usage from "./Usage.tsx";
 import type { Stats } from "./Stats.ts";
 import FileSystem, { type Entry } from "./FileSystem.tsx";
+import type { WebSocketProps } from "./WebSocketProps.ts";
 
-type VolumeExplorerProps = {
-  ws: WebSocket;
+type VolumeExplorerProps = WebSocketProps & {
   stats: Stats | undefined;
 };
 
-export default function VolumeExplorer({ ws, stats }: VolumeExplorerProps) {
+export default function VolumeExplorer({
+  send,
+  listen,
+  stats,
+}: VolumeExplorerProps) {
   const [items, setItems] = useState<Entry[]>([]);
 
   useEffect(() => {
     const abortController = new AbortController();
-    ws.addEventListener(
-      "message",
-      (event) => {
-        const { type, data } = JSON.parse(event.data);
-        if (type === "getVolumeFiles") {
-          setItems(data);
-        }
-      },
-      { signal: abortController.signal }
-    );
 
-    ws.send(JSON.stringify({ type: "getVolumeFiles" }));
+    listen(abortController.signal, {
+      getVolumeFiles: (data: Entry[]) => {
+        setItems(data);
+      },
+    });
+
+    send({ type: "getVolumeFiles" });
     return () => {
       abortController.abort();
     };
-  }, [ws]);
+  }, [send, listen]);
 
   const handleDeleteButtonClick = useCallback(
     async (event: MouseEvent<HTMLButtonElement>) => {
       const name = event.currentTarget.dataset.name;
+      if (!name) {
+        return;
+      }
+
       if (!confirm(`Are you sure you want to delete "${name}"?`)) {
         return;
       }
 
-      ws.send(
-        JSON.stringify({
-          type: "deleteVolumeFile",
-          name,
-        })
-      );
+      send({
+        type: "deleteVolumeFile",
+        name,
+      });
     },
-    [ws]
+    [send]
   );
 
   const actions = useCallback(

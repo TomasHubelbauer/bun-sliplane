@@ -8,13 +8,13 @@ import {
 import type { Item as ItemType } from "./ItemType.ts";
 import RichText from "./RichText.tsx";
 import Stamp from "./Stamp.tsx";
+import type { WebSocketProps } from "./WebSocketProps.ts";
 
-type ItemProps = {
-  ws: WebSocket;
-} & ItemType;
+type ItemProps = WebSocketProps & ItemType;
 
 export default function Item({
-  ws,
+  send,
+  listen,
   rowid,
   stamp,
   name,
@@ -26,33 +26,29 @@ export default function Item({
       return;
     }
 
-    ws.send(JSON.stringify({ type: "deleteItem", rowId: rowid }));
-  }, [ws, rowid, name]);
+    send({ type: "deleteItem", rowId: rowid });
+  }, [send, rowid, name]);
 
   const handleNameRichTextChange = useCallback(
     async (value: string) => {
-      ws.send(
-        JSON.stringify({
-          type: "updateItem",
-          rowId: rowid,
-          name: value,
-        })
-      );
+      send({
+        type: "updateItem",
+        rowId: rowid,
+        name: value,
+      });
     },
-    [ws, rowid]
+    [send, rowid]
   );
 
   const handleTextRichTextChange = useCallback(
     async (value: string) => {
-      ws.send(
-        JSON.stringify({
-          type: "updateItem",
-          rowId: rowid,
-          text: value,
-        })
-      );
+      send({
+        type: "updateItem",
+        rowId: rowid,
+        text: value,
+      });
     },
-    [ws, rowid]
+    [send, rowid]
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -77,13 +73,11 @@ export default function Item({
         });
       }
 
-      ws.send(
-        JSON.stringify({
-          type: "getItems",
-        })
-      );
+      send({
+        type: "getItems",
+      });
     },
-    [ws, rowid]
+    [send, rowid]
   );
 
   const files: { uuid: string; name: string; type: string }[] = useMemo(
@@ -111,15 +105,13 @@ export default function Item({
         return;
       }
 
-      ws.send(
-        JSON.stringify({
-          type: "deleteAttachment",
-          rowId: rowid,
-          uuid,
-        })
-      );
+      send({
+        type: "deleteAttachment",
+        rowId: rowid,
+        uuid,
+      });
     },
-    [ws, rowid, files]
+    [send, rowid, files]
   );
 
   return (
@@ -129,7 +121,8 @@ export default function Item({
         <span className="placeholder">#{rowid}</span>
         ·
         <RichText
-          ws={ws}
+          send={send}
+          listen={listen}
           text={name}
           fallback={<span className="placeholder">(no name)</span>}
           onChange={handleNameRichTextChange}
@@ -142,7 +135,8 @@ export default function Item({
         </button>
       </div>
       <RichText
-        ws={ws}
+        send={send}
+        listen={listen}
         text={text}
         fallback={<span className="placeholder">(no text)</span>}
         onChange={handleTextRichTextChange}

@@ -7,10 +7,9 @@ import {
 } from "react";
 import Stamp from "./Stamp.tsx";
 import LinkPreview from "./LinkPreview.tsx";
+import type { WebSocketProps } from "./WebSocketProps.ts";
 
-type LinkWatcherProps = {
-  ws: WebSocket;
-};
+type LinkWatcherProps = WebSocketProps;
 
 type Link = {
   url: string;
@@ -18,74 +17,67 @@ type Link = {
   changeStamp: string;
 };
 
-export default function LinkWatcher({ ws }: LinkWatcherProps) {
+export default function LinkWatcher({ send, listen }: LinkWatcherProps) {
   const [draft, setDraft] = useState("");
   const [links, setLinks] = useState<Link[]>([]);
   const [logs, setLogs] = useState(localStorage.getItem("linkCheckLog") || "");
 
   useEffect(() => {
     const abortController = new AbortController();
-    ws.addEventListener(
-      "message",
-      (event) => {
-        const { type, data } = JSON.parse(event.data);
-        switch (type) {
-          case "listLinks": {
-            setLinks(data);
-            break;
-          }
-          case "reportLinkCheckLog": {
-            setLogs(
-              (logs) =>
-                `${new Date().toISOString()}: ${data}` +
-                logs.split("\n").slice(0, 100).join("\n")
-            );
 
-            break;
-          }
-        }
+    listen(abortController.signal, {
+      listLinks: (data: Link[]) => {
+        setLinks(data);
       },
-      { signal: abortController.signal }
-    );
+      reportLinkCheckLog: (data: string) => {
+        setLogs(
+          (logs) =>
+            `${new Date().toISOString()}: ${data}` +
+            logs.split("\n").slice(0, 100).join("\n")
+        );
+      },
+    });
 
-    ws.send(JSON.stringify({ type: "listLinks" }));
+    send({ type: "listLinks" });
     return () => {
       abortController.abort();
     };
-  }, [ws]);
+  }, [send, listen]);
 
   const handleDraftInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       setDraft(event.target.value);
     },
-    [ws]
+    []
   );
 
   const handleDraftInputKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Enter" && draft) {
-        ws.send(JSON.stringify({ type: "trackLink", url: draft }));
+        send({ type: "trackLink", url: draft });
         setDraft("");
       }
     },
-    [ws, draft]
+    [send, draft]
   );
 
   const handleDeleteButtonClick = useCallback(
     async (event: MouseEvent<HTMLButtonElement>) => {
       const url = event.currentTarget.dataset.url;
+      if (!url) {
+        return;
+      }
+
       if (!confirm(`Are you sure you want to delete "${url}"?`)) {
         return;
       }
 
-      ws.send(
-        JSON.stringify({
-          type: "deleteLink",
-          url,
-        })
-      );
+      send({
+        type: "deleteLink",
+        url,
+      });
     },
-    [ws]
+    [send]
   );
 
   const handleForceCheckButtonClick = useCallback(() => {
@@ -93,20 +85,22 @@ export default function LinkWatcher({ ws }: LinkWatcherProps) {
       return;
     }
 
-    ws.send(JSON.stringify({ type: "forceCheckLinks" }));
-  }, [ws]);
+    send({ type: "forceCheckLinks" });
+  }, [send]);
 
   const handleForceCheckOneButtonClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       const url = event.currentTarget.dataset.url;
-      ws.send(
-        JSON.stringify({
-          type: "forceCheckLink",
-          url,
-        })
-      );
+      if (!url) {
+        return;
+      }
+
+      send({
+        type: "forceCheckLink",
+        url,
+      });
     },
-    [ws]
+    [send]
   );
 
   return (
@@ -120,7 +114,7 @@ export default function LinkWatcher({ ws }: LinkWatcherProps) {
       />
       {links.map((link, index) => (
         <div key={index}>
-          <LinkPreview ws={ws} url={link.url} />·
+          <LinkPreview send={send} listen={listen} url={link.url} />·
           <div>
             Last checked: <Stamp stamp={link.checkStamp} />
           </div>

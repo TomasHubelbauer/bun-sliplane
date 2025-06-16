@@ -2,9 +2,9 @@ import { useCallback, useMemo, type ReactNode, type MouseEvent } from "react";
 import segmentText from "./segmentText.ts";
 import RichLine from "./RichLine.tsx";
 import serializeSegments from "./serializeSegments.ts";
+import type { WebSocketProps } from "./WebSocketProps.ts";
 
-type RichTextProps = {
-  ws: WebSocket;
+type RichTextProps = WebSocketProps & {
   text: string;
   onChange: (text: string) => void;
   fallback: ReactNode;
@@ -14,7 +14,8 @@ export default function RichText({
   text,
   onChange,
   fallback,
-  ws,
+  send,
+  listen,
 }: RichTextProps) {
   const lines = useMemo(() => segmentText(text), [text]);
 
@@ -86,7 +87,7 @@ export default function RichText({
           case "paragraph": {
             return (
               <p key={index} data-index={index} onClick={handleClick}>
-                <RichLine ws={ws} parts={line.parts} />
+                <RichLine send={send} listen={listen} parts={line.parts} />
               </p>
             );
           }
@@ -125,7 +126,7 @@ export default function RichText({
                     data-subindex={itemIndex}
                     onClick={handleClick}
                   >
-                    <RichLine ws={ws} parts={item.parts} />
+                    <RichLine send={send} listen={listen} parts={item.parts} />
                   </li>
                 ))}
               </ul>
@@ -141,7 +142,7 @@ export default function RichText({
                     data-subindex={itemIndex}
                     onClick={handleClick}
                   >
-                    <RichLine ws={ws} parts={item.parts} />
+                    <RichLine send={send} listen={listen} parts={item.parts} />
                   </li>
                 ))}
               </ol>
