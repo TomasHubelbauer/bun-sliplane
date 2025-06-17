@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Item as ItemType } from "./ItemType.ts";
 import List from "./List.tsx";
 import Header from "./Header.tsx";
@@ -17,7 +17,7 @@ export default function App() {
   const [tool, setTool] = useState<Tool | undefined>();
   const [stats, setStats] = useState<Stats | undefined>();
   const [readState, setReadState] = useState(ws.readyState);
-  const [sendQueue, setSendQueue] = useState<unknown[]>([]);
+  const sendQueue = useRef<unknown[]>([]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -72,7 +72,7 @@ export default function App() {
         ws.send(JSON.stringify({ type: "getItems" }));
         ws.send(JSON.stringify({ type: "getStats" }));
         ws.send(JSON.stringify({ type: "getAudits" }));
-        for (const data of sendQueue) {
+        for (const data of sendQueue.current) {
           ws.send(JSON.stringify(data));
         }
 
@@ -132,7 +132,7 @@ export default function App() {
   const send = useCallback(
     (data: { type: string } & object) => {
       if (ws.readyState !== WebSocket.OPEN) {
-        setSendQueue((queue) => [...queue, data]);
+        sendQueue.current.push(data);
         return;
       }
 
