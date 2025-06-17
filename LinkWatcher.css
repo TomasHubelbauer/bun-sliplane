@@ -16,4 +16,12 @@
   button:first-of-type {
     margin-left: auto;
   }
+
+  code {
+    align-self: stretch;
+  }
+
+  code:empty {
+    width: 1ch;
+  }
 }

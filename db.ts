@@ -22,4 +22,12 @@ db.run(
   "CREATE TABLE IF NOT EXISTS links (url TEXT PRIMARY KEY, checkStamp TEXT, changeStamp TEXT, html TEXT)"
 );
 
+try {
+  db.run('ALTER TABLE links ADD COLUMN mask TEXT DEFAULT ""');
+} catch (error) {
+  if (error.message !== "duplicate column name: mask") {
+    throw error;
+  }
+}
+
 export default db;

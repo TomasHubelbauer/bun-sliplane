@@ -11,6 +11,7 @@ export default async function compareLink(
   link: {
     url: string;
     html: string;
+    mask: string;
   }
 ) {
   ws.send(
@@ -38,10 +39,18 @@ export default async function compareLink(
     })
   );
 
+  const maskedLinkHtml = link.mask
+    ? link.html.replace(new RegExp(link.mask, "g"), `<!-- ${link.mask} -->`)
+    : link.html;
+
+  const maskedHtml = link.mask
+    ? html.replace(new RegExp(link.mask, "g"), `<!-- ${link.mask} -->`)
+    : html;
+
   // See https://github.com/oven-sh/bun/issues/20396 for `util.diff` support
   // Bun shell doesn't support process substitution, so we use bash -c
   const diff =
-    await $`bash -c 'diff -u <(echo "$1") <(echo "$2") | tail -n +4' -- "${link.html}" "${html}"`
+    await $`bash -c 'diff -u <(echo "$1") <(echo "$2") | tail -n +4' -- "${maskedLinkHtml}" "${maskedHtml}"`
       .nothrow()
       .text();
 

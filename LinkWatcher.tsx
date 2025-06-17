@@ -12,9 +12,11 @@ import type { WebSocketProps } from "./WebSocketProps.ts";
 type LinkWatcherProps = WebSocketProps;
 
 type Link = {
+  rowid: number;
   url: string;
   checkStamp: string;
   changeStamp: string;
+  mask: string;
 };
 
 export default function LinkWatcher({ send, listen }: LinkWatcherProps) {
@@ -101,6 +103,41 @@ export default function LinkWatcher({ send, listen }: LinkWatcherProps) {
     [send]
   );
 
+  const handleMaskCodeClick = useCallback(
+    (event: MouseEvent<HTMLElement>) => {
+      const rowId = +event.currentTarget.dataset.rowid!;
+      const link = links.find((link) => link.rowid === rowId);
+      if (!link) {
+        return;
+      }
+
+      let draft = link.mask;
+      do {
+        const mask = prompt("Mask:", draft);
+        if (mask === null || mask === link.mask) {
+          return;
+        }
+
+        try {
+          new RegExp(mask);
+        } catch (error) {
+          alert("Invalid mask: " + error);
+          draft = mask;
+          continue;
+        }
+
+        send({
+          type: "setLinkMask",
+          rowId,
+          mask,
+        });
+
+        return;
+      } while (true);
+    },
+    [links, send]
+  );
+
   return (
     <div className={LinkWatcher.name}>
       <input
@@ -124,6 +161,10 @@ export default function LinkWatcher({ send, listen }: LinkWatcherProps) {
           <a href={`/preview/` + link.url} target="_blank">
             Preview
           </a>
+          · Mask:
+          <code data-rowid={link.rowid} onClick={handleMaskCodeClick}>
+            {link.mask}
+          </code>
           <button data-url={link.url} onClick={handleForceCheckOneButtonClick}>
             Force check
           </button>

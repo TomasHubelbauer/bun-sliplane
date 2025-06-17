@@ -32,6 +32,7 @@ import getMachineFiles from "./getMachineFiles.ts";
 import zipDirectory from "./zipDirectory.ts";
 import deleteDatabaseRows from "./deleteDatabaseRows.ts";
 import getDatabaseRowCount from "./getDatabaseRowCount.ts";
+import setLinkMask from "./setLinkMask.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -62,6 +63,7 @@ const handlers = [
   getMachineFiles,
   deleteDatabaseRows,
   getDatabaseRowCount,
+  setLinkMask,
 ] as const;
 
 // TODO: Split these per `userName`
