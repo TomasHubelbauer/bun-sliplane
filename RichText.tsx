@@ -28,7 +28,7 @@ export default function RichText({
       switch (line.type) {
         case "paragraph": {
           const text = prompt(undefined, line.text);
-          if (text !== line.text) {
+          if (text !== null && text !== line.text) {
             line.text = text ?? "";
             onChange(serializeSegments(_lines));
           }
@@ -38,7 +38,7 @@ export default function RichText({
         case "code-block": {
           const codeLine = line.lines[subindex];
           const text = prompt(undefined, codeLine);
-          if (text !== codeLine) {
+          if (text !== null && text !== codeLine) {
             line.lines[subindex] = text ?? "";
             onChange(serializeSegments(_lines));
           }
@@ -48,7 +48,7 @@ export default function RichText({
         case "unordered-list": {
           const item = line.items[subindex];
           const text = prompt(undefined, item.text);
-          if (text !== item.text) {
+          if (text !== null && text !== item.text) {
             item.text = text ?? "";
             onChange(serializeSegments(_lines));
           }
@@ -58,7 +58,7 @@ export default function RichText({
         case "ordered-list": {
           const item = line.items[subindex];
           const text = prompt(undefined, item.text);
-          if (text !== item.text) {
+          if (text !== null && text !== item.text) {
             item.text = text ?? "";
             onChange(serializeSegments(_lines));
           }
@@ -74,7 +74,10 @@ export default function RichText({
   );
 
   const handleFallbackDivClick = useCallback(() => {
-    onChange(prompt(undefined, "") ?? "");
+    const value = prompt(undefined, "");
+    if (value !== null) {
+      onChange(value);
+    }
   }, [onChange]);
 
   return (
