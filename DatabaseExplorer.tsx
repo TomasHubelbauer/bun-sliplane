@@ -45,12 +45,8 @@ export default function DatabaseExplorer({
         setTables(data);
         setSelectedTable(data[0]);
       },
-      getDatabaseColumns: (data: Column[]) => {
-        setColumns(data);
-      },
-      getDatabaseRows: (data: Row[]) => {
-        setRows(data);
-      },
+      getDatabaseColumns: setColumns,
+      getDatabaseRows: setRows,
     });
 
     send({ type: "getDatabaseTables" });

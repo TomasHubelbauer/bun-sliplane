@@ -19,9 +19,7 @@ export default function VolumeExplorer({
     const abortController = new AbortController();
 
     listen(abortController.signal, {
-      getVolumeFiles: (data: Entry[]) => {
-        setItems(data);
-      },
+      getVolumeFiles: setItems,
     });
 
     send({ type: "getVolumeFiles" });

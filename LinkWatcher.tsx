@@ -26,9 +26,7 @@ export default function LinkWatcher({ send, listen }: LinkWatcherProps) {
     const abortController = new AbortController();
 
     listen(abortController.signal, {
-      listLinks: (data: Link[]) => {
-        setLinks(data);
-      },
+      listLinks: setLinks,
       reportLinkCheckLog: (data: string) => {
         setLogs(
           (logs) =>

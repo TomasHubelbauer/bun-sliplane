@@ -14,9 +14,7 @@ export default function MachineExplorer({
     const abortController = new AbortController();
 
     listen(abortController.signal, {
-      getMachineFiles: (data: Entry[]) => {
-        setItems(data);
-      },
+      getMachineFiles: setItems,
     });
 
     send({ type: "getMachineFiles" });

@@ -35,15 +35,9 @@ export default function Tools({
     const abortController = new AbortController();
 
     listen(abortController.signal, {
-      calculateDatabaseSize: (data: number) => {
-        setDbSize(data);
-      },
-      getUserName: (data: string) => {
-        setUserName(data);
-      },
-      getAudits: (data: { name: string; stamp: string }[]) => {
-        setAudits(data);
-      },
+      calculateDatabaseSize: setDbSize,
+      getUserName: setUserName,
+      getAudits: setAudits,
       // Watch the link check log even when Link Watcher is not open
       reportLinkCheckLog: (data: string) => {
         const log = localStorage.getItem("linkCheckLog") || "";
