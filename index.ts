@@ -31,6 +31,7 @@ import compareLinks from "./compareLinks.ts";
 import getMachineFiles from "./getMachineFiles.ts";
 import zipDirectory from "./zipDirectory.ts";
 import deleteDatabaseRows from "./deleteDatabaseRows.ts";
+import getDatabaseRowCount from "./getDatabaseRowCount.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -60,6 +61,7 @@ const handlers = [
   calculateDatabaseSize,
   getMachineFiles,
   deleteDatabaseRows,
+  getDatabaseRowCount,
 ] as const;
 
 // TODO: Split these per `userName`

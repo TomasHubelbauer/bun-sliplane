@@ -5,6 +5,7 @@ import {
   type ChangeEvent,
   type MouseEvent,
   type KeyboardEvent,
+  useMemo,
 } from "react";
 import type { WebSocketProps } from "./WebSocketProps.ts";
 
@@ -36,6 +37,9 @@ export default function DatabaseExplorer({
   const [columns, setColumns] = useState<Column[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [pageSize, setPageSize] = useState(10);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -47,6 +51,7 @@ export default function DatabaseExplorer({
       },
       getDatabaseColumns: setColumns,
       getDatabaseRows: setRows,
+      getDatabaseRowCount: setTotal,
     });
 
     send({ type: "getDatabaseTables" });
@@ -62,6 +67,7 @@ export default function DatabaseExplorer({
       );
 
       setSelectedTable(table);
+      setPageIndex(0);
     },
     [tables]
   );
@@ -79,8 +85,15 @@ export default function DatabaseExplorer({
     send({
       type: "getDatabaseRows",
       table: selectedTable.name,
+      pageIndex,
+      pageSize,
     });
-  }, [send, selectedTable]);
+
+    send({
+      type: "getDatabaseRowCount",
+      table: selectedTable.name,
+    });
+  }, [send, selectedTable, pageIndex, pageSize]);
 
   const handleTextAreaKeyDown = useCallback(
     (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -247,6 +260,36 @@ export default function DatabaseExplorer({
     setSelectedRows([]);
   }, [send, selectedTable, selectedRows]);
 
+  const handlePrevPageButtonClick = useCallback(() => {
+    if (pageIndex <= 0) {
+      return;
+    }
+
+    setPageIndex((pageIndex) => pageIndex - 1);
+  }, [pageIndex]);
+
+  const pageCount = useMemo(
+    () => Math.ceil(total / pageSize),
+    [total, pageSize]
+  );
+
+  const handleNextPageButtonClick = useCallback(() => {
+    if (pageIndex >= pageCount - 1) {
+      return;
+    }
+
+    setPageIndex((pageIndex) => pageIndex + 1);
+  }, [pageIndex, pageCount]);
+
+  const handlePageSizeSelectChange = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      const newPageSize = +event.currentTarget.value;
+      setPageSize(newPageSize);
+      setPageIndex(0);
+    },
+    []
+  );
+
   return (
     <div className={DatabaseExplorer.name}>
       <div className="controls">
@@ -270,6 +313,25 @@ export default function DatabaseExplorer({
             Delete {selectedRows.length} selected
           </button>
         )}
+        <select value={pageSize} onChange={handlePageSizeSelectChange}>
+          <option value={1}>1 row per page</option>
+          <option value={5}>5 rows per page</option>
+          <option value={10}>10 rows per page</option>
+          <option value={20}>20 rows per page</option>
+          <option value={50}>50 rows per page</option>
+          <option value={100}>100 rows per page</option>
+        </select>
+        Page {pageIndex + 1} of {pageCount}
+        <button onClick={handlePrevPageButtonClick} disabled={pageIndex === 0}>
+          Go to prev page
+        </button>
+        <button
+          onClick={handleNextPageButtonClick}
+          disabled={pageIndex >= pageCount - 1}
+        >
+          Go to next page
+        </button>
+        {total} rows total
       </div>
       <table>
         <thead>
