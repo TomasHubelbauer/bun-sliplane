@@ -8,6 +8,7 @@ import {
 import Stamp from "./Stamp.tsx";
 import LinkPreview from "./LinkPreview.tsx";
 import { listen, send } from "./webSocket.ts";
+import MaskTweaker from "./MaskTweaker.tsx";
 
 type Link = {
   rowid: number;
@@ -21,6 +22,7 @@ export default function LinkWatcher() {
   const [draft, setDraft] = useState("");
   const [links, setLinks] = useState<Link[]>([]);
   const [logs, setLogs] = useState(localStorage.getItem("linkCheckLog") || "");
+  const [selectedLink, setSelectedLink] = useState<Link>();
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -109,32 +111,29 @@ export default function LinkWatcher() {
         return;
       }
 
-      let draft = link.mask;
-      do {
-        const mask = prompt("Mask:", draft);
-        if (mask === null || mask === link.mask) {
-          return;
-        }
-
-        try {
-          new RegExp(mask);
-        } catch (error) {
-          alert("Invalid mask: " + error);
-          draft = mask;
-          continue;
-        }
-
-        send({
-          type: "setLinkMask",
-          rowId,
-          mask,
-        });
-
-        return;
-      } while (true);
+      setSelectedLink(link);
     },
     [links]
   );
+
+  const handleMaskTweakerSave = useCallback(
+    (rowId: number, mask: string) => {
+      if (!selectedLink) {
+        return;
+      }
+
+      send({
+        type: "setLinkMask",
+        rowId,
+        mask,
+      });
+    },
+    [selectedLink, send]
+  );
+
+  const handleMaskTweakerClose = useCallback(() => {
+    setSelectedLink(undefined);
+  }, []);
 
   return (
     <div className={LinkWatcher.name}>
@@ -171,6 +170,13 @@ export default function LinkWatcher() {
           </button>
         </div>
       ))}
+      {selectedLink && (
+        <MaskTweaker
+          link={selectedLink}
+          onSave={handleMaskTweakerSave}
+          onClose={handleMaskTweakerClose}
+        />
+      )}
       <textarea readOnly value={logs} rows={5} />
       <button onClick={handleForceCheckButtonClick}>Force check all</button>
     </div>

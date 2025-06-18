@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 1ch;
 
-  div {
+  div:not([class]) {
     align-items: center;
     display: flex;
     gap: 1ch;
@@ -19,6 +19,7 @@
 
   code {
     align-self: stretch;
+    cursor: pointer;
   }
 
   code:empty {

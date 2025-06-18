@@ -1,0 +1,18 @@
+[class^="MaskTweaker"] {
+  display: flex;
+  flex-direction: column;
+  gap: 1ch;
+
+  .split {
+    display: flex;
+    gap: 1ch;
+
+    textarea {
+      flex: 1;
+    }
+
+    iframe {
+      flex: 1;
+    }
+  }
+}

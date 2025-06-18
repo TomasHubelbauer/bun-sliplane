@@ -5,9 +5,5 @@ export default function listLinks() {
     html?: string;
   }[];
 
-  for (const link of links) {
-    delete link.html;
-  }
-
   return links;
 }
