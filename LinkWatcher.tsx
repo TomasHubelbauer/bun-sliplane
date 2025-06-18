@@ -16,6 +16,7 @@ type Link = {
   checkStamp: string;
   changeStamp: string;
   mask: string;
+  html: string;
 };
 
 export default function LinkWatcher() {
