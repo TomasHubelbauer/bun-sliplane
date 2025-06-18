@@ -8,9 +8,11 @@ import {
   useMemo,
 } from "react";
 import { listen, send } from "./webSocket.ts";
+import formatHumanBytes from "./formatHumanBytes.ts";
 
 type Table = {
   name: string;
+  size: number;
 };
 
 type Column = {
@@ -291,7 +293,7 @@ export default function DatabaseExplorer() {
         <select value={selectedTable?.name} onChange={handleTableSelectChange}>
           {tables.map((table) => (
             <option key={table.name} value={table.name}>
-              {table.name}
+              {table.name} ({formatHumanBytes(table.size)})
             </option>
           ))}
         </select>
