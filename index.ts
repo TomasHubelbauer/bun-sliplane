@@ -342,12 +342,6 @@ const server: Server = Bun.serve({
         );
       }
     },
-    ping() {
-      console.log(new Date().toISOString(), "WebSocket ping received");
-    },
-    pong() {
-      console.log(new Date().toISOString(), "WebSocket pong received");
-    },
   },
 });
 
