@@ -104,14 +104,6 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
     }
   }, [readyState]);
 
-  const [readyStateStamp, setReadyStateStamp] = useState(
-    new Date().toISOString()
-  );
-
-  useEffect(() => {
-    setReadyStateStamp(new Date().toISOString());
-  }, [readyState]);
-
   return (
     <>
       <div className={Tools.name}>
