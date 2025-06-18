@@ -28,6 +28,16 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
     stamp: string;
   }>();
 
+  const [linkCheckStatus, setLinkCheckStatus] = useState<{
+    lastCheckStamp: string;
+    nextCheckStamp: string;
+  }>();
+
+  const [linkCheckProgress, setLinkCheckProgress] = useState<{
+    linkIndex: number;
+    linkCount: number;
+  }>();
+
   useEffect(() => {
     const abortController = new AbortController();
 
@@ -43,6 +53,8 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
           `${new Date().toISOString()}: ${data}\n${log}`
         );
       },
+      reportLinkCheckStatus: setLinkCheckStatus,
+      reportLinkCheckProgress: setLinkCheckProgress,
     });
 
     send({ type: "getUserName" });
@@ -136,7 +148,15 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
           disabled={tool === "link-watcher"}
         >
           Link Watcher
-          {lastLinkCheck && <Stamp stamp={lastLinkCheck} />}
+          {linkCheckStatus && <Stamp stamp={linkCheckStatus.lastCheckStamp} />}
+          {linkCheckStatus && "·"}
+          {linkCheckStatus && <Stamp stamp={linkCheckStatus.nextCheckStamp} />}
+          {linkCheckProgress && (
+            <progress
+              value={linkCheckProgress.linkIndex}
+              max={linkCheckProgress.linkCount}
+            />
+          )}
         </button>
         <a href="/backup" target="_blank">
           Backup

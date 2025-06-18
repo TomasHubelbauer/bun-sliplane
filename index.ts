@@ -356,14 +356,52 @@ console.log(server.url.href);
 // Use `globalThis` as it will be preserved between Bun hot reloads and thus
 // overlapping timers will be avoided.
 // See https://bun.sh/docs/runtime/hot#hot-mode
+const monitorFrequency = 60_000; // 1 minute
 void (async function monitorLinks() {
+  if (webSocket && webSocket.readyState === 1) {
+    const userName = webSocket.data as string;
+    const lastCheck = db
+      .query(`SELECT stamp FROM audits WHERE name = 'link-check-${userName}'`)
+      .get() as { stamp: string };
+
+    if (!lastCheck.stamp) {
+      await compareLinks(webSocket);
+      webSocket.send(
+        JSON.stringify({
+          type: "reportLinkCheckStatus",
+          data: {
+            lastCheckStamp: new Date().toISOString(),
+            nextCheckStamp: new Date(
+              Date.now() + monitorFrequency
+            ).toISOString(),
+          },
+        })
+      );
+    } else {
+      const lastCheckStamp = new Date(lastCheck.stamp);
+      const now = new Date();
+      const difference = now.getTime() - lastCheckStamp.getTime();
+      if (difference > monitorFrequency) {
+        await compareLinks(webSocket);
+      }
+
+      webSocket.send(
+        JSON.stringify({
+          type: "reportLinkCheckStatus",
+          data: {
+            lastCheckStamp: lastCheck.stamp,
+            nextCheckStamp: new Date(
+              lastCheckStamp.getTime() + monitorFrequency
+            ).toISOString(),
+          },
+        })
+      );
+    }
+  }
+
   if (globalThis.monitorLinksHandle) {
     clearTimeout(globalThis.monitorLinksHandle);
   }
 
-  if (webSocket && webSocket.readyState === 1) {
-    await compareLinks(webSocket);
-  }
-
-  globalThis.monitorLinksHandle = setTimeout(monitorLinks, 60 * 1000);
+  globalThis.monitorLinksHandle = setTimeout(monitorLinks, 1000);
 })();

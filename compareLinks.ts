@@ -8,9 +8,24 @@ export default async function compareLinks(ws: ServerWebSocket<unknown>) {
     checkStamp: string;
     changeStamp: string;
     html: string;
+    mask: string;
   }[];
 
-  for (const link of links) {
+  for (let index = 0; index < links.length; index++) {
+    ws.send(
+      JSON.stringify({
+        type: "reportLinkCheckProgress",
+        data: { linkIndex: index, linkCount: links.length },
+      })
+    );
+
+    const link = links[index];
     await compareLink(ws, link);
   }
+
+  ws.send(
+    JSON.stringify({
+      type: "reportLinkCheckProgress",
+    })
+  );
 }
