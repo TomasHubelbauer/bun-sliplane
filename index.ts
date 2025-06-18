@@ -289,12 +289,19 @@ const server: Server = Bun.serve({
 
         const link = db
           .query("SELECT * FROM links WHERE url = ?")
-          .get(linkUrl) as { html: string };
+          .get(linkUrl) as { html: string; mask: string } | undefined;
         if (!link) {
           return new Response("Link not found", { status: 404 });
         }
 
-        return new Response(link.html, {
+        const maskedLinkHtml = link.mask
+          ? link.html.replace(
+              new RegExp(link.mask, "g"),
+              `<!-- ${link.mask} -->`
+            )
+          : link.html;
+
+        return new Response(maskedLinkHtml, {
           headers: {
             "Content-Type": "text/html; charset=utf-8",
           },
