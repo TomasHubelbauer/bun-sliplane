@@ -8,13 +8,11 @@ import {
 import type { Item as ItemType } from "./ItemType.ts";
 import RichText from "./RichText.tsx";
 import Stamp from "./Stamp.tsx";
-import type { WebSocketProps } from "./WebSocketProps.ts";
+import { send } from "./webSocket.ts";
 
-type ItemProps = WebSocketProps & ItemType;
+type ItemProps = ItemType;
 
 export default function Item({
-  send,
-  listen,
   rowid,
   stamp,
   name,
@@ -27,7 +25,7 @@ export default function Item({
     }
 
     send({ type: "deleteItem", rowId: rowid });
-  }, [send, rowid, name]);
+  }, [rowid, name]);
 
   const handleNameRichTextChange = useCallback(
     async (value: string) => {
@@ -37,7 +35,7 @@ export default function Item({
         name: value,
       });
     },
-    [send, rowid]
+    [rowid]
   );
 
   const handleTextRichTextChange = useCallback(
@@ -48,7 +46,7 @@ export default function Item({
         text: value,
       });
     },
-    [send, rowid]
+    [rowid]
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -77,7 +75,7 @@ export default function Item({
         type: "getItems",
       });
     },
-    [send, rowid]
+    [rowid]
   );
 
   const files: { uuid: string; name: string; type: string }[] = useMemo(
@@ -111,7 +109,7 @@ export default function Item({
         uuid,
       });
     },
-    [send, rowid, files]
+    [rowid, files]
   );
 
   return (
@@ -121,8 +119,6 @@ export default function Item({
         <span className="placeholder">#{rowid}</span>
         ·
         <RichText
-          send={send}
-          listen={listen}
           text={name}
           fallback={<span className="placeholder">(no name)</span>}
           onChange={handleNameRichTextChange}
@@ -135,8 +131,6 @@ export default function Item({
         </button>
       </div>
       <RichText
-        send={send}
-        listen={listen}
         text={text}
         fallback={<span className="placeholder">(no text)</span>}
         onChange={handleTextRichTextChange}

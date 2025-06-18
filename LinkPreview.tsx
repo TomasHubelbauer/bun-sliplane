@@ -5,9 +5,9 @@ import {
   useEffect,
   useState,
 } from "react";
-import type { WebSocketProps } from "./WebSocketProps.ts";
+import { listen, send } from "./webSocket.ts";
 
-type LinkPreviewProps = WebSocketProps & {
+type LinkPreviewProps = {
   url: string;
 };
 
@@ -18,7 +18,7 @@ type Metadata = {
   title: string;
 };
 
-export default function LinkPreview({ send, listen, url }: LinkPreviewProps) {
+export default function LinkPreview({ url }: LinkPreviewProps) {
   const { href, host, origin } = useMemo(() => new URL(url), [url]);
   const [metadata, setMetadata] = useState<Metadata>();
 
@@ -41,7 +41,7 @@ export default function LinkPreview({ send, listen, url }: LinkPreviewProps) {
     return () => {
       abortController.abort();
     };
-  }, [send, url]);
+  }, [url]);
 
   useEffect(() => {
     setMetadata(undefined);

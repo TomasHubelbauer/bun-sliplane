@@ -1,7 +1,6 @@
 import LinkPreview from "./LinkPreview.tsx";
-import type { WebSocketProps } from "./WebSocketProps.ts";
 
-type RichLineProps = WebSocketProps & {
+type RichLineProps = {
   parts: (
     | string
     | { type: "code"; text: string }
@@ -9,7 +8,7 @@ type RichLineProps = WebSocketProps & {
   )[];
 };
 
-export default function RichLine({ parts, send, listen }: RichLineProps) {
+export default function RichLine({ parts }: RichLineProps) {
   return parts.map((part, index) => {
     if (typeof part === "string") {
       return <span key={index}>{part}</span>;
@@ -17,9 +16,7 @@ export default function RichLine({ parts, send, listen }: RichLineProps) {
 
     switch (part.type) {
       case "link": {
-        return (
-          <LinkPreview key={index} send={send} listen={listen} url={part.url} />
-        );
+        return <LinkPreview key={index} url={part.url} />;
       }
       case "code": {
         return <code key={index}>{part.text}</code>;

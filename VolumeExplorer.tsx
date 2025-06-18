@@ -2,17 +2,13 @@ import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import Usage from "./Usage.tsx";
 import type { Stats } from "./Stats.ts";
 import FileSystem, { type Entry } from "./FileSystem.tsx";
-import type { WebSocketProps } from "./WebSocketProps.ts";
+import { listen, send } from "./webSocket.ts";
 
-type VolumeExplorerProps = WebSocketProps & {
+type VolumeExplorerProps = {
   stats: Stats | undefined;
 };
 
-export default function VolumeExplorer({
-  send,
-  listen,
-  stats,
-}: VolumeExplorerProps) {
+export default function VolumeExplorer({ stats }: VolumeExplorerProps) {
   const [items, setItems] = useState<Entry[]>([]);
 
   useEffect(() => {
@@ -26,7 +22,7 @@ export default function VolumeExplorer({
     return () => {
       abortController.abort();
     };
-  }, [send, listen]);
+  }, []);
 
   const handleDeleteButtonClick = useCallback(
     async (event: MouseEvent<HTMLButtonElement>) => {

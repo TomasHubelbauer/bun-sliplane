@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import FileSystem, { type Entry } from "./FileSystem.tsx";
-import type { WebSocketProps } from "./WebSocketProps.ts";
+import { listen, send } from "./webSocket.ts";
 
-type MachineExplorerProps = WebSocketProps;
-
-export default function MachineExplorer({
-  send,
-  listen,
-}: MachineExplorerProps) {
+export default function MachineExplorer() {
   const [items, setItems] = useState<Entry[]>([]);
 
   useEffect(() => {
@@ -21,7 +16,7 @@ export default function MachineExplorer({
     return () => {
       abortController.abort();
     };
-  }, [send, listen]);
+  }, []);
 
   const actions = useCallback(
     (entry: Entry) => (

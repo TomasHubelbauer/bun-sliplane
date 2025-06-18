@@ -1,16 +1,15 @@
 import Item from "./Item.tsx";
 import type { Item as ItemType } from "./ItemType.ts";
-import type { WebSocketProps } from "./WebSocketProps.ts";
 
-type ListProps = WebSocketProps & {
+type ListProps = {
   items: ItemType[];
 };
 
-export default function List({ send, listen, items }: ListProps) {
+export default function List({ items }: ListProps) {
   return (
     <div className={List.name}>
       {items.map((item) => (
-        <Item key={item.rowid} send={send} listen={listen} {...item} />
+        <Item key={item.rowid} {...item} />
       ))}
     </div>
   );

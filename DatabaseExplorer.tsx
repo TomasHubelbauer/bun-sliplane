@@ -7,9 +7,7 @@ import {
   type KeyboardEvent,
   useMemo,
 } from "react";
-import type { WebSocketProps } from "./WebSocketProps.ts";
-
-type DatabaseExplorerProps = WebSocketProps;
+import { listen, send } from "./webSocket.ts";
 
 type Table = {
   name: string;
@@ -28,10 +26,7 @@ type Row = {
   [key: string]: string | number | null;
 };
 
-export default function DatabaseExplorer({
-  send,
-  listen,
-}: DatabaseExplorerProps) {
+export default function DatabaseExplorer() {
   const [tables, setTables] = useState<Table[]>([]);
   const [selectedTable, setSelectedTable] = useState<Table>();
   const [columns, setColumns] = useState<Column[]>([]);
@@ -58,7 +53,7 @@ export default function DatabaseExplorer({
     return () => {
       abortController.abort();
     };
-  }, [send, listen]);
+  }, []);
 
   const handleTableSelectChange = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
@@ -93,7 +88,7 @@ export default function DatabaseExplorer({
       type: "getDatabaseRowCount",
       table: selectedTable.name,
     });
-  }, [send, selectedTable, pageIndex, pageSize]);
+  }, [selectedTable, pageIndex, pageSize]);
 
   const handleTextAreaKeyDown = useCallback(
     (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -128,7 +123,7 @@ export default function DatabaseExplorer({
         value,
       });
     },
-    [send, selectedTable, columns, rows]
+    [selectedTable, columns, rows]
   );
 
   const handleCodeClick = useCallback(
@@ -166,7 +161,7 @@ export default function DatabaseExplorer({
         value,
       });
     },
-    [send, selectedTable, columns, rows]
+    [selectedTable, columns, rows]
   );
 
   const handleDeleteButtonClick = useCallback(
@@ -195,7 +190,7 @@ export default function DatabaseExplorer({
         rowId,
       });
     },
-    [send, selectedTable, rows]
+    [selectedTable, rows]
   );
 
   const handleDeleteTableButtonClick = useCallback(
@@ -258,7 +253,7 @@ export default function DatabaseExplorer({
     });
 
     setSelectedRows([]);
-  }, [send, selectedTable, selectedRows]);
+  }, [selectedTable, selectedRows]);
 
   const handlePrevPageButtonClick = useCallback(() => {
     if (pageIndex <= 0) {

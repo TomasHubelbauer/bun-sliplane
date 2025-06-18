@@ -12,24 +12,21 @@ import Stamp from "./Stamp.tsx";
 import type { Tool } from "./Tool.ts";
 import type { Stats } from "./Stats.ts";
 import formatHumanBytes from "./formatHumanBytes.ts";
-import type { WebSocketProps } from "./WebSocketProps.ts";
+import { ws } from "./webSocket.ts";
+import { listen, send } from "./webSocket.ts";
 
-type ToolsProps = WebSocketProps & {
+type ToolsProps = {
   stats: Stats | undefined;
   tool: Tool | undefined;
   setTool: Dispatch<SetStateAction<Tool | undefined>>;
-  readyState?: number;
 };
 
-export default function Tools({
-  send,
-  listen,
-  stats,
-  tool,
-  setTool,
-  readyState,
-}: ToolsProps) {
+export default function Tools({ stats, tool, setTool }: ToolsProps) {
   const [dbSize, setDbSize] = useState<number>();
+  const [readyState, setReadyState] = useState<{
+    state: number;
+    stamp: string;
+  }>();
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -52,10 +49,26 @@ export default function Tools({
     send({ type: "getAudits" });
     send({ type: "calculateDatabaseSize" });
 
+    const handle = setInterval(
+      () =>
+        setReadyState((readyState) => {
+          if (ws.readyState === readyState?.state) {
+            return readyState;
+          }
+
+          return {
+            state: ws.readyState,
+            stamp: new Date().toISOString(),
+          };
+        }),
+      1000
+    );
+
     return () => {
+      clearInterval(handle);
       abortController.abort();
     };
-  }, [send, listen]);
+  }, []);
 
   const [userName, setUserName] = useState<string>();
   const [audits, setAudits] = useState<{ name: string; stamp: string }[]>([]);
@@ -76,14 +89,8 @@ export default function Tools({
     [audits, userName]
   );
 
-  const lastLinkCheck = useMemo(
-    () =>
-      audits.find((audit) => audit.name === `link-check-${userName}`)?.stamp,
-    [audits, userName]
-  );
-
   const readyStateName = useMemo(() => {
-    switch (readyState) {
+    switch (readyState?.state) {
       case WebSocket.CONNECTING:
         return "connecting";
       case WebSocket.OPEN:
@@ -146,7 +153,7 @@ export default function Tools({
         ·
         <span className={`led ${readyStateName}`} title={readyStateName} />
         {readyStateName}
-        <Stamp stamp={readyStateStamp} />
+        {readyState && <Stamp stamp={readyState.stamp} />}
       </div>
     </>
   );

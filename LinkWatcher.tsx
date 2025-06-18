@@ -7,9 +7,7 @@ import {
 } from "react";
 import Stamp from "./Stamp.tsx";
 import LinkPreview from "./LinkPreview.tsx";
-import type { WebSocketProps } from "./WebSocketProps.ts";
-
-type LinkWatcherProps = WebSocketProps;
+import { listen, send } from "./webSocket.ts";
 
 type Link = {
   rowid: number;
@@ -19,7 +17,7 @@ type Link = {
   mask: string;
 };
 
-export default function LinkWatcher({ send, listen }: LinkWatcherProps) {
+export default function LinkWatcher() {
   const [draft, setDraft] = useState("");
   const [links, setLinks] = useState<Link[]>([]);
   const [logs, setLogs] = useState(localStorage.getItem("linkCheckLog") || "");
@@ -42,7 +40,7 @@ export default function LinkWatcher({ send, listen }: LinkWatcherProps) {
     return () => {
       abortController.abort();
     };
-  }, [send, listen]);
+  }, []);
 
   const handleDraftInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +56,7 @@ export default function LinkWatcher({ send, listen }: LinkWatcherProps) {
         setDraft("");
       }
     },
-    [send, draft]
+    [draft]
   );
 
   const handleDeleteButtonClick = useCallback(
@@ -135,7 +133,7 @@ export default function LinkWatcher({ send, listen }: LinkWatcherProps) {
         return;
       } while (true);
     },
-    [links, send]
+    [links]
   );
 
   return (
@@ -149,7 +147,7 @@ export default function LinkWatcher({ send, listen }: LinkWatcherProps) {
       />
       {links.map((link, index) => (
         <div key={index}>
-          <LinkPreview send={send} listen={listen} url={link.url} />·
+          <LinkPreview url={link.url} />·
           <div>
             Last checked: <Stamp stamp={link.checkStamp} />
           </div>

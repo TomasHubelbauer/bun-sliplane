@@ -6,14 +6,14 @@ import {
   type KeyboardEvent,
   type SetStateAction,
 } from "react";
-import type { WebSocketProps } from "./WebSocketProps.ts";
+import { send } from "./webSocket.ts";
 
-type ComposerProps = WebSocketProps & {
+type ComposerProps = {
   draft: string;
   setDraft: Dispatch<SetStateAction<string>>;
 };
 
-export default function Composer({ send, draft, setDraft }: ComposerProps) {
+export default function Composer({ draft, setDraft }: ComposerProps) {
   const handleTextAreaChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       setDraft(event.currentTarget.value);
@@ -65,7 +65,7 @@ export default function Composer({ send, draft, setDraft }: ComposerProps) {
 
       setDraft("");
     },
-    [send, setDraft]
+    [setDraft]
   );
 
   const rows = useMemo(() => draft.trim().split("\n").length, [draft]);
