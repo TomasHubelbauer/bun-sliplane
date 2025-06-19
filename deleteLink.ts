@@ -10,7 +10,7 @@ export default function deleteLink(
     ws.send(
       JSON.stringify({
         type: "reportError",
-        message: `Invalid URL: ${url}`,
+        data: { message: `Invalid URL: ${url}` },
       })
     );
 

@@ -336,8 +336,10 @@ const server: Server = Bun.serve({
         ws.send(
           JSON.stringify({
             type: "reportError",
-            message: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined,
+            data: {
+              message: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : undefined,
+            },
           })
         );
       }
