@@ -318,7 +318,7 @@ const server: Server = Bun.serve({
     open(ws) {
       globalThis.clients.push(ws);
       console.log(
-        new Date().toISOString(),
+        new Date().toISOString().slice("yyyy-mm-ddT".length, -".###Z".length),
         `${ws.data} connected. Clients:`,
         globalThis.clients
           .map((c) => `${c.data} (${c.readyState})`)
@@ -328,7 +328,7 @@ const server: Server = Bun.serve({
     close(ws) {
       globalThis.clients.splice(globalThis.clients.indexOf(ws), 1);
       console.log(
-        new Date().toISOString(),
+        new Date().toISOString().slice("yyyy-mm-ddT".length, -".###Z".length),
         `${ws.data} disconnected. Clients:`,
         globalThis.clients
           .map((c) => `${c.data} (${c.readyState})`)

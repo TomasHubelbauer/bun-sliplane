@@ -14,7 +14,7 @@ export default async function monitorLinks() {
     globalThis.isMonitoring = true;
 
     console.log(
-      new Date().toISOString(),
+      new Date().toISOString().slice("yyyy-mm-ddT".length, -".###Z".length),
       "Monitoring links… Clients:",
       (globalThis.clients as ServerWebSocket<unknown>[])
         .map((c) => `${c.data} (${c.readyState})`)
