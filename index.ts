@@ -401,5 +401,3 @@ void (async function monitorLinks() {
 
   globalThis.monitorLinksHandle = setTimeout(monitorLinks, 1000);
 })();
-
-console.log(process.env);
