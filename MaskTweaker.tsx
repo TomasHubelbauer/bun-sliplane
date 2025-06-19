@@ -4,6 +4,7 @@ import {
   useMemo,
   useState,
   type ChangeEvent,
+  type KeyboardEvent,
 } from "react";
 import { listen, send } from "./webSocket.ts";
 
@@ -80,10 +81,29 @@ export default function MaskTweaker({
     }
   }, [link]);
 
+  const handleMaskInputKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleSaveButtonClick();
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+    },
+    [handleSaveButtonClick]
+  );
+
   return (
     link && (
       <div className={MaskTweaker.name}>
-        <input value={link.mask} onChange={handleMaskInputChange} />
+        <input
+          value={link.mask}
+          onChange={handleMaskInputChange}
+          onKeyDown={handleMaskInputKeyDown}
+        />
         {error && <div className="error">Error: {error.message}</div>}
         <div className="split">
           <textarea value={maskedHtml} readOnly rows={30} onChange={() => {}} />
