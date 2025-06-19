@@ -1,4 +1,11 @@
-import { useCallback, useMemo, useState, type ChangeEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+} from "react";
+import { listen, send } from "./webSocket.ts";
 
 type Link = {
   rowid: number;
@@ -10,57 +17,87 @@ type Link = {
 };
 
 type MaskTweakerProps = {
-  link: Link;
+  rowId: number;
   onSave: (rowId: number, mask: string) => void;
   onClose: () => void;
 };
 
 export default function MaskTweaker({
-  link,
+  rowId,
   onSave,
   onClose,
 }: MaskTweakerProps) {
-  const [mask, setMask] = useState(link.mask);
+  const [link, setLink] = useState<Link>();
+
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    listen(abortController.signal, {
+      fetchLinkDetail: setLink,
+    });
+
+    send({ type: "fetchLinkDetail", rowId });
+    return () => {
+      abortController.abort();
+    };
+  }, [rowId]);
 
   const handleMaskInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      setMask(event.target.value);
+      setLink((link) =>
+        link ? { ...link, mask: event.target.value } : undefined
+      );
     },
     []
   );
 
   const handleSaveButtonClick = useCallback(() => {
-    onSave(link.rowid, mask);
+    if (!link) {
+      return;
+    }
+
+    onSave(rowId, link.mask);
     onClose();
-  }, [link.rowid, mask, onSave, onClose]);
+  }, [rowId, link, onSave, onClose]);
 
   const [maskedHtml, error] = useMemo(() => {
+    if (!link) {
+      return ["", null];
+    }
+
     try {
       return [
-        mask
-          ? link.html.replace(new RegExp(mask, "g"), `<!-- ${mask} -->`)
+        link.mask
+          ? link.html.replace(
+              new RegExp(link.mask, "g"),
+              `<!-- ${link.mask} -->`
+            )
           : link.html,
         null,
       ];
     } catch (error) {
       return [link.html, error];
     }
-  }, [mask, link.html]);
+  }, [link]);
 
   return (
-    <div className={MaskTweaker.name}>
-      <input value={mask} onChange={handleMaskInputChange} />
-      {error && <div className="error">Error: {error.message}</div>}
-      <div className="split">
-        <textarea value={maskedHtml} readOnly rows={30} onChange={() => {}} />
-        <iframe
-          src={`data:text/html;charset=utf-8,${encodeURIComponent(maskedHtml)}`}
-        />
+    link && (
+      <div className={MaskTweaker.name}>
+        <input value={link.mask} onChange={handleMaskInputChange} />
+        {error && <div className="error">Error: {error.message}</div>}
+        <div className="split">
+          <textarea value={maskedHtml} readOnly rows={30} onChange={() => {}} />
+          <iframe
+            src={`data:text/html;charset=utf-8,${encodeURIComponent(
+              maskedHtml
+            )}`}
+          />
+        </div>
+        <button onClick={handleSaveButtonClick} disabled={!!error}>
+          Save
+        </button>
+        <button onClick={onClose}>Close</button>
       </div>
-      <button onClick={handleSaveButtonClick} disabled={!!error}>
-        Save
-      </button>
-      <button onClick={onClose}>Close</button>
-    </div>
+    )
   );
 }

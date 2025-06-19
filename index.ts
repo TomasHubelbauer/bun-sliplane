@@ -33,6 +33,7 @@ import zipDirectory from "./zipDirectory.ts";
 import deleteDatabaseRows from "./deleteDatabaseRows.ts";
 import getDatabaseRowCount from "./getDatabaseRowCount.ts";
 import setLinkMask from "./setLinkMask.ts";
+import fetchLinkDetail from "./fetchLinkDetail.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -64,6 +65,7 @@ const handlers = [
   deleteDatabaseRows,
   getDatabaseRowCount,
   setLinkMask,
+  fetchLinkDetail,
 ] as const;
 
 // TODO: Split these per `userName`

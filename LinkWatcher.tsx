@@ -16,7 +16,6 @@ type Link = {
   checkStamp: string;
   changeStamp: string;
   mask: string;
-  html: string;
 };
 
 export default function LinkWatcher() {
@@ -173,7 +172,7 @@ export default function LinkWatcher() {
       ))}
       {selectedLink && (
         <MaskTweaker
-          link={selectedLink}
+          rowId={selectedLink.rowid}
           onSave={handleMaskTweakerSave}
           onClose={handleMaskTweakerClose}
         />
