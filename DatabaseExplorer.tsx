@@ -285,6 +285,14 @@ export default function DatabaseExplorer() {
     []
   );
 
+  const handleSelectAllInputChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const checked = event.currentTarget.checked;
+      setSelectedRows(checked ? rows.map((row) => row.rowid) : []);
+    },
+    [rows]
+  );
+
   return (
     <div className={DatabaseExplorer.name}>
       <div className="controls">
@@ -331,7 +339,13 @@ export default function DatabaseExplorer() {
       <table>
         <thead>
           <tr>
-            <th />
+            <th>
+              <input
+                type="checkbox"
+                checked={rows.every((row) => selectedRows.includes(row.rowid))}
+                onChange={handleSelectAllInputChange}
+              />
+            </th>
             <th>Row ID</th>
             {columns.map((column) => (
               <th key={column.name}>
