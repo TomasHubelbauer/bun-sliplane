@@ -5,14 +5,19 @@ import getDatabaseRows from "./getDatabaseRows.ts";
 
 export default function deleteDatabaseRow(
   ws: ServerWebSocket<unknown>,
-  { table, rowId }: { table: string; rowId: number }
+  {
+    table,
+    rowId,
+    pageIndex,
+    pageSize,
+  }: { table: string; rowId: number; pageIndex: number; pageSize: number }
 ) {
   db.run(`DELETE FROM ${table} WHERE rowid = ?`, [rowId]);
 
   ws.send(
     JSON.stringify({
       type: getDatabaseRows.name,
-      data: getDatabaseRows(ws, { table }),
+      data: getDatabaseRows(ws, { table, pageIndex, pageSize }),
     })
   );
 

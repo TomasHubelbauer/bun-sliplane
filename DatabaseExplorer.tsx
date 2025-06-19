@@ -250,10 +250,12 @@ export default function DatabaseExplorer() {
       type: "deleteDatabaseRows",
       table: selectedTable.name,
       rowIds: selectedRows,
+      pageIndex,
+      pageSize,
     });
 
     setSelectedRows([]);
-  }, [selectedTable, selectedRows]);
+  }, [selectedTable, selectedRows, pageIndex, pageSize]);
 
   const handlePrevPageButtonClick = useCallback(() => {
     if (pageIndex <= 0) {
