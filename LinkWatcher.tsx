@@ -144,7 +144,7 @@ export default function LinkWatcher() {
           </a>
           · Mask:
           <code data-rowid={link.rowid} onClick={handleMaskCodeClick}>
-            {link.mask}
+            {link.mask.length > 25 ? `${link.mask.slice(0, 25)}…` : link.mask}
           </code>
           <button data-url={link.url} onClick={handleForceCheckButtonClick}>
             Force check
