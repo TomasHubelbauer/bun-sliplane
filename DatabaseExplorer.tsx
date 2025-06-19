@@ -188,9 +188,11 @@ export default function DatabaseExplorer() {
         type: "deleteDatabaseRow",
         table: selectedTable.name,
         rowId,
+        pageIndex,
+        pageSize,
       });
     },
-    [selectedTable, rows]
+    [selectedTable, rows, pageIndex, pageSize]
   );
 
   const handleDeleteTableButtonClick = useCallback(
