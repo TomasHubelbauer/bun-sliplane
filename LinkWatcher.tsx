@@ -72,15 +72,7 @@ export default function LinkWatcher() {
     [send]
   );
 
-  const handleForceCheckButtonClick = useCallback(() => {
-    if (!confirm("Are you sure you want to force check all links?")) {
-      return;
-    }
-
-    send({ type: "forceCheckLinks" });
-  }, [send]);
-
-  const handleForceCheckOneButtonClick = useCallback(
+  const handleForceCheckButtonClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       const url = event.currentTarget.dataset.url;
       if (!url) {
@@ -154,7 +146,7 @@ export default function LinkWatcher() {
           <code data-rowid={link.rowid} onClick={handleMaskCodeClick}>
             {link.mask}
           </code>
-          <button data-url={link.url} onClick={handleForceCheckOneButtonClick}>
+          <button data-url={link.url} onClick={handleForceCheckButtonClick}>
             Force check
           </button>
           <button data-url={link.url} onClick={handleDeleteButtonClick}>
@@ -169,7 +161,6 @@ export default function LinkWatcher() {
           onClose={handleMaskTweakerClose}
         />
       )}
-      <button onClick={handleForceCheckButtonClick}>Force check all</button>
     </div>
   );
 }

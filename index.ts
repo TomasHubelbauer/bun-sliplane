@@ -24,7 +24,6 @@ import trackLink from "./trackLink.ts";
 import listLinks from "./listLinks.ts";
 import deleteLink from "./deleteLink.ts";
 import deleteDatabaseTable from "./deleteDatabaseTable.ts";
-import forceCheckLinks from "./forceCheckLinks.ts";
 import forceCheckLink from "./forceCheckLink.ts";
 import calculateDatabaseSize from "./calculateDatabaseSize.ts";
 import compareLinks from "./compareLinks.ts";
@@ -58,7 +57,6 @@ const handlers = [
   listLinks,
   deleteLink,
   deleteDatabaseTable,
-  forceCheckLinks,
   forceCheckLink,
   calculateDatabaseSize,
   getMachineFiles,
