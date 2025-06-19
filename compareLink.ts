@@ -14,37 +14,14 @@ export default async function compareLink(
     mask: string;
   }
 ) {
-  ws.send(
-    JSON.stringify({
-      type: "reportLinkCheckLog",
-      data: `Checking link: ${link.url}`,
-    })
-  );
-
   const html = await fetchBasicHtml(link.url);
 
-  ws.send(
-    JSON.stringify({
-      type: "reportLinkCheckLog",
-      data: `Fetch: ${formatHumanBytes(html.length)} (${html.length} B)`,
-    })
-  );
-
-  ws.send(
-    JSON.stringify({
-      type: "reportLinkCheckLog",
-      data: `Cache: ${formatHumanBytes(link.html.length)} (${
-        link.html.length
-      } B)`,
-    })
-  );
-
   const maskedLinkHtml = link.mask
-    ? link.html.replace(new RegExp(link.mask, "g"), `<!-- ${link.mask} -->`)
+    ? link.html.replace(new RegExp(link.mask, "g"), ``)
     : link.html;
 
   const maskedHtml = link.mask
-    ? html.replace(new RegExp(link.mask, "g"), `<!-- ${link.mask} -->`)
+    ? html.replace(new RegExp(link.mask, "g"), ``)
     : html;
 
   // See https://github.com/oven-sh/bun/issues/20396 for `util.diff` support
@@ -55,13 +32,6 @@ export default async function compareLink(
       .text();
 
   if (!diff) {
-    ws.send(
-      JSON.stringify({
-        type: "reportLinkCheckLog",
-        data: "No diff",
-      })
-    );
-
     db.run("UPDATE links SET checkStamp = ? WHERE url = ?", [
       new Date().toISOString(),
       link.url,
@@ -87,13 +57,6 @@ export default async function compareLink(
 
     return;
   }
-
-  ws.send(
-    JSON.stringify({
-      type: "reportLinkCheckLog",
-      data: diff,
-    })
-  );
 
   db.run(
     "UPDATE links SET checkStamp = ?, changeStamp = ?, html = ? WHERE url = ?",

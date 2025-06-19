@@ -21,7 +21,6 @@ type Link = {
 export default function LinkWatcher() {
   const [draft, setDraft] = useState("");
   const [links, setLinks] = useState<Link[]>([]);
-  const [logs, setLogs] = useState(localStorage.getItem("linkCheckLog") || "");
   const [selectedLink, setSelectedLink] = useState<Link>();
 
   useEffect(() => {
@@ -29,13 +28,6 @@ export default function LinkWatcher() {
 
     listen(abortController.signal, {
       listLinks: setLinks,
-      reportLinkCheckLog: (data: string) => {
-        setLogs(
-          (logs) =>
-            `${new Date().toISOString()}: ${data}` +
-            logs.split("\n").slice(0, 100).join("\n")
-        );
-      },
     });
 
     send({ type: "listLinks" });
@@ -177,7 +169,6 @@ export default function LinkWatcher() {
           onClose={handleMaskTweakerClose}
         />
       )}
-      <textarea readOnly value={logs} rows={5} />
       <button onClick={handleForceCheckButtonClick}>Force check all</button>
     </div>
   );

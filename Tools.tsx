@@ -45,14 +45,6 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
       calculateDatabaseSize: setDbSize,
       getUserName: setUserName,
       getAudits: setAudits,
-      // Watch the link check log even when Link Watcher is not open
-      reportLinkCheckLog: (data: string) => {
-        const log = localStorage.getItem("linkCheckLog") || "";
-        localStorage.setItem(
-          "linkCheckLog",
-          `${new Date().toISOString()}: ${data}\n${log}`
-        );
-      },
       reportLinkCheckStatus: setLinkCheckStatus,
       reportLinkCheckProgress: setLinkCheckProgress,
     });
