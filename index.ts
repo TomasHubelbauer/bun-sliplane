@@ -320,7 +320,9 @@ const server: Server = Bun.serve({
       console.log(
         new Date().toISOString(),
         `${ws.data} connected. Clients:`,
-        globalThis.clients.map((c) => c.data).join(", ") || "none"
+        globalThis.clients
+          .map((c) => `${c.data} (${c.readyState})`)
+          .join(", ") || "none"
       );
     },
     close(ws) {
@@ -328,7 +330,9 @@ const server: Server = Bun.serve({
       console.log(
         new Date().toISOString(),
         `${ws.data} disconnected. Clients:`,
-        globalThis.clients.map((c) => c.data).join(", ") || "none"
+        globalThis.clients
+          .map((c) => `${c.data} (${c.readyState})`)
+          .join(", ") || "none"
       );
     },
     async message(ws, message) {

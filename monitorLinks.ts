@@ -17,7 +17,7 @@ export default async function monitorLinks() {
       new Date().toISOString(),
       "Monitoring links… Clients:",
       (globalThis.clients as ServerWebSocket<unknown>[])
-        .map((c) => c.data)
+        .map((c) => `${c.data} (${c.readyState})`)
         .join(", ") || "none"
     );
 
