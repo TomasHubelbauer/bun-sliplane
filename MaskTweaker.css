@@ -9,6 +9,8 @@
 
     textarea {
       flex: 1;
+      font-family: monospace;
+      white-space: nowrap;
     }
 
     iframe {

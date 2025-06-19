@@ -66,16 +66,20 @@ export default function MaskTweaker({
       return ["", null];
     }
 
+    if (!link.mask) {
+      return [link.html, null];
+    }
+
     try {
-      return [
-        link.mask
-          ? link.html.replace(
-              new RegExp(link.mask, "g"),
-              `<!-- ${link.mask} -->`
-            )
-          : link.html,
-        null,
-      ];
+      const maskedHtml = link.html
+        .replace(new RegExp(link.mask, "g"), (match) =>
+          `█`.repeat(match.length)
+        )
+        .split("\n")
+        .map((line) => `${line.includes("█") ? "█" : " "} ${line}`)
+        .join("\n");
+
+      return [maskedHtml, null];
     } catch (error) {
       return [link.html, error];
     }
