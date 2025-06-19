@@ -26,13 +26,13 @@ import deleteLink from "./deleteLink.ts";
 import deleteDatabaseTable from "./deleteDatabaseTable.ts";
 import forceCheckLink from "./forceCheckLink.ts";
 import calculateDatabaseSize from "./calculateDatabaseSize.ts";
-import compareLinks from "./compareLinks.ts";
 import getMachineFiles from "./getMachineFiles.ts";
 import zipDirectory from "./zipDirectory.ts";
 import deleteDatabaseRows from "./deleteDatabaseRows.ts";
 import getDatabaseRowCount from "./getDatabaseRowCount.ts";
 import setLinkMask from "./setLinkMask.ts";
 import fetchLinkDetail from "./fetchLinkDetail.ts";
+import monitorLinks from "./monitorLinks.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -66,8 +66,7 @@ const handlers = [
   fetchLinkDetail,
 ] as const;
 
-// TODO: Split these per `userName`
-let webSocket: ServerWebSocket<unknown> | undefined;
+globalThis.clients = [];
 const server: Server = Bun.serve({
   routes: {
     // Public
@@ -217,9 +216,13 @@ const server: Server = Bun.serve({
           ]
         );
 
-        webSocket?.send(
-          JSON.stringify({ type: getAudits.name, data: getAudits() })
-        );
+        for (const client of globalThis.clients as ServerWebSocket<unknown>[]) {
+          if (client.readyState === 1 && client.data === userName) {
+            client.send(
+              JSON.stringify({ type: getAudits.name, data: getAudits() })
+            );
+          }
+        }
 
         return new Response(db.serialize(), {
           headers: {
@@ -313,10 +316,20 @@ const server: Server = Bun.serve({
     perMessageDeflate: true,
     idleTimeout: undefined,
     open(ws) {
-      webSocket = ws;
+      globalThis.clients.push(ws);
+      console.log(
+        new Date().toISOString(),
+        `${ws.data} connected. Clients:`,
+        globalThis.clients.map((c) => c.data).join(", ") || "none"
+      );
     },
-    close() {
-      webSocket = undefined;
+    close(ws) {
+      globalThis.clients.splice(globalThis.clients.indexOf(ws), 1);
+      console.log(
+        new Date().toISOString(),
+        `${ws.data} disconnected. Clients:`,
+        globalThis.clients.map((c) => c.data).join(", ") || "none"
+      );
     },
     async message(ws, message) {
       try {
@@ -348,64 +361,4 @@ const server: Server = Bun.serve({
 });
 
 console.log(server.url.href);
-
-// Do link monitoring so that overlapping timers due to restart don't interfere
-let monitorStamp;
-const monitorFrequency = 60_000;
-let isMonitoring = false;
-
-async function monitorLinks() {
-  if (
-    webSocket &&
-    webSocket.readyState === 1 &&
-    !isMonitoring &&
-    (!monitorStamp || Date.now() - monitorStamp > monitorFrequency)
-  ) {
-    isMonitoring = true;
-
-    console.log(new Date().toISOString(), "Monitoring links…");
-    const userName = webSocket.data as string;
-    const lastCheck = db
-      .query(`SELECT stamp FROM audits WHERE name = 'link-check-${userName}'`)
-      .get() as { stamp: string };
-
-    if (!lastCheck.stamp) {
-      await compareLinks(webSocket);
-      webSocket.send(
-        JSON.stringify({
-          type: "reportLinkCheckStatus",
-          data: {
-            lastCheckStamp: new Date().toISOString(),
-            nextCheckStamp: new Date(
-              Date.now() + monitorFrequency
-            ).toISOString(),
-          },
-        })
-      );
-    } else {
-      const lastCheckStamp = new Date(lastCheck.stamp);
-      const now = new Date();
-      const difference = now.getTime() - lastCheckStamp.getTime();
-      if (difference > monitorFrequency) {
-        await compareLinks(webSocket);
-      }
-
-      webSocket.send(
-        JSON.stringify({
-          type: "reportLinkCheckStatus",
-          data: {
-            lastCheckStamp: lastCheck.stamp,
-            nextCheckStamp: new Date(
-              lastCheckStamp.getTime() + monitorFrequency
-            ).toISOString(),
-          },
-        })
-      );
-    }
-
-    monitorStamp = Date.now();
-    isMonitoring = false;
-  }
-}
-
-setInterval(monitorLinks, 1000);
+monitorLinks();

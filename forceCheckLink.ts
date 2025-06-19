@@ -11,7 +11,8 @@ export default async function forceCheckLink(
     checkStamp: string;
     changeStamp: string;
     html: string;
+    mask: string;
   };
 
-  await compareLink(ws, link);
+  await compareLink([ws], link);
 }

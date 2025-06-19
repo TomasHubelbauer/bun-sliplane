@@ -1,13 +1,12 @@
 import { $, type ServerWebSocket } from "bun";
 import db from "./db.ts";
 import fetchBasicHtml from "./fetchBasicHtml.ts";
-import formatHumanBytes from "./formatHumanBytes.ts";
 import listLinks from "./listLinks.ts";
 import getItems from "./getItems.ts";
 import getAudits from "./getAudits.ts";
 
 export default async function compareLink(
-  ws: ServerWebSocket<unknown>,
+  clients: ServerWebSocket<unknown>[],
   link: {
     url: string;
     html: string;
@@ -37,23 +36,29 @@ export default async function compareLink(
       link.url,
     ]);
 
-    ws.send(
-      JSON.stringify({
-        type: listLinks.name,
-        data: listLinks(),
-      })
-    );
+    for (const client of clients) {
+      if (client.readyState === 1) {
+        client.send(
+          JSON.stringify({
+            type: listLinks.name,
+            data: listLinks(),
+          })
+        );
+      }
+    }
 
     db.run(
       "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
-      [
-        `link-check-${ws.data}`,
-        new Date().toISOString(),
-        new Date().toISOString(),
-      ]
+      ["link-check", new Date().toISOString(), new Date().toISOString()]
     );
 
-    ws.send(JSON.stringify({ type: getAudits.name, data: getAudits() }));
+    for (const client of clients) {
+      if (client.readyState === 1) {
+        client.send(
+          JSON.stringify({ type: getAudits.name, data: getAudits() })
+        );
+      }
+    }
 
     return;
   }
@@ -63,12 +68,16 @@ export default async function compareLink(
     [new Date().toISOString(), new Date().toISOString(), html, link.url]
   );
 
-  ws.send(
-    JSON.stringify({
-      type: listLinks.name,
-      data: listLinks(),
-    })
-  );
+  for (const client of clients) {
+    if (client.readyState === 1) {
+      client.send(
+        JSON.stringify({
+          type: listLinks.name,
+          data: listLinks(),
+        })
+      );
+    }
+  }
 
   db.run(`INSERT INTO items (stamp, name, text) VALUES (?, ?, ?)`, [
     new Date().toISOString(),
@@ -76,16 +85,20 @@ export default async function compareLink(
     `${link.url} has changed:\n\`\`\`diff\n${diff}\n\`\`\``,
   ]);
 
-  ws.send(JSON.stringify({ type: getItems.name, data: getItems() }));
+  for (const client of clients) {
+    if (client.readyState === 1) {
+      client.send(JSON.stringify({ type: getItems.name, data: getItems() }));
+    }
+  }
 
   db.run(
     "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
-    [
-      `link-check-${ws.data}`,
-      new Date().toISOString(),
-      new Date().toISOString(),
-    ]
+    ["link-check", new Date().toISOString(), new Date().toISOString()]
   );
 
-  ws.send(JSON.stringify({ type: getAudits.name, data: getAudits() }));
+  for (const client of clients) {
+    if (client.readyState === 1) {
+      client.send(JSON.stringify({ type: getAudits.name, data: getAudits() }));
+    }
+  }
 }

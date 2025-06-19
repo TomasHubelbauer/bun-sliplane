@@ -2,7 +2,9 @@ import type { ServerWebSocket } from "bun";
 import compareLink from "./compareLink.ts";
 import db from "./db.ts";
 
-export default async function compareLinks(ws: ServerWebSocket<unknown>) {
+export default async function compareLinks(
+  clients: ServerWebSocket<unknown>[]
+) {
   const links = db.query("SELECT * FROM links").all() as {
     url: string;
     checkStamp: string;
@@ -12,20 +14,28 @@ export default async function compareLinks(ws: ServerWebSocket<unknown>) {
   }[];
 
   for (let index = 0; index < links.length; index++) {
-    ws.send(
-      JSON.stringify({
-        type: "reportLinkCheckProgress",
-        data: { linkIndex: index, linkCount: links.length },
-      })
-    );
+    for (const client of clients) {
+      if (client.readyState === 1) {
+        client.send(
+          JSON.stringify({
+            type: "reportLinkCheckProgress",
+            data: { linkIndex: index, linkCount: links.length },
+          })
+        );
+      }
+    }
 
     const link = links[index];
-    await compareLink(ws, link);
+    await compareLink(clients, link);
   }
 
-  ws.send(
-    JSON.stringify({
-      type: "reportLinkCheckProgress",
-    })
-  );
+  for (const client of clients) {
+    if (client.readyState === 1) {
+      client.send(
+        JSON.stringify({
+          type: "reportLinkCheckProgress",
+        })
+      );
+    }
+  }
 }
