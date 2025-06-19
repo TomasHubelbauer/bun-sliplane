@@ -134,6 +134,7 @@ export default function Item({
         text={text}
         fallback={<span className="placeholder">(no text)</span>}
         onChange={handleTextRichTextChange}
+        multiLine
       />
       {files.length > 0 &&
         files.map((file) => (

@@ -7,9 +7,15 @@ type RichTextProps = {
   text: string;
   onChange: (text: string) => void;
   fallback: ReactNode;
+  multiLine?: boolean;
 };
 
-export default function RichText({ text, onChange, fallback }: RichTextProps) {
+export default function RichText({
+  text,
+  onChange,
+  fallback,
+  multiLine,
+}: RichTextProps) {
   const lines = useMemo(() => segmentText(text), [text]);
 
   const handleClick = useCallback(
@@ -72,6 +78,15 @@ export default function RichText({ text, onChange, fallback }: RichTextProps) {
       onChange(value);
     }
   }, [onChange]);
+
+  const handleNewLineButtonClick = useCallback(() => {
+    const value = prompt(undefined, "");
+    if (value !== null) {
+      const _lines = structuredClone(lines);
+      _lines.push(...segmentText(value));
+      onChange(serializeSegments(_lines));
+    }
+  }, [onChange, lines]);
 
   return (
     <div className={RichText.name}>
@@ -149,6 +164,7 @@ export default function RichText({ text, onChange, fallback }: RichTextProps) {
           }
         }
       })}
+      {multiLine && <button onClick={handleNewLineButtonClick}>+</button>}
     </div>
   );
 }
