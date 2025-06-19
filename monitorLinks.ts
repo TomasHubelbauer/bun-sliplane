@@ -3,7 +3,7 @@ import compareLinks from "./compareLinks.ts";
 import db from "./db.ts";
 
 // Do link monitoring so that overlapping timers due to restart don't interfere
-const monitorFrequency = 5_000;
+const monitorFrequency = 60_000;
 
 export default async function monitorLinks() {
   if (
