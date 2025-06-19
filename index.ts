@@ -349,12 +349,21 @@ const server: Server = Bun.serve({
 
 console.log(server.url.href);
 
-// Use `globalThis` as it will be preserved between Bun hot reloads and thus
-// overlapping timers will be avoided.
-// See https://bun.sh/docs/runtime/hot#hot-mode
-const monitorFrequency = 60_000; // 1 minute
-void (async function monitorLinks() {
-  if (webSocket && webSocket.readyState === 1) {
+// Do link monitoring so that overlapping timers due to restart don't interfere
+let monitorStamp;
+const monitorFrequency = 60_000;
+let isMonitoring = false;
+
+async function monitorLinks() {
+  if (
+    webSocket &&
+    webSocket.readyState === 1 &&
+    !isMonitoring &&
+    (!monitorStamp || Date.now() - monitorStamp > monitorFrequency)
+  ) {
+    isMonitoring = true;
+
+    console.log(new Date().toISOString(), "Monitoring links…");
     const userName = webSocket.data as string;
     const lastCheck = db
       .query(`SELECT stamp FROM audits WHERE name = 'link-check-${userName}'`)
@@ -393,11 +402,10 @@ void (async function monitorLinks() {
         })
       );
     }
-  }
 
-  if (globalThis.monitorLinksHandle) {
-    clearTimeout(globalThis.monitorLinksHandle);
+    monitorStamp = Date.now();
+    isMonitoring = false;
   }
+}
 
-  globalThis.monitorLinksHandle = setTimeout(monitorLinks, 1000);
-})();
+setInterval(monitorLinks, 1000);
