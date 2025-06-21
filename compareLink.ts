@@ -11,9 +11,77 @@ export default async function compareLink(
     url: string;
     html: string;
     mask: string;
+    runMaskPositive: string;
+    runMaskNegative: string;
   }
 ) {
   const html = await fetchBasicHtml(link.url);
+
+  if (link.runMaskPositive && !html.includes(link.runMaskPositive)) {
+    db.run("UPDATE links SET checkStamp = ? WHERE url = ?", [
+      new Date().toISOString(),
+      link.url,
+    ]);
+
+    for (const client of clients) {
+      if (client.readyState === 1) {
+        client.send(
+          JSON.stringify({
+            type: listLinks.name,
+            data: listLinks(),
+          })
+        );
+      }
+    }
+
+    db.run(
+      "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
+      ["link-check", new Date().toISOString(), new Date().toISOString()]
+    );
+
+    for (const client of clients) {
+      if (client.readyState === 1) {
+        client.send(
+          JSON.stringify({ type: getAudits.name, data: getAudits() })
+        );
+      }
+    }
+
+    return;
+  }
+
+  if (link.runMaskNegative && html.includes(link.runMaskNegative)) {
+    db.run("UPDATE links SET checkStamp = ? WHERE url = ?", [
+      new Date().toISOString(),
+      link.url,
+    ]);
+
+    for (const client of clients) {
+      if (client.readyState === 1) {
+        client.send(
+          JSON.stringify({
+            type: listLinks.name,
+            data: listLinks(),
+          })
+        );
+      }
+    }
+
+    db.run(
+      "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
+      ["link-check", new Date().toISOString(), new Date().toISOString()]
+    );
+
+    for (const client of clients) {
+      if (client.readyState === 1) {
+        client.send(
+          JSON.stringify({ type: getAudits.name, data: getAudits() })
+        );
+      }
+    }
+
+    return;
+  }
 
   const maskedLinkHtml = link.mask
     ? link.html.replace(new RegExp(link.mask, "g"), ``)

@@ -33,6 +33,8 @@ import getDatabaseRowCount from "./getDatabaseRowCount.ts";
 import setLinkMask from "./setLinkMask.ts";
 import fetchLinkDetail from "./fetchLinkDetail.ts";
 import monitorLinks from "./monitorLinks.ts";
+import setLinkRunMaskPositive from "./setLinkRunMaskPositive.ts";
+import setLinkRunMaskNegative from "./setLinkRunMaskNegative.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -64,6 +66,8 @@ const handlers = [
   getDatabaseRowCount,
   setLinkMask,
   fetchLinkDetail,
+  setLinkRunMaskPositive,
+  setLinkRunMaskNegative,
 ] as const;
 
 globalThis.clients = [];

@@ -4,4 +4,6 @@ export type Link = {
   checkStamp: string;
   changeStamp: string;
   mask: string;
+  runMaskPositive: string;
+  runMaskNegative: string;
 };

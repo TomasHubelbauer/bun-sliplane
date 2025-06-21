@@ -30,4 +30,20 @@ try {
   }
 }
 
+try {
+  db.run('ALTER TABLE links ADD COLUMN runMaskPositive TEXT DEFAULT ""');
+} catch (error) {
+  if (error.message !== "duplicate column name: runMaskPositive") {
+    throw error;
+  }
+}
+
+try {
+  db.run('ALTER TABLE links ADD COLUMN runMaskNegative TEXT DEFAULT ""');
+} catch (error) {
+  if (error.message !== "duplicate column name: runMaskNegative") {
+    throw error;
+  }
+}
+
 export default db;

@@ -3,6 +3,7 @@ import Stamp from "./Stamp.tsx";
 import LinkPreview from "./LinkPreview.tsx";
 import type { Link } from "./Link.ts";
 import { send } from "./webSocket.ts";
+import TrimmedText from "./TrimmedText.tsx";
 
 type LinkSnippetProps = {
   link: Link;
@@ -10,12 +11,7 @@ type LinkSnippetProps = {
 };
 
 export default function LinkSnippet({ link, onSelect }: LinkSnippetProps) {
-  const handleMaskCodeClick = useCallback(
-    (event: MouseEvent<HTMLElement>) => {
-      onSelect(link);
-    },
-    [onSelect]
-  );
+  const handleMaskCodeClick = useCallback(() => onSelect(link), [onSelect]);
 
   const handleForceCheckButtonClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
@@ -51,6 +47,32 @@ export default function LinkSnippet({ link, onSelect }: LinkSnippetProps) {
     [send]
   );
 
+  const handleRunMaskPositiveCodeClick = useCallback(() => {
+    const runMaskPositive = prompt(undefined, link.runMaskPositive);
+    if (runMaskPositive === null) {
+      return;
+    }
+
+    send({
+      type: "setLinkRunMaskPositive",
+      rowId: link.rowid,
+      runMaskPositive,
+    });
+  }, []);
+
+  const handleRunMaskNegativeCodeClick = useCallback(() => {
+    const runMaskNegative = prompt(undefined, link.runMaskNegative);
+    if (runMaskNegative === null) {
+      return;
+    }
+
+    send({
+      type: "setLinkRunMaskNegative",
+      rowId: link.rowid,
+      runMaskNegative,
+    });
+  }, []);
+
   return (
     <div className={LinkSnippet.name}>
       <LinkPreview url={link.url} />·
@@ -65,9 +87,17 @@ export default function LinkSnippet({ link, onSelect }: LinkSnippetProps) {
       <a href={`/preview/` + link.url} target="_blank">
         Preview
       </a>
-      · Mask:
-      <code data-rowid={link.rowid} onClick={handleMaskCodeClick}>
-        {link.mask.length > 25 ? `${link.mask.slice(0, 25)}…` : link.mask}
+      · Diff mask:
+      <code onClick={handleMaskCodeClick}>
+        <TrimmedText text={link.mask} limit={25} />
+      </code>
+      · Run mask (positive):
+      <code onClick={handleRunMaskPositiveCodeClick}>
+        <TrimmedText text={link.runMaskPositive} limit={25} />
+      </code>
+      · Run mask (negative):
+      <code onClick={handleRunMaskNegativeCodeClick}>
+        <TrimmedText text={link.runMaskNegative} limit={25} />
       </code>
       <button data-url={link.url} onClick={handleForceCheckButtonClick}>
         Force check
