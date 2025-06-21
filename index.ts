@@ -366,3 +366,5 @@ const server: Server = Bun.serve({
 
 console.log(server.url.href);
 monitorLinks();
+
+process.on("exit", (code) => console.log(`Process exited with code ${code}`));
