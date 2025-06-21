@@ -1,22 +1,8 @@
-import {
-  useCallback,
-  useEffect,
-  useState,
-  type ChangeEvent,
-  type MouseEvent,
-} from "react";
-import Stamp from "./Stamp.tsx";
-import LinkPreview from "./LinkPreview.tsx";
+import { useCallback, useEffect, useState, type ChangeEvent } from "react";
 import { listen, send } from "./webSocket.ts";
 import MaskTweaker from "./MaskTweaker.tsx";
-
-type Link = {
-  rowid: number;
-  url: string;
-  checkStamp: string;
-  changeStamp: string;
-  mask: string;
-};
+import LinkSnippet from "./LinkSnippet.tsx";
+import type { Link } from "./Link.ts";
 
 export default function LinkWatcher() {
   const [draft, setDraft] = useState("");
@@ -53,53 +39,6 @@ export default function LinkWatcher() {
     [draft]
   );
 
-  const handleDeleteButtonClick = useCallback(
-    async (event: MouseEvent<HTMLButtonElement>) => {
-      const url = event.currentTarget.dataset.url;
-      if (!url) {
-        return;
-      }
-
-      if (!confirm(`Are you sure you want to delete "${url}"?`)) {
-        return;
-      }
-
-      send({
-        type: "deleteLink",
-        url,
-      });
-    },
-    [send]
-  );
-
-  const handleForceCheckButtonClick = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      const url = event.currentTarget.dataset.url;
-      if (!url) {
-        return;
-      }
-
-      send({
-        type: "forceCheckLink",
-        url,
-      });
-    },
-    [send]
-  );
-
-  const handleMaskCodeClick = useCallback(
-    (event: MouseEvent<HTMLElement>) => {
-      const rowId = +event.currentTarget.dataset.rowid!;
-      const link = links.find((link) => link.rowid === rowId);
-      if (!link) {
-        return;
-      }
-
-      setSelectedLink(link);
-    },
-    [links]
-  );
-
   const handleMaskTweakerSave = useCallback(
     (rowId: number, mask: string) => {
       if (!selectedLink) {
@@ -119,6 +58,10 @@ export default function LinkWatcher() {
     setSelectedLink(undefined);
   }, []);
 
+  const handleLinkSnippetSelect = useCallback((link: Link) => {
+    setSelectedLink(link);
+  }, []);
+
   return (
     <div className={LinkWatcher.name}>
       <input
@@ -128,38 +71,23 @@ export default function LinkWatcher() {
         pattern="https?://.+"
         placeholder="https?://.*"
       />
-      {links.map((link, index) => (
-        <div key={index}>
-          <LinkPreview url={link.url} />·
-          <div>
-            Last checked: <Stamp stamp={link.checkStamp} />
+      {links.map((link, index) =>
+        selectedLink?.rowid === link.rowid ? (
+          <div key={index}>
+            <LinkSnippet link={link} onSelect={handleLinkSnippetSelect} />
+            <MaskTweaker
+              rowId={selectedLink.rowid}
+              onSave={handleMaskTweakerSave}
+              onClose={handleMaskTweakerClose}
+            />
           </div>
-          ·
-          <div>
-            Last changed: <Stamp stamp={link.changeStamp} />
-          </div>
-          ·
-          <a href={`/preview/` + link.url} target="_blank">
-            Preview
-          </a>
-          · Mask:
-          <code data-rowid={link.rowid} onClick={handleMaskCodeClick}>
-            {link.mask.length > 25 ? `${link.mask.slice(0, 25)}…` : link.mask}
-          </code>
-          <button data-url={link.url} onClick={handleForceCheckButtonClick}>
-            Force check
-          </button>
-          <button data-url={link.url} onClick={handleDeleteButtonClick}>
-            Delete
-          </button>
-        </div>
-      ))}
-      {selectedLink && (
-        <MaskTweaker
-          rowId={selectedLink.rowid}
-          onSave={handleMaskTweakerSave}
-          onClose={handleMaskTweakerClose}
-        />
+        ) : (
+          <LinkSnippet
+            key={index}
+            link={link}
+            onSelect={handleLinkSnippetSelect}
+          />
+        )
       )}
     </div>
   );

@@ -2,27 +2,4 @@
   display: flex;
   flex-direction: column;
   gap: 1ch;
-
-  div:not([class]) {
-    align-items: center;
-    display: flex;
-    gap: 1ch;
-  }
-
-  div:hover {
-    background: whitesmoke;
-  }
-
-  button:first-of-type {
-    margin-left: auto;
-  }
-
-  code {
-    align-self: stretch;
-    cursor: pointer;
-  }
-
-  code:empty {
-    width: 1ch;
-  }
 }

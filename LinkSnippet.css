@@ -1,0 +1,22 @@
+[class^="LinkSnippet"] {
+  align-items: center;
+  display: flex;
+  gap: 1ch;
+
+  &:hover {
+    background: whitesmoke;
+  }
+
+  button:first-of-type {
+    margin-left: auto;
+  }
+
+  code {
+    align-self: stretch;
+    cursor: pointer;
+  }
+
+  code:empty {
+    width: 1ch;
+  }
+}
