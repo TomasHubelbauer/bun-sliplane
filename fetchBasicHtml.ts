@@ -45,6 +45,47 @@ const BANNED_ATTRIBUTES = [
   "target",
 ];
 
+// Create a cached HTMLRewriter instance with all handlers configured
+const htmlRewriter = new HTMLRewriter()
+  .onDocument({
+    doctype(doctype) {
+      doctype.remove();
+    },
+    comments(comment) {
+      comment.remove();
+    },
+  })
+  .on("*", {
+    element(element) {
+      if (BANNED_TAGS.includes(element.tagName)) {
+        element.remove();
+        return;
+      }
+
+      if (FLATTENED_TAGS.includes(element.tagName)) {
+        element.removeAndKeepContent();
+      } else if (element.canHaveContent) {
+        element.onEndTag((tag) => {
+          tag.after("\n");
+        });
+      }
+
+      for (const attribute of BANNED_ATTRIBUTES) {
+        element.removeAttribute(attribute);
+      }
+
+      element.before("\n");
+    },
+    text(text) {
+      if (!text.text.trim()) {
+        return;
+      }
+    },
+    comments(comment) {
+      comment.remove();
+    },
+  });
+
 export default async function fetchBasicHtml(url: string) {
   const response = await fetch(url);
   if (!response.ok) {
@@ -52,45 +93,7 @@ export default async function fetchBasicHtml(url: string) {
   }
 
   const html = await response.text();
-  return new HTMLRewriter()
-    .onDocument({
-      doctype(doctype) {
-        doctype.remove();
-      },
-      comments(comment) {
-        comment.remove();
-      },
-    })
-    .on("*", {
-      element(element) {
-        if (BANNED_TAGS.includes(element.tagName)) {
-          element.remove();
-          return;
-        }
-
-        if (FLATTENED_TAGS.includes(element.tagName)) {
-          element.removeAndKeepContent();
-        } else if (element.canHaveContent) {
-          element.onEndTag((tag) => {
-            tag.after("\n");
-          });
-        }
-
-        for (const attribute of BANNED_ATTRIBUTES) {
-          element.removeAttribute(attribute);
-        }
-
-        element.before("\n");
-      },
-      text(text) {
-        if (!text.text.trim()) {
-          return;
-        }
-      },
-      comments(comment) {
-        comment.remove();
-      },
-    })
+  return htmlRewriter
     .transform(html)
     .split(/\r?\n/g)
     .map((line) => line.trim())
