@@ -38,6 +38,11 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
     linkCount: number;
   }>();
 
+  const [memoryStats, setMemoryStats] = useState<{
+    total: number;
+    free: number;
+  }>();
+
   useEffect(() => {
     const abortController = new AbortController();
 
@@ -47,26 +52,27 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
       getAudits: setAudits,
       reportLinkCheckStatus: setLinkCheckStatus,
       reportLinkCheckProgress: setLinkCheckProgress,
+      getMemoryStats: setMemoryStats,
     });
 
     send({ type: "getUserName" });
     send({ type: "getAudits" });
     send({ type: "calculateDatabaseSize" });
 
-    const handle = setInterval(
-      () =>
-        setReadyState((readyState) => {
-          if (ws.readyState === readyState?.state) {
-            return readyState;
-          }
+    const handle = setInterval(() => {
+      setReadyState((readyState) => {
+        if (ws.readyState === readyState?.state) {
+          return readyState;
+        }
 
-          return {
-            state: ws.readyState,
-            stamp: new Date().toISOString(),
-          };
-        }),
-      1000
-    );
+        return {
+          state: ws.readyState,
+          stamp: new Date().toISOString(),
+        };
+      });
+
+      send({ type: "getMemoryStats" });
+    }, 1000);
 
     return () => {
       clearInterval(handle);
@@ -150,6 +156,18 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
             />
           )}
         </button>
+        {memoryStats && (
+          <progress
+            value={memoryStats.total - memoryStats.free}
+            max={memoryStats.total}
+            title={`Memory usage: ${formatHumanBytes(
+              memoryStats.total - memoryStats.free
+            )} / ${formatHumanBytes(memoryStats.total)} (${~~(
+              ((memoryStats.total - memoryStats.free) / memoryStats.total) *
+              100
+            )}%)`}
+          />
+        )}
         <a href="/backup" target="_blank">
           Backup
           {lastBackup && <Stamp stamp={lastBackup} />}
