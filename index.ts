@@ -35,6 +35,8 @@ import fetchLinkDetail from "./fetchLinkDetail.ts";
 import monitorLinks from "./monitorLinks.ts";
 import setLinkRunMaskPositive from "./setLinkRunMaskPositive.ts";
 import setLinkRunMaskNegative from "./setLinkRunMaskNegative.ts";
+import attachFile from "./attachFile.ts";
+import parseMessage from "./parseMessage.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -68,6 +70,7 @@ const handlers = [
   fetchLinkDetail,
   setLinkRunMaskPositive,
   setLinkRunMaskNegative,
+  attachFile,
 ] as const;
 
 globalThis.clients = [];
@@ -115,53 +118,6 @@ const server: Server = Bun.serve({
       return new Response("Upgrade failed", { status: 500 });
     },
     "/attachment": {
-      POST: async (request) => {
-        const userName = validatePasswordAndGetUserName(request);
-        if (!userName) {
-          return new Response(null, {
-            status: 401,
-            headers: {
-              "WWW-Authenticate": "Basic",
-            },
-          });
-        }
-
-        const rowId = getRequestSearchParameter(request, "rowId");
-
-        const formData = await request.formData();
-        const file = formData.get("file");
-        if (!(file instanceof File)) {
-          return new Response("'file' form field is required", { status: 400 });
-        }
-
-        const uuid = crypto.randomUUID();
-        const extension = file.name.split(".").pop() || "";
-        if (
-          !extension ||
-          extension.length > 10 ||
-          !/^[a-zA-Z0-9]+$/.test(extension)
-        ) {
-          return new Response("Invalid file extension", { status: 400 });
-        }
-
-        const path = `${rowId}-${uuid}.${extension}`;
-        const attachment = {
-          uuid,
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          lastModified: file.lastModified,
-          path,
-        };
-
-        await Bun.write(`${volumePath}/${path}`, await file.arrayBuffer());
-        db.run(
-          "UPDATE items SET attachments = json_insert(attachments, '$[#]', ?) WHERE rowid = ?",
-          [JSON.stringify(attachment), rowId]
-        );
-
-        return new Response();
-      },
       GET: async (request) => {
         const userName = validatePasswordAndGetUserName(request);
         if (!userName) {
@@ -353,18 +309,16 @@ const server: Server = Bun.serve({
     },
     async message(ws, message) {
       try {
-        const { type, ...args } = JSON.parse(message as string);
+        const { type, args, data } = parseMessage(message);
         const handler = handlers.find((h) => h.name === type);
         if (!handler) {
           throw new Error(`Unknown handler: ${type}`);
         }
 
-        const data = await handler(ws, args);
-        if (data) {
-          ws.send(JSON.stringify({ type, data }));
+        const result = await handler(ws, args, data);
+        if (result) {
+          ws.send(JSON.stringify({ type, data: result }));
         }
-
-        return;
       } catch (error) {
         ws.send(
           JSON.stringify({

@@ -63,17 +63,17 @@ export default function Item({
       }
 
       for (const file of event.currentTarget.files) {
-        const formData = new FormData();
-        formData.append("file", file);
-        await fetch(`/attachment?rowId=${rowid}`, {
-          method: "POST",
-          body: formData,
-        });
+        send(
+          {
+            type: "attachFile",
+            rowId: rowid,
+            name: file.name,
+            mimeType: file.type,
+            size: file.size,
+          },
+          await file.arrayBuffer()
+        );
       }
-
-      send({
-        type: "getItems",
-      });
     },
     [rowid]
   );

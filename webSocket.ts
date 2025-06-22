@@ -1,6 +1,6 @@
 export let ws: WebSocket;
 
-const queue: ({ type: string } & object)[] = [];
+const queue: (string | Uint8Array)[] = [];
 function makeWebSocket() {
   const webSocket = new WebSocket("/ws");
   webSocket.addEventListener("error", () => (ws = makeWebSocket()));
@@ -8,7 +8,7 @@ function makeWebSocket() {
   webSocket.addEventListener("open", () => {
     for (const data of queue) {
       //console.log("Re-sending:", data.type, data);
-      webSocket.send(JSON.stringify(data));
+      webSocket.send(data);
     }
 
     queue.splice(0, queue.length);
@@ -20,10 +20,22 @@ function makeWebSocket() {
 ws = makeWebSocket();
 
 export function send(
-  data: { type: string } & {
+  textData: { type: string } & {
     [key: string]: string | number | boolean | string[] | number[] | boolean[];
-  }
+  },
+  binaryData?: ArrayBuffer
 ) {
+  let data: (typeof queue)[number] = JSON.stringify(textData);
+  if (binaryData) {
+    const jsonBytes = new TextEncoder().encode(data + "\n");
+    data = new Uint8Array(
+      new ArrayBuffer(jsonBytes.length + binaryData.byteLength)
+    );
+
+    data.set(jsonBytes, 0);
+    data.set(new Uint8Array(binaryData), jsonBytes.length);
+  }
+
   if (ws.readyState !== WebSocket.OPEN) {
     //console.log("Queuing:", data.type, data);
     queue.push(data);
@@ -31,7 +43,7 @@ export function send(
   }
 
   //console.log("Sending:", data.type, data);
-  ws.send(JSON.stringify(data));
+  ws.send(data);
 }
 
 // TODO: Change the `any` to `unknown` or make the method generic
