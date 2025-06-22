@@ -1,6 +1,5 @@
 import Bun, { type Server, type ServerWebSocket } from "bun";
 import { writeHeapSnapshot } from "v8";
-import { heapStats } from "bun:jsc";
 import index from "./index.html";
 import validatePasswordAndGetUserName from "./validatePasswordAndGetUserName.ts";
 import db from "./db.ts";
@@ -12,7 +11,6 @@ import zipDirectory from "./zipDirectory.ts";
 import monitorLinks from "./monitorLinks.ts";
 import parseMessage from "./parseMessage.ts";
 import handlers from "./handlers.ts";
-import formatHumanBytes from "./formatHumanBytes.ts";
 
 const nonce = crypto.randomUUID();
 
@@ -314,39 +312,3 @@ console.log(server.url.href);
 monitorLinks();
 
 process.on("exit", (code) => console.log(`Process exited with code ${code}`));
-
-let stats = heapStats();
-setInterval(() => {
-  const _stats = heapStats();
-
-  for (const key in _stats.objectTypeCounts) {
-    const newValue = _stats.objectTypeCounts[key];
-    const oldValue = stats.objectTypeCounts[key];
-    const diff = newValue - oldValue;
-    if (diff > 100) {
-      console.log(
-        `objectTypeCounts.${key}: ${oldValue} -> ${newValue} (+${diff})`
-      );
-    }
-  }
-
-  for (const key in _stats.protectedObjectTypeCounts) {
-    const newValue = _stats.protectedObjectTypeCounts[key];
-    const oldValue = stats.protectedObjectTypeCounts[key];
-    const diff = newValue - oldValue;
-    if (diff > 100) {
-      console.log(
-        `protectedObjectTypeCounts.${key}: ${oldValue} -> ${newValue} (+${diff})`
-      );
-    }
-  }
-
-  const diff = _stats.heapSize - stats.heapSize;
-  if (diff > 100_000) {
-    const before = formatHumanBytes(stats.heapSize);
-    const after = formatHumanBytes(_stats.heapSize);
-    console.log(`heapSize: ${before} -> ${after} (+${formatHumanBytes(diff)})`);
-  }
-
-  stats = _stats;
-}, 10_000);

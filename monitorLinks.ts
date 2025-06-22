@@ -1,6 +1,9 @@
 import type { ServerWebSocket } from "bun";
 import compareLinks from "./compareLinks.ts";
 import db from "./db.ts";
+import v8 from "v8";
+import fs from "fs";
+import volumePath from "./volumePath.ts";
 
 // Do link monitoring so that overlapping timers due to restart don't interfere
 const monitorFrequency = 60_000;
@@ -12,6 +15,16 @@ export default async function monitorLinks() {
       Date.now() - globalThis.monitorStamp > monitorFrequency)
   ) {
     globalThis.isMonitoring = true;
+
+    const name = v8.writeHeapSnapshot();
+    console.log(
+      new Date().toISOString().slice("yyyy-mm-ddT".length, -".###Z".length),
+      "Heap snapshot written to",
+      name
+    );
+
+    // Copy from server disk to attached volume to survive restarts
+    await fs.promises.rename(name, volumePath + "/" + name);
 
     console.log(
       new Date().toISOString().slice("yyyy-mm-ddT".length, -".###Z".length),
