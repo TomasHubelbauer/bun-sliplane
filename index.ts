@@ -262,18 +262,6 @@ const server: Server = Bun.serve({
     perMessageDeflate: true,
     idleTimeout: undefined,
     open(ws) {
-      for (const client of globalThis.clients as ServerWebSocket<unknown>[]) {
-        if (client.data === ws.data) {
-          client.close(1000, "Duplicate connection");
-          console.log(
-            new Date()
-              .toISOString()
-              .slice("yyyy-mm-ddT".length, -".###Z".length),
-            `Duplicate connection for ${ws.data}. Closed existing connection.`
-          );
-        }
-      }
-
       globalThis.clients.push(ws);
       console.log(
         new Date().toISOString().slice("yyyy-mm-ddT".length, -".###Z".length),
