@@ -24,7 +24,7 @@ export default async function monitorLinks() {
     );
 
     // Copy from server disk to attached volume to survive restarts
-    await fs.promises.rename(name, volumePath + "/" + name);
+    await fs.promises.copyFile(name, volumePath + "/" + name);
 
     console.log(
       new Date().toISOString().slice("yyyy-mm-ddT".length, -".###Z".length),
