@@ -17,3 +17,5 @@ Note that volumes can be created and attached to services at a selected path
 like `/data` and they will preserve data between deployments.
 
 Run using `bun start`, test using `bun test`.
+
+See [the contribution guide](CONTRIBUTING.md).
