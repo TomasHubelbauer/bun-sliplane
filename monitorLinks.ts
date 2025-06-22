@@ -1,6 +1,5 @@
 import type { ServerWebSocket } from "bun";
 //import compareLinks from "./compareLinks.ts";
-//import db from "./db.ts";
 
 const FREQUENCY = 60_000;
 
@@ -14,52 +13,24 @@ export default async function monitorLinks(monitorStamp = Date.now()) {
         .join(", ") || "none"
     );
 
-    // const lastCheck = db
-    //   .query(`SELECT stamp FROM audits WHERE name = 'link-check'`)
-    //   .get() as { stamp: string };
+    //await compareLinks(globalThis.clients as ServerWebSocket<unknown>[]);
 
-    // if (!lastCheck?.stamp) {
-    //   await compareLinks(globalThis.clients as ServerWebSocket<unknown>[]);
+    for (const client of globalThis.clients as ServerWebSocket<unknown>[]) {
+      if (client.readyState === 1) {
+        client.send(
+          JSON.stringify({
+            // TODO: Change to `monitorLinks` and reuse within `compareLinks`
+            type: "reportLinkCheckStatus",
 
-    //   for (const client of globalThis.clients as ServerWebSocket<unknown>[]) {
-    //     if (client.readyState === 1) {
-    //       client.send(
-    //         JSON.stringify({
-    //           type: "reportLinkCheckStatus",
-    //           data: {
-    //             lastCheckStamp: new Date().toISOString(),
-    //             nextCheckStamp: new Date(
-    //               Date.now() + monitorFrequency
-    //             ).toISOString(),
-    //           },
-    //         })
-    //       );
-    //     }
-    //   }
-    // } else {
-    //   const lastCheckStamp = new Date(lastCheck.stamp);
-    //   const now = new Date();
-    //   const difference = now.getTime() - lastCheckStamp.getTime();
-    //   if (difference > monitorFrequency) {
-    //     await compareLinks(globalThis.clients as ServerWebSocket<unknown>[]);
-    //   }
-
-    //   for (const client of globalThis.clients as ServerWebSocket<unknown>[]) {
-    //     if (client.readyState === 1) {
-    //       client.send(
-    //         JSON.stringify({
-    //           type: "reportLinkCheckStatus",
-    //           data: {
-    //             lastCheckStamp: lastCheck.stamp,
-    //             nextCheckStamp: new Date(
-    //               lastCheckStamp.getTime() + monitorFrequency
-    //             ).toISOString(),
-    //           },
-    //         })
-    //       );
-    //     }
-    //   }
-    // }
+            // TODO: Report only a stamp of the next check (last check is now)
+            data: {
+              lastCheckStamp: new Date().toISOString(),
+              nextCheckStamp: new Date(Date.now() + FREQUENCY).toISOString(),
+            },
+          })
+        );
+      }
+    }
 
     monitorStamp = Date.now();
   }
