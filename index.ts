@@ -2,76 +2,16 @@ import Bun, { type Server, type ServerWebSocket } from "bun";
 import index from "./index.html";
 import validatePasswordAndGetUserName from "./validatePasswordAndGetUserName.ts";
 import db from "./db.ts";
-import getItems from "./getItems.ts";
 import getAudits from "./getAudits.ts";
-import getStats from "./getStats.ts";
 import getRequestSearchParameter from "./getRequestSearchParameter.ts";
 import volumePath from "./volumePath.ts";
-import getVolumeFiles from "./getVolumeFiles.ts";
-import createItem from "./createItem.ts";
-import deleteItem from "./deleteItem.ts";
-import updateItem from "./updateItem.ts";
-import deleteAttachment from "./deleteAttachment.ts";
-import deleteVolumeFile from "./deleteVolumeFile.ts";
-import updateDatabaseCell from "./updateDatabaseCell.ts";
-import deleteDatabaseRow from "./deleteDatabaseRow.ts";
-import getUserName from "./getUserName.ts";
-import getDatabaseTables from "./getDatabaseTables.ts";
-import getDatabaseColumns from "./getDatabaseColumns.ts";
-import getDatabaseRows from "./getDatabaseRows.ts";
-import fetchUrlMetadata from "./fetchUrlMetadata.ts";
-import trackLink from "./trackLink.ts";
-import listLinks from "./listLinks.ts";
-import deleteLink from "./deleteLink.ts";
-import deleteDatabaseTable from "./deleteDatabaseTable.ts";
-import forceCheckLink from "./forceCheckLink.ts";
-import calculateDatabaseSize from "./calculateDatabaseSize.ts";
 import getMachineFiles from "./getMachineFiles.ts";
 import zipDirectory from "./zipDirectory.ts";
-import deleteDatabaseRows from "./deleteDatabaseRows.ts";
-import getDatabaseRowCount from "./getDatabaseRowCount.ts";
-import setLinkMask from "./setLinkMask.ts";
-import fetchLinkDetail from "./fetchLinkDetail.ts";
 import monitorLinks from "./monitorLinks.ts";
-import setLinkRunMaskPositive from "./setLinkRunMaskPositive.ts";
-import setLinkRunMaskNegative from "./setLinkRunMaskNegative.ts";
-import attachFile from "./attachFile.ts";
 import parseMessage from "./parseMessage.ts";
+import handlers from "./handlers.ts";
 
 const nonce = crypto.randomUUID();
-
-const handlers = [
-  getStats,
-  getAudits,
-  getItems,
-  createItem,
-  deleteItem,
-  updateItem,
-  deleteAttachment,
-  getVolumeFiles,
-  deleteVolumeFile,
-  updateDatabaseCell,
-  deleteDatabaseRow,
-  getUserName,
-  getDatabaseTables,
-  getDatabaseColumns,
-  getDatabaseRows,
-  fetchUrlMetadata,
-  trackLink,
-  listLinks,
-  deleteLink,
-  deleteDatabaseTable,
-  forceCheckLink,
-  calculateDatabaseSize,
-  getMachineFiles,
-  deleteDatabaseRows,
-  getDatabaseRowCount,
-  setLinkMask,
-  fetchLinkDetail,
-  setLinkRunMaskPositive,
-  setLinkRunMaskNegative,
-  attachFile,
-] as const;
 
 globalThis.clients = [];
 const server: Server = Bun.serve({
