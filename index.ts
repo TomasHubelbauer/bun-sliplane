@@ -147,7 +147,7 @@ const server: Server = Bun.serve({
 
         const path = writeHeapSnapshot();
 
-        return new Response(Bun.file(`${volumePath}/${path}`), {
+        return new Response(Bun.file(path), {
           headers: {
             "Content-Type": "application/json",
             "Content-Disposition": `attachment; filename="heapsnapshot-v8-${userName}-${new Date().toISOString()}.json"`,
