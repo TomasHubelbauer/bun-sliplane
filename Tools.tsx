@@ -28,10 +28,7 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
     stamp: string;
   }>();
 
-  const [linkCheckStatus, setLinkCheckStatus] = useState<{
-    lastCheckStamp: string;
-    nextCheckStamp: string;
-  }>();
+  const [linkCheckStamp, setLinkCheckStamp] = useState<string>();
 
   const [linkCheckProgress, setLinkCheckProgress] = useState<{
     linkIndex: number;
@@ -50,7 +47,7 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
       calculateDatabaseSize: setDbSize,
       getUserName: setUserName,
       getAudits: setAudits,
-      reportLinkCheckStatus: setLinkCheckStatus,
+      monitorLinks: setLinkCheckStamp,
       reportLinkCheckProgress: setLinkCheckProgress,
       getMemoryStats: setMemoryStats,
     });
@@ -146,15 +143,13 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
           disabled={tool === "link-watcher"}
         >
           Link Watcher
-          {linkCheckStatus && <Stamp stamp={linkCheckStatus.lastCheckStamp} />}
-          {linkCheckStatus && "·"}
-          {linkCheckStatus && <Stamp stamp={linkCheckStatus.nextCheckStamp} />}
           {linkCheckProgress && (
             <progress
               value={linkCheckProgress.linkIndex}
               max={linkCheckProgress.linkCount}
             />
           )}
+          {linkCheckStamp && <Stamp stamp={linkCheckStamp} />}
         </button>
         {memoryStats && (
           <progress

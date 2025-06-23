@@ -1,5 +1,5 @@
 import type { ServerWebSocket } from "bun";
-import compareLink from "./compareLink.ts";
+//import compareLink from "./compareLink.ts";
 import db from "./db.ts";
 
 export default async function compareLinks(
@@ -11,6 +11,8 @@ export default async function compareLinks(
     changeStamp: string;
     html: string;
     mask: string;
+    runMaskPositive: string;
+    runMaskNegative: string;
   }[];
 
   for (let index = 0; index < links.length; index++) {
@@ -26,7 +28,7 @@ export default async function compareLinks(
     }
 
     const link = links[index];
-    await compareLink(clients, link);
+    //await compareLink(clients, link);
   }
 
   for (const client of clients) {
