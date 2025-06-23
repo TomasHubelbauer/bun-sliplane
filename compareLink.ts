@@ -26,8 +26,6 @@ export default async function compareLink(
     return;
   }
 
-  return;
-
   if (
     link.runMaskPositive &&
     !fetchResult.html.includes(link.runMaskPositive)
@@ -96,6 +94,8 @@ export default async function compareLink(
 
     return;
   }
+
+  return;
 
   const maskedLinkHtml = link.mask
     ? link.html.replace(new RegExp(link.mask, "g"), ``)
