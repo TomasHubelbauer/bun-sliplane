@@ -89,16 +89,22 @@ const htmlRewriter = new HTMLRewriter()
 export default async function fetchBasicHtml(url: string) {
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Failed to fetch ${url} (status: ${response.status})`);
+    return {
+      ok: false,
+      status: response.status,
+      statusText: response.statusText,
+    } as const;
   }
 
-  const html = await response.text();
-  return htmlRewriter
-    .transform(html)
-    .split(/\r?\n/g)
-    .map((line) => line.trim())
-    .filter((line) => line)
-    .join("\n");
+  return {
+    ok: true,
+    html: htmlRewriter
+      .transform(await response.text())
+      .split(/\r?\n/g)
+      .map((line) => line.trim())
+      .filter((line) => line)
+      .join("\n"),
+  } as const;
 }
 
 if (import.meta.main) {

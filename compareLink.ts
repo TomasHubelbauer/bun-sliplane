@@ -15,10 +15,23 @@ export default async function compareLink(
     runMaskNegative: string;
   }
 ) {
-  const html = await fetchBasicHtml(link.url);
+  const fetchResult = await fetchBasicHtml(link.url);
+  if (!fetchResult.ok) {
+    db.run(`INSERT INTO items (stamp, name, text) VALUES (?, ?, ?)`, [
+      new Date().toISOString(),
+      `Beware ${link.url} fetch failure`,
+      `${link.url} has failed to fetch due to: ${fetchResult.status} ${fetchResult.statusText}`,
+    ]);
+
+    return;
+  }
+
   return;
 
-  if (link.runMaskPositive && !html.includes(link.runMaskPositive)) {
+  if (
+    link.runMaskPositive &&
+    !fetchResult.html.includes(link.runMaskPositive)
+  ) {
     db.run("UPDATE links SET checkStamp = ? WHERE url = ?", [
       new Date().toISOString(),
       link.url,
@@ -51,7 +64,7 @@ export default async function compareLink(
     return;
   }
 
-  if (link.runMaskNegative && html.includes(link.runMaskNegative)) {
+  if (link.runMaskNegative && fetchResult.html.includes(link.runMaskNegative)) {
     db.run("UPDATE links SET checkStamp = ? WHERE url = ?", [
       new Date().toISOString(),
       link.url,
@@ -89,8 +102,8 @@ export default async function compareLink(
     : link.html;
 
   const maskedHtml = link.mask
-    ? html.replace(new RegExp(link.mask, "g"), ``)
-    : html;
+    ? fetchResult.html.replace(new RegExp(link.mask, "g"), ``)
+    : fetchResult.html;
 
   // See https://github.com/oven-sh/bun/issues/20396 for `util.diff` support
   // Bun shell doesn't support process substitution, so we use bash -c
@@ -134,7 +147,12 @@ export default async function compareLink(
 
   db.run(
     "UPDATE links SET checkStamp = ?, changeStamp = ?, html = ? WHERE url = ?",
-    [new Date().toISOString(), new Date().toISOString(), html, link.url]
+    [
+      new Date().toISOString(),
+      new Date().toISOString(),
+      fetchResult.html,
+      link.url,
+    ]
   );
 
   for (const client of clients) {
