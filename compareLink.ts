@@ -16,6 +16,7 @@ export default async function compareLink(
   }
 ) {
   const html = await fetchBasicHtml(link.url);
+  return;
 
   if (link.runMaskPositive && !html.includes(link.runMaskPositive)) {
     db.run("UPDATE links SET checkStamp = ? WHERE url = ?", [
