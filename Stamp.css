@@ -1,4 +1,8 @@
 [class^="Stamp"] {
   color: gray;
   cursor: default;
+
+  span {
+    font-variant-numeric: tabular-nums;
+  }
 }

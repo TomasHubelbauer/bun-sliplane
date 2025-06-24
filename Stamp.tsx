@@ -1,4 +1,4 @@
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState, memo, useMemo } from "react";
 import formatHumanStamp from "./formatHumanStamp.ts";
 
 type StampProps = {
@@ -19,8 +19,16 @@ export default memo(function Stamp({ stamp }: StampProps) {
   }, [stamp]);
 
   return (
-    <time dateTime={stamp} title={stamp} className={Stamp.name}>
-      {humanStamp}
-    </time>
+    humanStamp && (
+      <time dateTime={stamp} title={stamp} className={Stamp.name}>
+        {humanStamp.number && (
+          <>
+            <span>{humanStamp.number}</span>{" "}
+          </>
+        )}
+        {humanStamp.unit && `${humanStamp.unit} `}
+        {humanStamp.word}
+      </time>
+    )
   );
 });
