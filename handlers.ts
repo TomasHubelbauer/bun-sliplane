@@ -23,6 +23,7 @@ import getDatabaseTables from "./getDatabaseTables.ts";
 import getItems from "./getItems.ts";
 import getMachineFiles from "./getMachineFiles.ts";
 import getMemoryStats from "./getMemoryStats.ts";
+import getProcessUptime from "./getProcessUptime.ts";
 import getStats from "./getStats.ts";
 import getUserName from "./getUserName.ts";
 import getVolumeFiles from "./getVolumeFiles.ts";
@@ -59,6 +60,7 @@ export default [
   getItems,
   getMachineFiles,
   getMemoryStats,
+  getProcessUptime,
   getStats,
   getUserName,
   getVolumeFiles,

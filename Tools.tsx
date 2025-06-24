@@ -40,6 +40,8 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
     free: number;
   }>();
 
+  const [processUptime, setProcessUptime] = useState(0);
+
   useEffect(() => {
     const abortController = new AbortController();
 
@@ -50,6 +52,7 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
       monitorLinks: setLinkCheckStamp,
       reportLinkCheckProgress: setLinkCheckProgress,
       getMemoryStats: setMemoryStats,
+      getProcessUptime: setProcessUptime,
     });
 
     send({ type: "getUserName" });
@@ -69,6 +72,7 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
       });
 
       send({ type: "getMemoryStats" });
+      send({ type: "getProcessUptime" });
     }, 1000);
 
     return () => {
@@ -179,6 +183,11 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
         <span className={`led ${readyStateName}`} title={readyStateName} />
         {readyStateName}
         {readyState && <Stamp stamp={readyState.stamp} />}
+        Uptime:
+        <Stamp
+          stamp={new Date(Date.now() - processUptime * 1000).toISOString()}
+          showWord={false}
+        />
       </div>
     </>
   );

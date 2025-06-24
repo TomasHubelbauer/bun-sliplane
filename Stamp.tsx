@@ -3,9 +3,10 @@ import formatHumanStamp from "./formatHumanStamp.ts";
 
 type StampProps = {
   stamp: string;
+  showWord?: boolean;
 };
 
-export default memo(function Stamp({ stamp }: StampProps) {
+export default memo(function Stamp({ stamp, showWord = true }: StampProps) {
   const [humanStamp, setHumanStamp] = useState(formatHumanStamp(stamp));
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export default memo(function Stamp({ stamp }: StampProps) {
           </>
         )}
         {humanStamp.unit && `${humanStamp.unit} `}
-        {humanStamp.word}
+        {showWord && humanStamp.word}
       </time>
     )
   );
