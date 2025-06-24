@@ -73,6 +73,8 @@ export default function MachineExplorer() {
       type: "deleteMachineFiles",
       names: selectedItems,
     });
+
+    setSelectedItems([]);
   }, [selectedItems, send]);
 
   const multiActions = useCallback(

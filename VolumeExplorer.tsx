@@ -68,6 +68,8 @@ export default function VolumeExplorer({ stats }: VolumeExplorerProps) {
       type: "deleteVolumeFiles",
       names: selectedItems,
     });
+
+    setSelectedItems([]);
   }, [selectedItems, send]);
 
   const multiActions = useCallback(
