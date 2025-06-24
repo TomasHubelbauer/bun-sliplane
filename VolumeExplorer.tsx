@@ -10,6 +10,7 @@ type VolumeExplorerProps = {
 
 export default function VolumeExplorer({ stats }: VolumeExplorerProps) {
   const [items, setItems] = useState<Entry[]>([]);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -56,10 +57,34 @@ export default function VolumeExplorer({ stats }: VolumeExplorerProps) {
     [handleDeleteButtonClick]
   );
 
+  const handleDeleteMultipleButtonClick = useCallback(async () => {
+    if (
+      !confirm(`Are you sure you want to delete ${selectedItems.length} items?`)
+    ) {
+      return;
+    }
+
+    send({
+      type: "deleteVolumeFiles",
+      names: selectedItems,
+    });
+  }, [selectedItems, send]);
+
+  const multiActions = useCallback(
+    () => <button onClick={handleDeleteMultipleButtonClick}>Delete</button>,
+    [handleDeleteMultipleButtonClick]
+  );
+
   return (
     <div className={VolumeExplorer.name}>
       {stats && <Usage {...stats} />}
-      <FileSystem entries={items} actions={actions} />
+      <FileSystem
+        entries={items}
+        selectedEntries={selectedItems}
+        setSelectedEntries={setSelectedItems}
+        actions={actions}
+        multiActions={multiActions}
+      />
     </div>
   );
 }

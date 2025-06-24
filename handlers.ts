@@ -8,7 +8,10 @@ import deleteDatabaseRows from "./deleteDatabaseRows.ts";
 import deleteDatabaseTable from "./deleteDatabaseTable.ts";
 import deleteItem from "./deleteItem.ts";
 import deleteLink from "./deleteLink.ts";
+import deleteMachineFile from "./deleteMachineFile.ts";
+import deleteMachineFiles from "./deleteMachineFiles.ts";
 import deleteVolumeFile from "./deleteVolumeFile.ts";
+import deleteVolumeFiles from "./deleteVolumeFiles.ts";
 import fetchLinkDetail from "./fetchLinkDetail.ts";
 import fetchUrlMetadata from "./fetchUrlMetadata.ts";
 import forceCheckLink from "./forceCheckLink.ts";
@@ -41,7 +44,10 @@ export default [
   deleteDatabaseTable,
   deleteItem,
   deleteLink,
+  deleteMachineFile,
+  deleteMachineFiles,
   deleteVolumeFile,
+  deleteVolumeFiles,
   fetchLinkDetail,
   fetchUrlMetadata,
   forceCheckLink,
