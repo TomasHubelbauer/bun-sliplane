@@ -46,4 +46,8 @@ try {
   }
 }
 
+db.run(
+  "CREATE TABLE IF NOT EXISTS dailies (name TEXT, note TEXT, icon TEXT, stamp TEXT)"
+);
+
 export default db;

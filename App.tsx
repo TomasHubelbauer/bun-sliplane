@@ -9,6 +9,7 @@ import type { Stats } from "./Stats.ts";
 import LinkWatcher from "./LinkWatcher.tsx";
 import MachineExplorer from "./MachineExplorer.tsx";
 import { listen, send, ws } from "./webSocket.ts";
+import Dailies from "./Dailies.tsx";
 
 export default function App() {
   const [draft, setDraft] = useState("");
@@ -80,6 +81,7 @@ export default function App() {
       {tool === "database-explorer" && <DatabaseExplorer />}
       {tool == "link-watcher" && <LinkWatcher />}
       {tool && <hr />}
+      <Dailies />
       {matches.length > 0 && `Items matching "${search}":`}
       <List items={matches.length ? matches : items} />
     </>

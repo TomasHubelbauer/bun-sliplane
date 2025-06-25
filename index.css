@@ -11,6 +11,7 @@
 @import url("./LinkWatcher.css");
 @import url("./MaskTweaker.css");
 @import url("./LinkSnippet.css");
+@import url("./Dailies.css");
 
 body {
   display: flex;

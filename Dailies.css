@@ -1,0 +1,9 @@
+[class^="Dailies"] {
+  align-items: center;
+  display: flex;
+  gap: 1ch;
+
+  button {
+    align-self: stretch;
+  }
+}

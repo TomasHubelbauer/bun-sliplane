@@ -4,9 +4,14 @@ import formatHumanStamp from "./formatHumanStamp.ts";
 type StampProps = {
   stamp: string;
   showWord?: boolean;
+  shortUnit?: boolean;
 };
 
-export default memo(function Stamp({ stamp, showWord = true }: StampProps) {
+export default memo(function Stamp({
+  stamp,
+  showWord = true,
+  shortUnit = false,
+}: StampProps) {
   const [humanStamp, setHumanStamp] = useState(formatHumanStamp(stamp));
 
   useEffect(() => {
@@ -27,7 +32,8 @@ export default memo(function Stamp({ stamp, showWord = true }: StampProps) {
             <span>{humanStamp.number}</span>{" "}
           </>
         )}
-        {humanStamp.unit && `${humanStamp.unit} `}
+        {humanStamp.unit &&
+          `${shortUnit ? humanStamp.unit[0] : humanStamp.unit} `}
         {showWord && humanStamp.word}
       </time>
     )

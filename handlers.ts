@@ -1,6 +1,7 @@
 // Remember to keep these in alphabetical order for easy skimming
 import attachFile from "./attachFile.ts";
 import calculateDatabaseSize from "./calculateDatabaseSize.ts";
+import createDaily from "./createDaily.ts";
 import createItem from "./createItem.ts";
 import deleteAttachment from "./deleteAttachment.ts";
 import deleteDatabaseRow from "./deleteDatabaseRow.ts";
@@ -16,6 +17,7 @@ import fetchLinkDetail from "./fetchLinkDetail.ts";
 import fetchUrlMetadata from "./fetchUrlMetadata.ts";
 import forceCheckLink from "./forceCheckLink.ts";
 import getAudits from "./getAudits.ts";
+import getDailies from "./getDailies.ts";
 import getDatabaseColumns from "./getDatabaseColumns.ts";
 import getDatabaseRowCount from "./getDatabaseRowCount.ts";
 import getDatabaseRows from "./getDatabaseRows.ts";
@@ -28,6 +30,7 @@ import getStats from "./getStats.ts";
 import getUserName from "./getUserName.ts";
 import getVolumeFiles from "./getVolumeFiles.ts";
 import listLinks from "./listLinks.ts";
+import setDailyStamp from "./setDailyStamp.ts";
 import setLinkMask from "./setLinkMask.ts";
 import setLinkRunMaskNegative from "./setLinkRunMaskNegative.ts";
 import setLinkRunMaskPositive from "./setLinkRunMaskPositive.ts";
@@ -38,6 +41,7 @@ import updateItem from "./updateItem.ts";
 export default [
   attachFile,
   calculateDatabaseSize,
+  createDaily,
   createItem,
   deleteAttachment,
   deleteDatabaseRow,
@@ -53,6 +57,7 @@ export default [
   fetchUrlMetadata,
   forceCheckLink,
   getAudits,
+  getDailies,
   getDatabaseColumns,
   getDatabaseRowCount,
   getDatabaseRows,
@@ -65,6 +70,7 @@ export default [
   getUserName,
   getVolumeFiles,
   listLinks,
+  setDailyStamp,
   setLinkMask,
   setLinkRunMaskNegative,
   setLinkRunMaskPositive,
