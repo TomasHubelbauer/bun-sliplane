@@ -16,6 +16,10 @@ const nonce = crypto.randomUUID();
 
 globalThis.clients = [];
 const server: Server = Bun.serve({
+  development: {
+    // Disable HMR on Sliplane as the HMR web socket reconnects reload the page
+    hmr: process.env.HOSTNAME !== "bun-sliplane",
+  },
   routes: {
     // Public
     "/manifest.json": () => new Response(Bun.file("./manifest.json")),
