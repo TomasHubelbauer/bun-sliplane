@@ -310,3 +310,5 @@ const server: Server = Bun.serve({
 
 console.log(server.url.href);
 monitorLinks();
+
+console.log(process.env);
