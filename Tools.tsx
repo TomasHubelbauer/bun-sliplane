@@ -167,14 +167,6 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
             )}%)`}
           />
         )}
-        <a href="/snapshot/v8" target="_blank">
-          V8 snapshot
-        </a>
-        ·
-        <a href="/snapshot/jsc" target="_blank">
-          JSC snapshot
-        </a>
-        ·
         <a href="/backup" target="_blank">
           Backup
           {lastBackup && <Stamp stamp={lastBackup} />}

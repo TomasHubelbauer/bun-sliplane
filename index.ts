@@ -1,5 +1,4 @@
 import Bun, { type Server, type ServerWebSocket } from "bun";
-import { writeHeapSnapshot } from "v8";
 import index from "./index.html";
 import validatePasswordAndGetUserName from "./validatePasswordAndGetUserName.ts";
 import db from "./db.ts";
@@ -135,51 +134,6 @@ const server: Server = Bun.serve({
             "Content-Disposition": `attachment; filename="backup-${userName}-${new Date().toISOString()}.db"`,
           },
         });
-      },
-    },
-    "/snapshot/v8": {
-      GET: (request) => {
-        const userName = validatePasswordAndGetUserName(request);
-        if (!userName) {
-          return new Response(null, {
-            status: 401,
-            headers: {
-              "WWW-Authenticate": "Basic",
-            },
-          });
-        }
-
-        const path = writeHeapSnapshot();
-
-        return new Response(Bun.file(path), {
-          headers: {
-            "Content-Type": "application/json",
-            "Content-Disposition": `attachment; filename="heapsnapshot-v8-${userName}-${new Date().toISOString()}.json"`,
-          },
-        });
-      },
-    },
-    "/snapshot/jsc": {
-      GET: (request) => {
-        const userName = validatePasswordAndGetUserName(request);
-        if (!userName) {
-          return new Response(null, {
-            status: 401,
-            headers: {
-              "WWW-Authenticate": "Basic",
-            },
-          });
-        }
-
-        return new Response(
-          JSON.stringify(Bun.generateHeapSnapshot(), null, 2),
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "Content-Disposition": `attachment; filename="heapsnapshot-jsc-${userName}-${new Date().toISOString()}.json"`,
-            },
-          }
-        );
       },
     },
     "/download/:name": {
