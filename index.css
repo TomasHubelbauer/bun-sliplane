@@ -12,6 +12,11 @@
 @import url("./MaskTweaker.css");
 @import url("./LinkSnippet.css");
 @import url("./Dailies.css");
+@import url("./Errands.css");
+@import url("./Group.css");
+@import url("./Errand.css");
+@import url("./TaskErrand.css");
+@import url("./EventErrand.css");
 
 body {
   display: flex;

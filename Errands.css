@@ -1,0 +1,11 @@
+[class^="Errands"] {
+  display: flex;
+  flex-direction: column;
+  gap: 1ch;
+
+  > :first-child {
+    align-items: center;
+    display: flex;
+    gap: 1ch;
+  }
+}

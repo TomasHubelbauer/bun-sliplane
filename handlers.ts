@@ -2,11 +2,14 @@
 import attachFile from "./attachFile.ts";
 import calculateDatabaseSize from "./calculateDatabaseSize.ts";
 import createDaily from "./createDaily.ts";
+import createEventErrand from "./createEventErrand.ts";
 import createItem from "./createItem.ts";
+import createTaskErrand from "./createTaskErrand.ts";
 import deleteAttachment from "./deleteAttachment.ts";
 import deleteDatabaseRow from "./deleteDatabaseRow.ts";
 import deleteDatabaseRows from "./deleteDatabaseRows.ts";
 import deleteDatabaseTable from "./deleteDatabaseTable.ts";
+import deleteErrand from "./deleteErrand.ts";
 import deleteItem from "./deleteItem.ts";
 import deleteLink from "./deleteLink.ts";
 import deleteMachineFile from "./deleteMachineFile.ts";
@@ -18,6 +21,7 @@ import fetchUrlMetadata from "./fetchUrlMetadata.ts";
 import forceCheckLink from "./forceCheckLink.ts";
 import getAudits from "./getAudits.ts";
 import getDailies from "./getDailies.ts";
+import getErrands from "./getErrands.ts";
 import getDatabaseColumns from "./getDatabaseColumns.ts";
 import getDatabaseRowCount from "./getDatabaseRowCount.ts";
 import getDatabaseRows from "./getDatabaseRows.ts";
@@ -42,11 +46,14 @@ export default [
   attachFile,
   calculateDatabaseSize,
   createDaily,
+  createEventErrand,
   createItem,
+  createTaskErrand,
   deleteAttachment,
   deleteDatabaseRow,
   deleteDatabaseRows,
   deleteDatabaseTable,
+  deleteErrand,
   deleteItem,
   deleteLink,
   deleteMachineFile,
@@ -58,6 +65,7 @@ export default [
   forceCheckLink,
   getAudits,
   getDailies,
+  getErrands,
   getDatabaseColumns,
   getDatabaseRowCount,
   getDatabaseRows,

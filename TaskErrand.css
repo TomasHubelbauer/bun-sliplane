@@ -1,0 +1,9 @@
+[class^="TaskErrand"] {
+  align-items: center;
+  display: flex;
+  gap: 1ch;
+
+  > button {
+    margin-left: auto;
+  }
+}

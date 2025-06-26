@@ -1,0 +1,23 @@
+[class^="Errand"]:not([class^="Errands"]) {
+  align-items: center;
+  border-left: 2px solid silver;
+  display: flex;
+  gap: 1ch;
+  padding: 1ch;
+
+  button {
+    visibility: hidden;
+  }
+
+  > :first-child {
+    flex: 1;
+  }
+
+  &:hover {
+    background: whitesmoke;
+
+    button {
+      visibility: initial;
+    }
+  }
+}

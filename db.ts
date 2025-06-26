@@ -50,4 +50,6 @@ db.run(
   "CREATE TABLE IF NOT EXISTS dailies (name TEXT, note TEXT, icon TEXT, stamp TEXT)"
 );
 
+db.run("CREATE TABLE IF NOT EXISTS errands (name TEXT, type TEXT, data TEXT)");
+
 export default db;

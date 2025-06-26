@@ -1,0 +1,17 @@
+[class^="Group"] {
+  display: flex;
+  flex-direction: column;
+  gap: 1ch;
+
+  > :first-child {
+    align-items: center;
+    background: whitesmoke;
+    display: flex;
+    gap: 1ch;
+    padding: 1ch;
+
+    > :last-child {
+      margin-left: auto;
+    }
+  }
+}
