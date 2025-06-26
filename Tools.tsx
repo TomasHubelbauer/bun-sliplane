@@ -14,6 +14,7 @@ import type { Stats } from "./Stats.ts";
 import formatHumanBytes from "./formatHumanBytes.ts";
 import { ws } from "./webSocket.ts";
 import { listen, send } from "./webSocket.ts";
+import Memory from "./Memory.tsx";
 
 type ToolsProps = {
   stats: Stats | undefined;
@@ -38,6 +39,7 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
   const [memoryStats, setMemoryStats] = useState<{
     total: number;
     free: number;
+    rss: number;
   }>();
 
   const [processUptime, setProcessUptime] = useState(0);
@@ -155,18 +157,7 @@ export default function Tools({ stats, tool, setTool }: ToolsProps) {
           )}
           {linkCheckStamp && <Stamp stamp={linkCheckStamp} />}
         </button>
-        {memoryStats && (
-          <progress
-            value={memoryStats.total - memoryStats.free}
-            max={memoryStats.total}
-            title={`Memory usage: ${formatHumanBytes(
-              memoryStats.total - memoryStats.free
-            )} / ${formatHumanBytes(memoryStats.total)} (${~~(
-              ((memoryStats.total - memoryStats.free) / memoryStats.total) *
-              100
-            )}%)`}
-          />
-        )}
+        {memoryStats && <Memory {...memoryStats} />}
         <a href="/backup" target="_blank">
           Backup
           {lastBackup && <Stamp stamp={lastBackup} />}
