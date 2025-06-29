@@ -14,4 +14,12 @@
       margin-left: auto;
     }
   }
+
+  span.weekendDay {
+    color: maroon;
+  }
+
+  span.weekDay {
+    color: gray;
+  }
 }

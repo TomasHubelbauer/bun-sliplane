@@ -26,10 +26,19 @@ export default function Group({ stamp, errands }: GroupProps) {
     [stamp]
   );
 
+  const isWeekendDay = useMemo(() => {
+    const date = new Date(stamp);
+    const day = date.getDay();
+    return day === 0 || day === 6;
+  }, [stamp]);
+
   return (
     <div className={Group.name}>
       <div>
-        {stamp} {dayName}
+        {stamp}
+        <span className={isWeekendDay ? "weekendDay" : "weekDay"}>
+          {dayName}
+        </span>
         <button onClick={handleAddEventButtonClick}>Add event</button>
       </div>
       {errands.map((errand) => (
