@@ -15,11 +15,23 @@
     }
   }
 
+  span.stamp {
+    font-variant-numeric: tabular-nums;
+  }
+
   span.weekendDay {
     color: maroon;
   }
 
   span.weekDay {
+    color: gray;
+  }
+
+  span.today {
+    color: gray;
+  }
+
+  span.tomorrow {
     color: gray;
   }
 }
