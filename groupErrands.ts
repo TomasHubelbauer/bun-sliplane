@@ -30,5 +30,17 @@ export default function groupErrands(errands: Errand[]) {
     }
   }
 
+  for (let index = 0; index < 7; index++) {
+    const stamp = new Date().setDate(new Date().getDate() + index);
+    const stampString = new Date(stamp)
+      .toISOString()
+      .slice(0, "yyyy-mm-dd".length);
+    if (!groups.some((group) => group.stamp === stampString)) {
+      groups.push({ stamp: stampString, errands: [] });
+    }
+  }
+
+  groups.sort((a, b) => a.stamp.localeCompare(b.stamp));
+
   return { ungrouped, groups };
 }
