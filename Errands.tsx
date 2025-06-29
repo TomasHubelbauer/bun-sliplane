@@ -40,12 +40,19 @@ export default function Errands() {
   }, []);
 
   const handleAddEventButtonClick = useCallback(() => {
-    const name = prompt("Name:");
+    let name = prompt("Name:");
     if (!name) {
       return;
     }
 
-    const stamp = prompt("Stamp (YYYY-MM-DD):");
+    let stamp: string | null;
+    if (name.match(/^\d{4}-\d{2}-\d{2} /)) {
+      stamp = name.slice(0, "yyyy-mm-dd".length);
+      name = name.slice("yyyy-mm-dd ".length).trim();
+    } else {
+      stamp = prompt("Stamp (YYYY-MM-DD):");
+    }
+
     if (!stamp) {
       return;
     }
