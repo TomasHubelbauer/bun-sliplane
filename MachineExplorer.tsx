@@ -47,14 +47,10 @@ export default function MachineExplorer() {
   const actions = useCallback(
     (entry: Entry) => (
       <Fragment key={entry.name}>
-        <a key={entry.name} href={`/download/${entry.name}`} target="_blank">
+        <a href={`/download/${entry.name}`} target="_blank">
           Download
         </a>
-        <button
-          key={entry.name}
-          data-name={entry.name}
-          onClick={handleDeleteButtonClick}
-        >
+        <button data-name={entry.name} onClick={handleDeleteButtonClick}>
           Delete
         </button>
       </Fragment>
