@@ -1,40 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { listen, send } from "./webSocket.ts";
-import type { RawErrand, Errand as ErrandType } from "./Errand.ts";
+import type { RawErrand } from "./Errand.ts";
 import Group from "./Group.tsx";
 import Errand from "./Errand.tsx";
 import groupErrands from "./groupErrands.ts";
+import parseErrands from "./parseErrands.ts";
 
 export default function Errands() {
   const [errands, setErrands] = useState<RawErrand[]>([]);
 
-  const parsedErrands: ErrandType[] = useMemo(
-    () =>
-      errands.map((errand) => {
-        switch (errand.type) {
-          case "task": {
-            return {
-              rowid: errand.rowid,
-              name: errand.name,
-              type: "task",
-            };
-          }
-          case "event": {
-            const data = JSON.parse(errand.data);
-            return {
-              rowid: errand.rowid,
-              name: errand.name,
-              type: "event",
-              stamp: data.stamp,
-            };
-          }
-          default: {
-            throw new Error(`Unknown errand type: ${errand.type}`);
-          }
-        }
-      }),
-    [errands]
-  );
+  const parsedErrands = useMemo(() => [...parseErrands(errands)], [errands]);
 
   useEffect(() => {
     const abortController = new AbortController();
