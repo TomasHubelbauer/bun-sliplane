@@ -4,6 +4,7 @@ import calculateDatabaseSize from "./calculateDatabaseSize.ts";
 import createDaily from "./createDaily.ts";
 import createEventErrand from "./createEventErrand.ts";
 import createItem from "./createItem.ts";
+import createReminderErrand from "./createReminderErrand.ts";
 import createTaskErrand from "./createTaskErrand.ts";
 import deleteAttachment from "./deleteAttachment.ts";
 import deleteDatabaseRow from "./deleteDatabaseRow.ts";
@@ -48,6 +49,7 @@ export default [
   createDaily,
   createEventErrand,
   createItem,
+  createReminderErrand,
   createTaskErrand,
   deleteAttachment,
   deleteDatabaseRow,

@@ -1,6 +1,7 @@
 import type { Errand } from "./Errand.ts";
 import TaskErrand from "./TaskErrand.tsx";
 import EventErrand from "./EventErrand.tsx";
+import ReminderErrand from "./ReminderErrand.tsx";
 import { useCallback, useMemo } from "react";
 import { send } from "./webSocket.ts";
 
@@ -17,6 +18,9 @@ export default function Errand({ errand }: ErrandProps) {
       }
       case "event": {
         return <EventErrand {...errand} />;
+      }
+      case "reminder": {
+        return <ReminderErrand {...errand} />;
       }
       default: {
         throw new Error(`Unknown errand type: ${type}`);

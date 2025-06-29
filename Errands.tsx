@@ -53,11 +53,26 @@ export default function Errands() {
     send({ type: "createEventErrand", name, stamp });
   }, []);
 
+  const handleAddReminderButtonClick = useCallback(() => {
+    const name = prompt("Name:");
+    if (!name) {
+      return;
+    }
+
+    const dayOfMonth = prompt("Day of month:");
+    if (!dayOfMonth) {
+      return;
+    }
+
+    send({ type: "createReminderErrand", name, dayOfMonth: +dayOfMonth });
+  }, []);
+
   return (
     <div className={Errands.name}>
       <div>
         <button onClick={handleAddTaskButtonClick}>Add task</button>
         <button onClick={handleAddEventButtonClick}>Add event</button>
+        <button onClick={handleAddReminderButtonClick}>Add reminder</button>
       </div>
       {ungrouped.map((errand) => (
         <Errand key={errand.rowid} errand={errand} />

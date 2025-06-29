@@ -24,6 +24,24 @@ export default function groupErrands(errands: Errand[]) {
         group.errands.push(errand);
         break;
       }
+      case "reminder": {
+        const dayOfMonth = errand.dayOfMonth;
+        const monthDate = new Date();
+        if (monthDate.getDate() > dayOfMonth) {
+          monthDate.setMonth(monthDate.getMonth() + 1);
+        }
+
+        const monthStamp = monthDate.toISOString().slice(0, "yyyy-mm-".length);
+        const stamp = `${monthStamp}${dayOfMonth.toString().padStart(2, "0")}`;
+        let group = groups.find((group) => group.stamp === stamp);
+        if (!group) {
+          group = { stamp, errands: [] };
+          groups.push(group);
+        }
+
+        group.errands.push(errand);
+        break;
+      }
       default: {
         throw new Error(`Unknown errand type: ${type}`);
       }
