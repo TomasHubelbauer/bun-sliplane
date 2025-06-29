@@ -1,0 +1,12 @@
+[class^="FileSystem"] {
+  td:first-of-type {
+    width: 0;
+  }
+
+  td:last-of-type {
+    display: inline-flex;
+    gap: 1ch;
+    white-space: nowrap;
+    width: 0;
+  }
+}

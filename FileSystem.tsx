@@ -65,7 +65,7 @@ export default function FileSystem({
   );
 
   return (
-    <table>
+    <table className={FileSystem.name}>
       {selectedEntries.length > 0 && (
         <caption>
           {`${selectedEntries.length} of ${entries.length} selected. `}
