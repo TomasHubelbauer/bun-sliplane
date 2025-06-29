@@ -3,6 +3,7 @@ import { listen, send } from "./webSocket.ts";
 import type { RawErrand, Errand as ErrandType } from "./Errand.ts";
 import Group from "./Group.tsx";
 import Errand from "./Errand.tsx";
+import groupErrands from "./groupErrands.ts";
 
 export default function Errands() {
   const [errands, setErrands] = useState<RawErrand[]>([]);
@@ -49,38 +50,10 @@ export default function Errands() {
     };
   }, []);
 
-  const { ungrouped, groups } = useMemo(() => {
-    const ungrouped: (typeof parsedErrands)[number][] = [];
-    const groups: {
-      stamp: string;
-      errands: (typeof parsedErrands)[number][];
-    }[] = [];
-    for (const errand of parsedErrands) {
-      const type = errand.type;
-      switch (type) {
-        case "task": {
-          ungrouped.push(errand);
-          break;
-        }
-        case "event": {
-          const stamp = errand.stamp;
-          let group = groups.find((group) => group.stamp === stamp);
-          if (!group) {
-            group = { stamp, errands: [] };
-            groups.push(group);
-          }
-
-          group.errands.push(errand);
-          break;
-        }
-        default: {
-          throw new Error(`Unknown errand type: ${type}`);
-        }
-      }
-    }
-
-    return { ungrouped, groups };
-  }, [parsedErrands]);
+  const { ungrouped, groups } = useMemo(
+    () => groupErrands(parsedErrands),
+    [parsedErrands]
+  );
 
   const handleAddTaskButtonClick = useCallback(() => {
     const name = prompt("Name:");
