@@ -15,29 +15,29 @@ export default async function compareLinks(
     runMaskNegative: string;
   }[];
 
-  for (let index = 0; index < links.length; index++) {
-    for (const client of clients) {
-      if (client.readyState === 1) {
-        client.send(
-          JSON.stringify({
-            type: "reportLinkCheckProgress",
-            data: { linkIndex: index, linkCount: links.length },
-          })
-        );
-      }
-    }
+  // for (let index = 0; index < links.length; index++) {
+  //   for (const client of clients) {
+  //     if (client.readyState === 1) {
+  //       client.send(
+  //         JSON.stringify({
+  //           type: "reportLinkCheckProgress",
+  //           data: { linkIndex: index, linkCount: links.length },
+  //         })
+  //       );
+  //     }
+  //   }
 
-    const link = links[index];
-    await compareLink(clients, link);
-  }
+  //   const link = links[index];
+  //   await compareLink(clients, link);
+  // }
 
-  for (const client of clients) {
-    if (client.readyState === 1) {
-      client.send(
-        JSON.stringify({
-          type: "reportLinkCheckProgress",
-        })
-      );
-    }
-  }
+  // for (const client of clients) {
+  //   if (client.readyState === 1) {
+  //     client.send(
+  //       JSON.stringify({
+  //         type: "reportLinkCheckProgress",
+  //       })
+  //     );
+  //   }
+  // }
 }
