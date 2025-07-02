@@ -7,14 +7,12 @@ if (!process.env.PASSWORD) {
 export default function validateCredential(request: BunRequest) {
   const authorization = request.headers.get("Authorization");
   if (!authorization || !authorization.startsWith("Basic ")) {
-    return {
-      response: new Response(null, {
-        status: 401,
-        headers: {
-          "WWW-Authenticate": "Basic",
-        },
-      }),
-    };
+    return new Response(null, {
+      status: 401,
+      headers: {
+        "WWW-Authenticate": "Basic",
+      },
+    });
   }
 
   const base64 = authorization.slice("Basic ".length);
@@ -23,17 +21,13 @@ export default function validateCredential(request: BunRequest) {
     .split(":");
 
   if (!userName || !password || password !== process.env.PASSWORD) {
-    return {
-      response: new Response(null, {
-        status: 401,
-        headers: {
-          "WWW-Authenticate": "Basic",
-        },
-      }),
-    };
+    return new Response(null, {
+      status: 401,
+      headers: {
+        "WWW-Authenticate": "Basic",
+      },
+    });
   }
 
-  return {
-    userName,
-  };
+  return userName;
 }

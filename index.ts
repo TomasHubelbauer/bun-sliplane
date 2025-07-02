@@ -28,22 +28,22 @@ const server: Server = Bun.serve({
 
     // Private
     "/": (request) => {
-      const { response } = validateCredential(request);
-      if (response) {
-        return response;
+      const credential = validateCredential(request);
+      if (credential instanceof Response) {
+        return credential;
       }
 
       return fetch(`${server.url}/${nonce}`);
     },
     "/ws": (request) => {
-      const { userName, response } = validateCredential(request);
-      if (response) {
-        return response;
+      const credential = validateCredential(request);
+      if (credential instanceof Response) {
+        return credential;
       }
 
       if (
         server.upgrade(request, {
-          data: userName,
+          data: credential,
         })
       ) {
         return;
@@ -53,9 +53,9 @@ const server: Server = Bun.serve({
     },
     "/attachment": {
       GET: async (request) => {
-        const { response } = validateCredential(request);
-        if (response) {
-          return response;
+        const credential = validateCredential(request);
+        if (credential instanceof Response) {
+          return credential;
         }
 
         const rowId = getRequestSearchParameter(request, "rowId");
@@ -86,22 +86,22 @@ const server: Server = Bun.serve({
     },
     "/backup": {
       GET: (request) => {
-        const { userName, response } = validateCredential(request);
-        if (response) {
-          return response;
+        const credential = validateCredential(request);
+        if (credential instanceof Response) {
+          return credential;
         }
 
         db.run(
           "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
           [
-            `backup-${userName}`,
+            `backup-${credential}`,
             new Date().toISOString(),
             new Date().toISOString(),
           ]
         );
 
         for (const client of globalThis.clients as ServerWebSocket<unknown>[]) {
-          if (client.readyState === 1 && client.data === userName) {
+          if (client.readyState === 1 && client.data === credential) {
             client.send(
               JSON.stringify({ type: getAudits.name, data: getAudits() })
             );
@@ -111,16 +111,16 @@ const server: Server = Bun.serve({
         return new Response(db.serialize(), {
           headers: {
             "Content-Type": "application/x-sqlite3",
-            "Content-Disposition": `attachment; filename="backup-${userName}-${new Date().toISOString()}.db"`,
+            "Content-Disposition": `attachment; filename="backup-${credential}-${new Date().toISOString()}.db"`,
           },
         });
       },
     },
     "/download/:name": {
       GET: async (request) => {
-        const { response } = validateCredential(request);
-        if (response) {
-          return response;
+        const credential = validateCredential(request);
+        if (credential instanceof Response) {
+          return credential;
         }
 
         const entries = await getMachineFiles();
@@ -153,9 +153,9 @@ const server: Server = Bun.serve({
     },
     "/preview/*": {
       GET: async (request) => {
-        const { response } = validateCredential(request);
-        if (response) {
-          return response;
+        const credential = validateCredential(request);
+        if (credential instanceof Response) {
+          return credential;
         }
 
         const url = new URL(request.url);
