@@ -27,13 +27,23 @@ const server: Server = Bun.serve({
     [`/${nonce}`]: index,
 
     // Private
-    "/": (request) => {
+    "/": async (request) => {
       const credential = validateCredential(request);
       if (credential instanceof Response) {
         return credential;
       }
 
-      return fetch(`${server.url}/${nonce}`);
+      const response = await fetch(`${server.url}/${nonce}`);
+
+      const cookieMap = new Bun.CookieMap();
+      cookieMap.set("bun-sliplane", request.headers.get("Authorization")!, {
+        sameSite: "strict",
+        httpOnly: true,
+        secure: process.env.HOSTNAME === "bun-sliplane",
+      });
+
+      response.headers.set("Set-Cookie", cookieMap.toSetCookieHeaders()[0]);
+      return response;
     },
     "/ws": (request) => {
       const credential = validateCredential(request);
