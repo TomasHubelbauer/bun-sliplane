@@ -4,7 +4,7 @@ if (!process.env.PASSWORD) {
   throw new Error("PASSWORD environment variable is required");
 }
 
-export default function validatePasswordAndGetUserName(request: BunRequest) {
+export default function validateCredential(request: BunRequest) {
   const authorization = request.headers.get("Authorization");
   if (!authorization || !authorization.startsWith("Basic ")) {
     return {

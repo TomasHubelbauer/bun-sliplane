@@ -1,6 +1,6 @@
 import Bun, { type Server, type ServerWebSocket } from "bun";
 import index from "./index.html";
-import validatePasswordAndGetUserName from "./validatePasswordAndGetUserName.ts";
+import validateCredential from "./validateCredential.ts";
 import db from "./db.ts";
 import getAudits from "./getAudits.ts";
 import getRequestSearchParameter from "./getRequestSearchParameter.ts";
@@ -28,7 +28,7 @@ const server: Server = Bun.serve({
 
     // Private
     "/": (request) => {
-      const { response } = validatePasswordAndGetUserName(request);
+      const { response } = validateCredential(request);
       if (response) {
         return response;
       }
@@ -36,7 +36,7 @@ const server: Server = Bun.serve({
       return fetch(`${server.url}/${nonce}`);
     },
     "/ws": (request) => {
-      const { userName, response } = validatePasswordAndGetUserName(request);
+      const { userName, response } = validateCredential(request);
       if (response) {
         return response;
       }
@@ -53,7 +53,7 @@ const server: Server = Bun.serve({
     },
     "/attachment": {
       GET: async (request) => {
-        const { response } = validatePasswordAndGetUserName(request);
+        const { response } = validateCredential(request);
         if (response) {
           return response;
         }
@@ -86,7 +86,7 @@ const server: Server = Bun.serve({
     },
     "/backup": {
       GET: (request) => {
-        const { userName, response } = validatePasswordAndGetUserName(request);
+        const { userName, response } = validateCredential(request);
         if (response) {
           return response;
         }
@@ -118,7 +118,7 @@ const server: Server = Bun.serve({
     },
     "/download/:name": {
       GET: async (request) => {
-        const { response } = validatePasswordAndGetUserName(request);
+        const { response } = validateCredential(request);
         if (response) {
           return response;
         }
@@ -153,7 +153,7 @@ const server: Server = Bun.serve({
     },
     "/preview/*": {
       GET: async (request) => {
-        const { response } = validatePasswordAndGetUserName(request);
+        const { response } = validateCredential(request);
         if (response) {
           return response;
         }
