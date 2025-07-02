@@ -3,8 +3,8 @@ export let ws: WebSocket;
 const queue: (string | Uint8Array)[] = [];
 function makeWebSocket() {
   const webSocket = new WebSocket("/ws");
-  webSocket.addEventListener("error", () => (ws = makeWebSocket()));
-  webSocket.addEventListener("close", () => (ws = makeWebSocket()));
+  //webSocket.addEventListener("error", () => (ws = makeWebSocket()));
+  //webSocket.addEventListener("close", () => (ws = makeWebSocket()));
   webSocket.addEventListener("open", () => {
     for (const data of queue) {
       //console.log("Re-sending:", data.type, data);
