@@ -28,27 +28,17 @@ const server: Server = Bun.serve({
 
     // Private
     "/": (request) => {
-      const userName = validatePasswordAndGetUserName(request);
-      if (!userName) {
-        return new Response(null, {
-          status: 401,
-          headers: {
-            "WWW-Authenticate": "Basic",
-          },
-        });
+      const { response } = validatePasswordAndGetUserName(request);
+      if (response) {
+        return response;
       }
 
       return fetch(`${server.url}/${nonce}`);
     },
     "/ws": (request) => {
-      const userName = validatePasswordAndGetUserName(request);
-      if (!userName) {
-        return new Response(null, {
-          status: 401,
-          headers: {
-            "WWW-Authenticate": "Basic",
-          },
-        });
+      const { userName, response } = validatePasswordAndGetUserName(request);
+      if (response) {
+        return response;
       }
 
       if (
@@ -63,14 +53,9 @@ const server: Server = Bun.serve({
     },
     "/attachment": {
       GET: async (request) => {
-        const userName = validatePasswordAndGetUserName(request);
-        if (!userName) {
-          return new Response(null, {
-            status: 401,
-            headers: {
-              "WWW-Authenticate": "Basic",
-            },
-          });
+        const { response } = validatePasswordAndGetUserName(request);
+        if (response) {
+          return response;
         }
 
         const rowId = getRequestSearchParameter(request, "rowId");
@@ -101,14 +86,9 @@ const server: Server = Bun.serve({
     },
     "/backup": {
       GET: (request) => {
-        const userName = validatePasswordAndGetUserName(request);
-        if (!userName) {
-          return new Response(null, {
-            status: 401,
-            headers: {
-              "WWW-Authenticate": "Basic",
-            },
-          });
+        const { userName, response } = validatePasswordAndGetUserName(request);
+        if (response) {
+          return response;
         }
 
         db.run(
@@ -138,14 +118,9 @@ const server: Server = Bun.serve({
     },
     "/download/:name": {
       GET: async (request) => {
-        const userName = validatePasswordAndGetUserName(request);
-        if (!userName) {
-          return new Response(null, {
-            status: 401,
-            headers: {
-              "WWW-Authenticate": "Basic",
-            },
-          });
+        const { response } = validatePasswordAndGetUserName(request);
+        if (response) {
+          return response;
         }
 
         const entries = await getMachineFiles();
@@ -178,14 +153,9 @@ const server: Server = Bun.serve({
     },
     "/preview/*": {
       GET: async (request) => {
-        const userName = validatePasswordAndGetUserName(request);
-        if (!userName) {
-          return new Response(null, {
-            status: 401,
-            headers: {
-              "WWW-Authenticate": "Basic",
-            },
-          });
+        const { response } = validatePasswordAndGetUserName(request);
+        if (response) {
+          return response;
         }
 
         const url = new URL(request.url);
