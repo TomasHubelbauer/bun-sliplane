@@ -22,6 +22,8 @@ const server: Server = Bun.serve({
   routes: {
     // Public
     "/manifest.json": () => new Response(Bun.file("./manifest.json")),
+    "/icon-192.png": () => new Response(Bun.file("./icon-192.png")),
+    "/icon-512.png": () => new Response(Bun.file("./icon-512.png")),
 
     // Secret
     [`/${nonce}`]: index,
