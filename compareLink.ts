@@ -35,29 +35,29 @@ export default async function compareLink(
       link.url,
     ]);
 
-    for (const client of clients) {
-      if (client.readyState === 1) {
-        client.send(
-          JSON.stringify({
-            type: listLinks.name,
-            data: listLinks(),
-          })
-        );
-      }
-    }
+    // for (const client of clients) {
+    //   if (client.readyState === 1) {
+    //     client.send(
+    //       JSON.stringify({
+    //         type: listLinks.name,
+    //         data: listLinks(),
+    //       })
+    //     );
+    //   }
+    // }
 
     db.run(
       "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
       ["link-check", new Date().toISOString(), new Date().toISOString()]
     );
 
-    for (const client of clients) {
-      if (client.readyState === 1) {
-        client.send(
-          JSON.stringify({ type: getAudits.name, data: getAudits() })
-        );
-      }
-    }
+    // for (const client of clients) {
+    //   if (client.readyState === 1) {
+    //     client.send(
+    //       JSON.stringify({ type: getAudits.name, data: getAudits() })
+    //     );
+    //   }
+    // }
 
     return;
   }
@@ -68,29 +68,29 @@ export default async function compareLink(
       link.url,
     ]);
 
-    for (const client of clients) {
-      if (client.readyState === 1) {
-        client.send(
-          JSON.stringify({
-            type: listLinks.name,
-            data: listLinks(),
-          })
-        );
-      }
-    }
+    // for (const client of clients) {
+    //   if (client.readyState === 1) {
+    //     client.send(
+    //       JSON.stringify({
+    //         type: listLinks.name,
+    //         data: listLinks(),
+    //       })
+    //     );
+    //   }
+    // }
 
     db.run(
       "INSERT INTO audits (name, stamp) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET stamp = ?",
       ["link-check", new Date().toISOString(), new Date().toISOString()]
     );
 
-    for (const client of clients) {
-      if (client.readyState === 1) {
-        client.send(
-          JSON.stringify({ type: getAudits.name, data: getAudits() })
-        );
-      }
-    }
+    // for (const client of clients) {
+    //   if (client.readyState === 1) {
+    //     client.send(
+    //       JSON.stringify({ type: getAudits.name, data: getAudits() })
+    //     );
+    //   }
+    // }
 
     return;
   }
